@@ -31,6 +31,10 @@ import StudentCalendar from './pages/users/students/StudentCalendar.tsx';
 import StudentMaterials from './pages/users/students/StudentMaterials.tsx';
 import StudentProgress from './pages/users/students/StudentProgress.tsx';
 import StudentMessages from './pages/users/students/StudentMessages.tsx';
+import StudentTests from './pages/users/students/StudentTests.tsx';
+import TakeTest from './pages/users/students/TakeTest.tsx';
+import TestResults from './pages/users/students/TestResults.tsx';
+import SubmitAssignment from './pages/users/students/SubmitAssignment.tsx';
 import VideoCall from './pages/users/students/VideoCall';
 import ScheduleClass from './pages/users/students/ScheduleClass.tsx';
 
@@ -89,6 +93,10 @@ function App() {
           <Route path="/student/calendar" element={<StudentCalendar />} />
           <Route path="/student/materials" element={<StudentMaterials />} />
           <Route path="/student/progress" element={<StudentProgress />} />
+          <Route path="/student/tests" element={<StudentTests />} />
+          <Route path="/student/take-test/:testId" element={<TakeTest />} />
+          <Route path="/student/test-results/:testId" element={<TestResults />} />
+          <Route path="/student/submit-assignment/:assignmentId" element={<SubmitAssignment />} />
           <Route path="/student/messages" element={<StudentMessages />} />
           <Route path="/student/video-call/:classId" element={<VideoCall />} />
           <Route path="/student/schedule-class" element={<ScheduleClass />} />

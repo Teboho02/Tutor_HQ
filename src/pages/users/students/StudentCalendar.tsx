@@ -26,6 +26,7 @@ const StudentCalendar: React.FC = () => {
         { label: 'Calendar', href: '/student/calendar' },
         { label: 'Materials', href: '/student/materials' },
         { label: 'Progress', href: '/student/progress' },
+        { label: 'Tests', href: '/student/tests' },
         { label: 'Messages', href: '/student/messages' },
     ];
 
@@ -294,37 +295,37 @@ const StudentCalendar: React.FC = () => {
 
                             <div className="calendar-days">
                                 {getDaysInMonth(currentDate).map((date, index) => {
-                                        const dayEvents = date ? getEventsForDate(date) : [];
-                                        return (
-                                            <div
-                                                key={index}
-                                                className={`calendar-day ${!date ? 'empty' : ''} ${date && isToday(date) ? 'today' : ''} ${date && !isSameMonth(date) ? 'other-month' : ''}`}
-                                                onClick={() => date && setSelectedDate(date)}
-                                            >
-                                                {date && (
-                                                    <>
-                                                        <div className="day-number">{date.getDate()}</div>
-                                                        <div className="day-events">
-                                                            {dayEvents.slice(0, 3).map(event => (
-                                                                <div
-                                                                    key={event.id}
-                                                                    className="day-event-dot"
-                                                                    style={{ backgroundColor: getEventColor(event.type) }}
-                                                                    title={event.title}
-                                                                >
-                                                                    <span className="event-dot-icon">{getEventIcon(event.type)}</span>
-                                                                </div>
-                                                            ))}
-                                                            {dayEvents.length > 3 && (
-                                                                <div className="event-more">+{dayEvents.length - 3}</div>
-                                                            )}
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                    const dayEvents = date ? getEventsForDate(date) : [];
+                                    return (
+                                        <div
+                                            key={index}
+                                            className={`calendar-day ${!date ? 'empty' : ''} ${date && isToday(date) ? 'today' : ''} ${date && !isSameMonth(date) ? 'other-month' : ''}`}
+                                            onClick={() => date && setSelectedDate(date)}
+                                        >
+                                            {date && (
+                                                <>
+                                                    <div className="day-number">{date.getDate()}</div>
+                                                    <div className="day-events">
+                                                        {dayEvents.slice(0, 3).map(event => (
+                                                            <div
+                                                                key={event.id}
+                                                                className="day-event-dot"
+                                                                style={{ backgroundColor: getEventColor(event.type) }}
+                                                                title={event.title}
+                                                            >
+                                                                <span className="event-dot-icon">{getEventIcon(event.type)}</span>
+                                                            </div>
+                                                        ))}
+                                                        {dayEvents.length > 3 && (
+                                                            <div className="event-more">+{dayEvents.length - 3}</div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
 
                             {selectedDate && (
                                 <div className="selected-date-events">

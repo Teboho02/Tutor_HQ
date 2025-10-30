@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import TestBuilder from '../../../components/TestBuilder';
 import type { NavigationLink } from '../../../types';
+import type { Question } from '../../../types/test';
 import './TutorSchedule.css';
 
 const TutorSchedule: React.FC = () => {
     const navigate = useNavigate();
     const [scheduleType, setScheduleType] = useState<'liveClass' | 'test' | 'assignment'>('liveClass');
+    const [testQuestions, setTestQuestions] = useState<Question[]>([]);
+    const [assignmentType, setAssignmentType] = useState<'test' | 'upload' | 'both'>('test');
     const [formData, setFormData] = useState({
         title: '',
         subject: '',
@@ -20,6 +24,10 @@ const TutorSchedule: React.FC = () => {
         dueDate: '',
         totalMarks: '',
         passingMarks: '',
+        // File upload settings
+        maxFileSize: '10',
+        allowedFileTypes: '.pdf,.docx,.doc,.jpg,.jpeg,.png',
+        requiresDescription: false,
     });
 
     const navigationLinks: NavigationLink[] = [
@@ -45,8 +53,45 @@ const TutorSchedule: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validation for tests
+        if (scheduleType === 'test' && testQuestions.length === 0) {
+            alert('Please add at least one question to the test');
+            return;
+        }
+
+        // Validation for assignments with test format
+        if (scheduleType === 'assignment' && (assignmentType === 'test' || assignmentType === 'both') && testQuestions.length === 0) {
+            alert('Please add at least one question to the assignment');
+            return;
+        }
+
+        // Calculate total points from questions for tests
+        const totalPoints = scheduleType === 'test'
+            ? testQuestions.reduce((sum, q) => sum + q.points, 0)
+            : parseInt(formData.totalMarks);
+
         // Handle submission based on type
-        console.log('Scheduling', scheduleType, formData);
+        const submissionData = {
+            ...formData,
+            scheduleType,
+            questions: (scheduleType === 'test' || (scheduleType === 'assignment' && assignmentType !== 'upload')) ? testQuestions : undefined,
+            totalPoints: (scheduleType === 'test' || (scheduleType === 'assignment' && assignmentType !== 'upload')) ? totalPoints : undefined,
+            assignmentType: scheduleType === 'assignment' ? assignmentType : undefined,
+            allowedFileTypes: scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both')
+                ? formData.allowedFileTypes.split(',')
+                : undefined,
+            maxFileSize: scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both')
+                ? parseInt(formData.maxFileSize)
+                : undefined,
+            requiresDescription: scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both')
+                ? formData.requiresDescription
+                : undefined,
+        };
+
+        console.log('Scheduling', scheduleType, submissionData);
+
+        // Here you would make an API call to save the test/assignment/class
+        // For now, just show success message
         alert(`${scheduleType === 'liveClass' ? 'Live Class' : scheduleType === 'test' ? 'Test' : 'Assignment'} scheduled successfully!`);
         navigate('/tutor/classes');
     };
@@ -213,6 +258,116 @@ const TutorSchedule: React.FC = () => {
                             />
                         </div>
                     </div>
+
+                    {/* Assignment Type Selector - Only for Assignments */}
+                    {scheduleType === 'assignment' && (
+                        <div className="form-section">
+                            <h3>Assignment Format</h3>
+                            <div className="assignment-type-selector">
+                                <label className="assignment-type-option">
+                                    <input
+                                        type="radio"
+                                        name="assignmentType"
+                                        value="test"
+                                        checked={assignmentType === 'test'}
+                                        onChange={(e) => setAssignmentType(e.target.value as 'test' | 'upload' | 'both')}
+                                    />
+                                    <div className="option-content">
+                                        <span className="option-icon">📝</span>
+                                        <div className="option-text">
+                                            <strong>Test Format</strong>
+                                            <p>Students answer questions online</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label className="assignment-type-option">
+                                    <input
+                                        type="radio"
+                                        name="assignmentType"
+                                        value="upload"
+                                        checked={assignmentType === 'upload'}
+                                        onChange={(e) => setAssignmentType(e.target.value as 'test' | 'upload' | 'both')}
+                                    />
+                                    <div className="option-content">
+                                        <span className="option-icon">📤</span>
+                                        <div className="option-text">
+                                            <strong>File Upload</strong>
+                                            <p>Students upload document files</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label className="assignment-type-option">
+                                    <input
+                                        type="radio"
+                                        name="assignmentType"
+                                        value="both"
+                                        checked={assignmentType === 'both'}
+                                        onChange={(e) => setAssignmentType(e.target.value as 'test' | 'upload' | 'both')}
+                                    />
+                                    <div className="option-content">
+                                        <span className="option-icon">📋</span>
+                                        <div className="option-text">
+                                            <strong>Both</strong>
+                                            <p>Answer questions and upload files</p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* File Upload Settings - Only for Upload Assignments */}
+                    {scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both') && (
+                        <div className="form-section">
+                            <h3>File Upload Settings</h3>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label htmlFor="maxFileSize">Max File Size (MB)</label>
+                                    <input
+                                        type="number"
+                                        id="maxFileSize"
+                                        value={formData.maxFileSize}
+                                        onChange={(e) => setFormData({ ...formData, maxFileSize: e.target.value })}
+                                        min="1"
+                                        max="50"
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="allowedFileTypes">Allowed File Types</label>
+                                    <input
+                                        type="text"
+                                        id="allowedFileTypes"
+                                        value={formData.allowedFileTypes}
+                                        onChange={(e) => setFormData({ ...formData, allowedFileTypes: e.target.value })}
+                                        placeholder=".pdf,.docx,.jpg"
+                                    />
+                                    <small>Comma-separated file extensions (e.g., .pdf,.docx,.jpg)</small>
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label className="checkbox-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.requiresDescription}
+                                        onChange={(e) => setFormData({ ...formData, requiresDescription: e.target.checked })}
+                                    />
+                                    <span>Require text description with file upload</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Test Builder - For Tests and Test-Format Assignments */}
+                    {(scheduleType === 'test' || (scheduleType === 'assignment' && (assignmentType === 'test' || assignmentType === 'both'))) && (
+                        <div className="form-section">
+                            <TestBuilder
+                                onQuestionsChange={setTestQuestions}
+                                initialQuestions={testQuestions}
+                            />
+                        </div>
+                    )}
 
                     {/* Select Module */}
                     <div className="form-section">

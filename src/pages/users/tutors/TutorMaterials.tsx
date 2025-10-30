@@ -104,7 +104,7 @@ const TutorMaterials: React.FC = () => {
 
     const handleUploadSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!uploadForm.title || !uploadForm.class) {
             alert('Please fill in all required fields!');
             return;
@@ -120,12 +120,12 @@ const TutorMaterials: React.FC = () => {
             return;
         }
 
-        const fileInfo = uploadForm.file 
+        const fileInfo = uploadForm.file
             ? `File: ${uploadForm.file.name} (${(uploadForm.file.size / 1024).toFixed(2)} KB)`
             : `URL: ${uploadForm.url}`;
 
         alert(`Material uploaded successfully!\n\nTitle: ${uploadForm.title}\nClass: ${uploadForm.class}\nType: ${uploadForm.type.toUpperCase()}\n${fileInfo}`);
-        
+
         // Reset form
         setUploadForm({
             title: '',
@@ -209,9 +209,9 @@ const TutorMaterials: React.FC = () => {
                             <form className="upload-form" onSubmit={handleUploadSubmit}>
                                 <div className="form-group">
                                     <label>Title *</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g., Chapter 5 Notes" 
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., Chapter 5 Notes"
                                         value={uploadForm.title}
                                         onChange={(e) => setUploadForm({ ...uploadForm, title: e.target.value })}
                                         required
@@ -220,7 +220,7 @@ const TutorMaterials: React.FC = () => {
 
                                 <div className="form-group">
                                     <label>Class *</label>
-                                    <select 
+                                    <select
                                         value={uploadForm.class}
                                         onChange={(e) => setUploadForm({ ...uploadForm, class: e.target.value })}
                                         required
@@ -234,7 +234,7 @@ const TutorMaterials: React.FC = () => {
 
                                 <div className="form-group">
                                     <label>Type</label>
-                                    <select 
+                                    <select
                                         value={uploadForm.type}
                                         onChange={(e) => setUploadForm({ ...uploadForm, type: e.target.value as 'pdf' | 'video' | 'doc' | 'link' })}
                                     >
@@ -248,9 +248,9 @@ const TutorMaterials: React.FC = () => {
                                 {uploadForm.type === 'link' ? (
                                     <div className="form-group">
                                         <label>URL *</label>
-                                        <input 
-                                            type="url" 
-                                            placeholder="https://example.com/resource" 
+                                        <input
+                                            type="url"
+                                            placeholder="https://example.com/resource"
                                             value={uploadForm.url}
                                             onChange={(e) => setUploadForm({ ...uploadForm, url: e.target.value })}
                                             required
@@ -260,9 +260,9 @@ const TutorMaterials: React.FC = () => {
                                     <div className="form-group">
                                         <label>File *</label>
                                         <div className="file-upload">
-                                            <input 
-                                                type="file" 
-                                                id="file-upload" 
+                                            <input
+                                                type="file"
+                                                id="file-upload"
                                                 onChange={handleFileChange}
                                                 accept={uploadForm.type === 'pdf' ? '.pdf' : uploadForm.type === 'video' ? 'video/*' : '.doc,.docx'}
                                             />

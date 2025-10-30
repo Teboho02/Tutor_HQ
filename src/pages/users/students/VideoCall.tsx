@@ -209,7 +209,7 @@ const VideoCall: React.FC = () => {
     // Create peer connection
     const createPeerConnection = (socketId: string, stream: MediaStream | null, isInitiator: boolean) => {
         if (!stream) return null;
-        
+
         const configuration = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },

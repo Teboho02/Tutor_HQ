@@ -295,4 +295,103 @@
     .type-selector {
         flex-direction: column;
     }
+
+    .assignment-type-selector {
+        flex-direction: column;
+    }
+
+    .assignment-type-option {
+        width: 100%;
+    }
+}
+
+/* Assignment Type Selector */
+.assignment-type-selector {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.assignment-type-option {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+}
+
+.assignment-type-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.option-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.5rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.assignment-type-option:hover .option-content {
+    border-color: #667eea;
+    background: #f7faff;
+}
+
+.assignment-type-option input[type="radio"]:checked+.option-content {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f7faff 0%, #e9ecff 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.option-icon {
+    font-size: 2.5rem;
+}
+
+.option-text {
+    text-align: center;
+}
+
+.option-text strong {
+    display: block;
+    font-size: 1.125rem;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+}
+
+.option-text p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #718096;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.checkbox-label span {
+    font-size: 1rem;
+    color: #2d3748;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #718096;
+    font-style: italic;
 }

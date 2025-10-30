@@ -31,6 +31,7 @@ const StudentMessages: React.FC = () => {
         { label: 'Calendar', href: '/student/calendar' },
         { label: 'Materials', href: '/student/materials' },
         { label: 'Progress', href: '/student/progress' },
+        { label: 'Tests', href: '/student/tests' },
         { label: 'Messages', href: '/student/messages' },
     ];
 

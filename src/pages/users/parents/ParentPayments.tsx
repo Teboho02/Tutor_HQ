@@ -285,8 +285,8 @@ const ParentPayments: React.FC = () => {
                 )}
 
                 {/* Floating Action Button */}
-                <button 
-                    className="floating-payment-btn" 
+                <button
+                    className="floating-payment-btn"
                     onClick={() => setShowPaymentModal(true)}
                     title="Make New Payment"
                 >
