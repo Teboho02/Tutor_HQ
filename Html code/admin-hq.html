@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - BlueLearn</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css">
+    <style>
+        :root {
+            --primary-blue: #1a73e8;
+            --secondary-blue: #4285f4;
+            --light-blue: #e8f0fe;
+            --dark-blue: #0d47a1;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #5f6368;
+            --text-color: #202124;
+            --success: #34a853;
+            --warning: #f9ab00;
+            --danger: #ea4335;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--white);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+            transition: all 0.3s;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            margin-bottom: 20px;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+            color: var(--primary-blue);
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .nav-links li {
+            margin-bottom: 5px;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: var(--text-color);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            background-color: var(--light-blue);
+            color: var(--primary-blue);
+        }
+
+        .nav-links i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .header h1 {
+            color: var(--primary-blue);
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: var(--primary-blue);
+            font-weight: bold;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--dark-gray);
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            color: var(--primary-blue);
+            border-bottom: 3px solid var(--primary-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .card-header h3 {
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+        }
+
+        .card-header i {
+            color: var(--primary-blue);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: var(--white);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--primary-blue);
+            border: 2px solid var(--primary-blue);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--light-blue);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Assessment Creation */
+        .question-item {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .question-number {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .question-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .option-item input[type="text"] {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .option-item input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .qr-form {
+            flex: 1;
+        }
+
+        .qr-display {
+            flex: 0 0 200px;
+            text-align: center;
+        }
+
+        #qrcode {
+            margin: 15px auto;
+            border: 1px solid var(--medium-gray);
+            padding: 10px;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        /* Live Lessons */
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .lesson-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .lesson-header {
+            padding: 15px;
+            background-color: var(--light-blue);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lesson-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-upcoming {
+            background-color: rgba(249, 171, 0, 0.1);
+            color: var(--warning);
+        }
+
+        .status-live {
+            background-color: rgba(234, 67, 53, 0.1);
+            color: var(--danger);
+        }
+
+        .status-completed {
+            background-color: rgba(52, 168, 83, 0.1);
+            color: var(--success);
+        }
+
+        .lesson-body {
+            padding: 15px;
+        }
+
+        .lesson-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--text-color);
+        }
+
+        .lesson-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+
+        .lesson-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Certificates */
+        .certificates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .certificate-card {
+            background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .certificate-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .certificate-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .certificate-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* Announcements */
+        .announcements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .announcement-item {
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--warning);
+        }
+
+        .announcement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .announcement-date {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+        }
+
+        .announcement-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark-gray);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .modal-header h2 {
+            color: var(--primary-blue);
+        }
+
+        /* Image Upload and Cropping */
+        .image-upload-container {
+            margin-bottom: 20px;
+        }
+
+        .image-preview-container {
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .image-preview {
+            max-width: 300px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 5px;
+            padding: 10px;
+            background-color: var(--white);
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .cropper-container {
+            width: 100%;
+            max-height: 400px;
+            margin: 15px 0;
+        }
+
+        .cropper-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .question-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 10px 0;
+            border: 1px solid var(--medium-gray);
+            border-radius: 5px;
+        }
+
+        .memo-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 10px;
+            }
+            
+            .nav-links {
+                display: flex;
+                overflow-x: auto;
+            }
+            
+            .nav-links li {
+                margin-right: 10px;
+                margin-bottom: 0;
+            }
+            
+            .nav-links a {
+                white-space: nowrap;
+            }
+            
+            .qr-section {
+                flex-direction: column;
+            }
+            
+            .qr-display {
+                align-self: center;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .lessons-grid, .certificates-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .image-preview-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span class="logo-text">BlueLearn</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="Dashboard2.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="Live-classes.html"><i class="fas fa-video"></i> Live Classes</a></li>
+                <li><a href="Test-and-Assignment.html"><i class="fas fa-tasks"></i> Assignments</a></li>
+                <li><a href="Analytics.html"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li><a href="Schedule-and-Calender.html"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li><a href="#" class="active"><i class="fas fa-cog"></i> Admin Panel</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Admin Dashboard</h1>
+                <div class="user-info">
+                    <div class="user-avatar">AD</div>
+                    <div>
+                        <p>Admin User</p>
+                        <small>System Administrator</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="assessments">Assessments & Tests</button>
+                <button class="tab" data-tab="qr">QR Code Generator</button>
+                <button class="tab" data-tab="lessons">Live Lessons</button>
+                <button class="tab" data-tab="certificates">Certificates</button>
+                <button class="tab" data-tab="announcements">Announcements</button>
+            </div>
+
+            <!-- Assessments & Tests Tab -->
+            <div class="tab-content active" id="assessments-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Create New Assessment</h3>
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <form id="assessmentForm">
+                        <div class="form-group">
+                            <label for="assessmentTitle">Assessment Title</label>
+                            <input type="text" id="assessmentTitle" class="form-control" placeholder="Enter assessment title" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="assessmentSubject">Subject</label>
+                                <select id="assessmentSubject" class="form-control" required>
+                                    <option value="">Select a subject</option>
+                                    <option value="math">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="english">English</option>
+                                    <option value="history">History</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="assessmentType">Type</label>
+                                <select id="assessmentType" class="form-control" required>
+                                    <option value="">Select type</option>
+                                    <option value="test">Test</option>
+                                    <option value="quiz">Quiz</option>
+                                    <option value="assignment">Assignment</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="assessmentInstructions">Instructions</label>
+                            <textarea id="assessmentInstructions" class="form-control" placeholder="Enter assessment instructions"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Questions</label>
+                            <div id="questionsContainer">
+                                <!-- Questions will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-outline" id="addQuestionBtn">
+                                <i class="fas fa-plus"></i> Add Question
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Create Assessment</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Existing Assessments</h3>
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="assessments-list" id="assessmentsList">
+                        <!-- Assessments will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR Code Generator Tab -->
+            <div class="tab-content" id="qr-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>QR Code Generator</h3>
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div class="qr-section">
+                        <div class="qr-form">
+                            <div class="form-group">
+                                <label for="qrContent">Content for QR Code</label>
+                                <textarea id="qrContent" class="form-control" placeholder="Enter text, URL, or other content to encode in QR code"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="qrSize">QR Code Size</label>
+                                <select id="qrSize" class="form-control">
+                                    <option value="128">Small (128x128)</option>
+                                    <option value="256" selected>Medium (256x256)</option>
+                                    <option value="512">Large (512x512)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-primary" id="generateQRBtn">Generate QR Code</button>
+                                <button type="button" class="btn btn-outline" id="downloadQRBtn" disabled>Download QR Code</button>
+                            </div>
+                        </div>
+                        <div class="qr-display">
+                            <h4>Generated QR Code</h4>
+                            <div id="qrcode"></div>
+                            <p>Scan with your phone camera</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Lessons Tab -->
+            <div class="tab-content" id="lessons-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Schedule Live Lesson</h3>
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <form id="lessonForm">
+                        <div class="form-group">
+                            <label for="lessonTitle">Lesson Title</label>
+                            <input type="text" id="lessonTitle" class="form-control" placeholder="Enter lesson title" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lessonSubject">Subject</label>
+                                <select id="lessonSubject" class="form-control" required>
+                                    <option value="">Select a subject</option>
+                                    <option value="math">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="english">English</option>
+                                    <option value="history">History</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="lessonTutor">Tutor</label>
+                                <select id="lessonTutor" class="form-control" required>
+                                    <option value="">Select a tutor</option>
+                                    <option value="sj">Sarah Johnson</option>
+                                    <option value="dw">David Wilson</option>
+                                    <option value="lc">Lisa Chen</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lessonDate">Date</label>
+                                <input type="date" id="lessonDate" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lessonTime">Time</label>
+                                <input type="time" id="lessonTime" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lessonDuration">Duration (minutes)</label>
+                                <input type="number" id="lessonDuration" class="form-control" min="15" max="180" value="60" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="lessonDescription">Lesson Description</label>
+                            <textarea id="lessonDescription" class="form-control" placeholder="Describe what the lesson will cover" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Schedule Lesson</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Scheduled Lessons</h3>
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="lessons-grid" id="lessonsList">
+                        <!-- Lessons will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Certificates Tab -->
+            <div class="tab-content" id="certificates-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Create Certificate</h3>
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <form id="certificateForm">
+                        <div class="form-group">
+                            <label for="certificateStudent">Student Name</label>
+                            <input type="text" id="certificateStudent" class="form-control" placeholder="Enter student name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="certificateCourse">Course/Subject</label>
+                            <input type="text" id="certificateCourse" class="form-control" placeholder="Enter course or subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="certificateDate">Completion Date</label>
+                            <input type="date" id="certificateDate" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="certificateMessage">Certificate Message</label>
+                            <textarea id="certificateMessage" class="form-control" placeholder="Enter certificate message"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Generate Certificate</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Certificates</h3>
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="certificates-grid" id="certificatesList">
+                        <!-- Certificates will be listed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcements Tab -->
+            <div class="tab-content" id="announcements-tab">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Create Announcement</h3>
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <form id="announcementForm">
+                        <div class="form-group">
+                            <label for="announcementTitle">Title</label>
+                            <input type="text" id="announcementTitle" class="form-control" placeholder="Enter announcement title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="announcementContent">Content</label>
+                            <textarea id="announcementContent" class="form-control" placeholder="Enter announcement content" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="announcementAudience">Audience</label>
+                            <select id="announcementAudience" class="form-control" required>
+                                <option value="all">All Users</option>
+                                <option value="students">Students Only</option>
+                                <option value="parents">Parents Only</option>
+                                <option value="tutors">Tutors Only</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="announcementPriority">Priority</label>
+                            <select id="announcementPriority" class="form-control" required>
+                                <option value="normal">Normal</option>
+                                <option value="important">Important</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Publish Announcement</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Recent Announcements</h3>
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <div class="announcements-list" id="announcementsList">
+                        <!-- Announcements will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Modal -->
+    <div class="modal" id="questionModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2>Add Question</h2>
+            </div>
+            <form id="questionForm">
+                <div class="form-group">
+                    <label for="questionText">Question Text</label>
+                    <textarea id="questionText" class="form-control" placeholder="Enter question text"></textarea>
+                </div>
+                
+                <!-- Question Image Upload -->
+                <div class="form-group">
+                    <label>Question Image (Optional)</label>
+                    <div class="image-upload-container">
+                        <input type="file" id="questionImageUpload" class="form-control" accept="image/*">
+                        <div class="cropper-container" id="cropperContainer" style="display: none;">
+                            <img id="questionImage" src="" alt="Question Image">
+                        </div>
+                        <div class="cropper-controls" id="cropperControls" style="display: none;">
+                            <button type="button" class="btn btn-primary" id="cropImageBtn">Crop Image</button>
+                            <button type="button" class="btn btn-outline" id="cancelCropBtn">Cancel</button>
+                        </div>
+                        <div class="image-preview-container" id="questionImagePreview"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Options</label>
+                    <div id="optionsContainer">
+                        <div class="option-item">
+                            <input type="radio" name="correctOption" value="0" required>
+                            <input type="text" class="form-control" placeholder="Option 1" required>
+                        </div>
+                        <div class="option-item">
+                            <input type="radio" name="correctOption" value="1" required>
+                            <input type="text" class="form-control" placeholder="Option 2" required>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline" id="addOptionBtn">
+                        <i class="fas fa-plus"></i> Add Option
+                    </button>
+                </div>
+                
+                <!-- Memo Section -->
+                <div class="memo-section">
+                    <h3>Memo/Answer Explanation</h3>
+                    <div class="form-group">
+                        <label for="memoText">Memo Text</label>
+                        <textarea id="memoText" class="form-control" placeholder="Enter memo/answer explanation"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Memo Image (Optional)</label>
+                        <input type="file" id="memoImageUpload" class="form-control" accept="image/*">
+                        <div class="image-preview-container" id="memoImagePreview"></div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="questionPoints">Points</label>
+                    <input type="number" id="questionPoints" class="form-control" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Add Question</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = tab.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Question management
+        let questionCount = 0;
+        const questionsContainer = document.getElementById('questionsContainer');
+        const addQuestionBtn = document.getElementById('addQuestionBtn');
+        const questionModal = document.getElementById('questionModal');
+        const closeModal = document.querySelector('.close-modal');
+        const questionForm = document.getElementById('questionForm');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const addOptionBtn = document.getElementById('addOptionBtn');
+        
+        // Image cropping variables
+        let cropper;
+        let currentImageElement;
+        let questionImageData = null;
+        let memoImageData = null;
+
+        addQuestionBtn.addEventListener('click', () => {
+            questionModal.style.display = 'flex';
+        });
+
+        closeModal.addEventListener('click', () => {
+            questionModal.style.display = 'none';
+            resetQuestionForm();
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === questionModal) {
+                questionModal.style.display = 'none';
+                resetQuestionForm();
+            }
+        });
+
+        // Reset question form
+        function resetQuestionForm() {
+            questionForm.reset();
+            optionsContainer.innerHTML = `
+                <div class="option-item">
+                    <input type="radio" name="correctOption" value="0" required>
+                    <input type="text" class="form-control" placeholder="Option 1" required>
+                </div>
+                <div class="option-item">
+                    <input type="radio" name="correctOption" value="1" required>
+                    <input type="text" class="form-control" placeholder="Option 2" required>
+                </div>
+            `;
+            document.getElementById('questionImagePreview').innerHTML = '';
+            document.getElementById('memoImagePreview').innerHTML = '';
+            document.getElementById('cropperContainer').style.display = 'none';
+            document.getElementById('cropperControls').style.display = 'none';
+            questionImageData = null;
+            memoImageData = null;
+            
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }
+
+        // Add option functionality
+        addOptionBtn.addEventListener('click', () => {
+            const optionCount = optionsContainer.children.length;
+            const optionItem = document.createElement('div');
+            optionItem.className = 'option-item';
+            optionItem.innerHTML = `
+                <input type="radio" name="correctOption" value="${optionCount}" required>
+                <input type="text" class="form-control" placeholder="Option ${optionCount + 1}" required>
+            `;
+            optionsContainer.appendChild(optionItem);
+        });
+
+        // Question image upload and cropping
+        document.getElementById('questionImageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageSrc = event.target.result;
+                
+                // Show cropper container
+                document.getElementById('cropperContainer').style.display = 'block';
+                document.getElementById('cropperControls').style.display = 'flex';
+                
+                // Set image source
+                const imageElement = document.getElementById('questionImage');
+                imageElement.src = imageSrc;
+                currentImageElement = imageElement;
+                
+                // Initialize cropper
+                if (cropper) {
+                    cropper.destroy();
+                }
+                
+                cropper = new Cropper(imageElement, {
+                    aspectRatio: NaN, // Free aspect ratio
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    guides: true,
+                    background: false
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Crop image button
+        document.getElementById('cropImageBtn').addEventListener('click', function() {
+            if (!cropper) return;
+            
+            // Get cropped canvas
+            const canvas = cropper.getCroppedCanvas();
+            
+            // Convert to data URL
+            const croppedImageData = canvas.toDataURL('image/jpeg');
+            questionImageData = croppedImageData;
+            
+            // Display cropped image preview
+            const previewContainer = document.getElementById('questionImagePreview');
+            previewContainer.innerHTML = `
+                <div class="image-preview">
+                    <h4>Cropped Question Image</h4>
+                    <img src="${croppedImageData}" alt="Cropped Question">
+                    <div style="margin-top: 10px;">
+                        <button type="button" class="btn btn-outline" id="removeQuestionImageBtn">Remove Image</button>
+                    </div>
+                </div>
+            `;
+            
+            // Hide cropper
+            document.getElementById('cropperContainer').style.display = 'none';
+            document.getElementById('cropperControls').style.display = 'none';
+            
+            // Add event listener for remove button
+            document.getElementById('removeQuestionImageBtn').addEventListener('click', function() {
+                previewContainer.innerHTML = '';
+                questionImageData = null;
+                document.getElementById('questionImageUpload').value = '';
+            });
+        });
+
+        // Cancel crop button
+        document.getElementById('cancelCropBtn').addEventListener('click', function() {
+            document.getElementById('cropperContainer').style.display = 'none';
+            document.getElementById('cropperControls').style.display = 'none';
+            document.getElementById('questionImageUpload').value = '';
+            
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        });
+
+        // Memo image upload
+        document.getElementById('memoImageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const imageSrc = event.target.result;
+                memoImageData = imageSrc;
+                
+                // Display memo image preview
+                const previewContainer = document.getElementById('memoImagePreview');
+                previewContainer.innerHTML = `
+                    <div class="image-preview">
+                        <h4>Memo Image</h4>
+                        <img src="${imageSrc}" alt="Memo Image">
+                        <div style="margin-top: 10px;">
+                            <button type="button" class="btn btn-outline" id="removeMemoImageBtn">Remove Image</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Add event listener for remove button
+                document.getElementById('removeMemoImageBtn').addEventListener('click', function() {
+                    previewContainer.innerHTML = '';
+                    memoImageData = null;
+                    document.getElementById('memoImageUpload').value = '';
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Question form submission
+        questionForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            questionCount++;
+            const questionText = document.getElementById('questionText').value;
+            const questionPoints = document.getElementById('questionPoints').value;
+            const memoText = document.getElementById('memoText').value;
+            const options = Array.from(optionsContainer.querySelectorAll('input[type="text"]')).map(input => input.value);
+            const correctOption = document.querySelector('input[name="correctOption"]:checked').value;
+            
+            const questionItem = document.createElement('div');
+            questionItem.className = 'question-item';
+            questionItem.innerHTML = `
+                <div class="question-header">
+                    <div class="question-number">Question ${questionCount}</div>
+                    <div class="question-actions">
+                        <button type="button" class="btn btn-outline edit-question">Edit</button>
+                        <button type="button" class="btn btn-danger delete-question">Delete</button>
+                    </div>
+                </div>
+                ${questionText ? `<div class="question-text">${questionText}</div>` : ''}
+                ${questionImageData ? `<img src="${questionImageData}" class="question-image" alt="Question Image">` : ''}
+                <div class="question-options">
+                    ${options.map((option, index) => `
+                        <div class="option-item">
+                            <input type="radio" ${index == correctOption ? 'checked' : ''} disabled>
+                            <span>${option}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="memo-section">
+                    <h4>Memo/Answer Explanation</h4>
+                    ${memoText ? `<div class="memo-text">${memoText}</div>` : ''}
+                    ${memoImageData ? `<img src="${memoImageData}" class="question-image" alt="Memo Image">` : ''}
+                </div>
+                <div class="question-points">Points: ${questionPoints}</div>
+            `;
+            
+            questionsContainer.appendChild(questionItem);
+            
+            // Reset form
+            resetQuestionForm();
+            questionModal.style.display = 'none';
+            
+            // Add event listeners for edit and delete buttons
+            questionItem.querySelector('.edit-question').addEventListener('click', () => {
+                // In a real app, this would populate the modal with existing question data
+                alert('Edit functionality would be implemented here');
+            });
+            
+            questionItem.querySelector('.delete-question').addEventListener('click', () => {
+                questionItem.remove();
+                questionCount--;
+                // Renumber remaining questions
+                const questions = questionsContainer.querySelectorAll('.question-item');
+                questions.forEach((q, index) => {
+                    q.querySelector('.question-number').textContent = `Question ${index + 1}`;
+                });
+                questionCount = questions.length;
+            });
+        });
+
+        // QR Code Generation
+        const generateQRBtn = document.getElementById('generateQRBtn');
+        const downloadQRBtn = document.getElementById('downloadQRBtn');
+        const qrContent = document.getElementById('qrContent');
+        const qrSize = document.getElementById('qrSize');
+        const qrcodeDiv = document.getElementById('qrcode');
+
+        generateQRBtn.addEventListener('click', () => {
+            const content = qrContent.value.trim();
+            if (!content) {
+                alert('Please enter content for the QR code');
+                return;
+            }
+            
+            // Clear previous QR code
+            qrcodeDiv.innerHTML = '';
+            
+            // Generate new QR code
+            QRCode.toCanvas(qrcodeDiv, content, {
+                width: parseInt(qrSize.value),
+                margin: 1,
+                color: {
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                }
+            }, function(error) {
+                if (error) {
+                    console.error(error);
+                    alert('Error generating QR code');
+                } else {
+                    downloadQRBtn.disabled = false;
+                }
+            });
+        });
+
+        downloadQRBtn.addEventListener('click', () => {
+            const canvas = qrcodeDiv.querySelector('canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'qrcode.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+        });
+
+        // Form submissions
+        document.getElementById('assessmentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Assessment created successfully!');
+            // In a real app, this would send data to the server
+        });
+
+        document.getElementById('lessonForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Live lesson scheduled successfully!');
+            // In a real app, this would send data to the server
+        });
+
+        document.getElementById('certificateForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Certificate generated successfully!');
+            // In a real app, this would send data to the server
+        });
+
+        document.getElementById('announcementForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Announcement published successfully!');
+            // In a real app, this would send data to the server
+        });
+
+        // Initialize with some sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add sample assessments
+            const assessmentsList = document.getElementById('assessmentsList');
+            assessmentsList.innerHTML = `
+                <div class="question-item">
+                    <div class="question-header">
+                        <div class="question-number">Algebra Midterm</div>
+                        <div class="question-actions">
+                            <button class="btn btn-outline">Edit</button>
+                            <button class="btn btn-danger">Delete</button>
+                        </div>
+                    </div>
+                    <div class="question-text">Mathematics | Test | 15 questions</div>
+                </div>
+                <div class="question-item">
+                    <div class="question-header">
+                        <div class="question-number">Science Quiz 1</div>
+                        <div class="question-actions">
+                            <button class="btn btn-outline">Edit</button>
+                            <button class="btn btn-danger">Delete</button>
+                        </div>
+                    </div>
+                    <div class="question-text">Science | Quiz | 10 questions</div>
+                </div>
+            `;
+
+            // Add sample lessons
+            const lessonsList = document.getElementById('lessonsList');
+            lessonsList.innerHTML = `
+                <div class="lesson-card">
+                    <div class="lesson-header">
+                        <div class="lesson-title">Introduction to Calculus</div>
+                        <div class="lesson-status status-upcoming">Upcoming</div>
+                    </div>
+                    <div class="lesson-body">
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-calendar"></i> 2023-10-15</span>
+                            <span><i class="fas fa-clock"></i> 14:00</span>
+                        </div>
+                        <p>Basic concepts of differential calculus and their applications.</p>
+                        <div class="lesson-actions">
+                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-outline">Edit</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="lesson-card">
+                    <div class="lesson-header">
+                        <div class="lesson-title">Chemical Reactions</div>
+                        <div class="lesson-status status-live">Live Now</div>
+                    </div>
+                    <div class="lesson-body">
+                        <div class="lesson-meta">
+                            <span><i class="fas fa-calendar"></i> 2023-10-12</span>
+                            <span><i class="fas fa-clock"></i> 10:30</span>
+                        </div>
+                        <p>Understanding different types of chemical reactions and balancing equations.</p>
+                        <div class="lesson-actions">
+                            <button class="btn btn-danger">Join</button>
+                            <button class="btn btn-outline">Edit</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add sample certificates
+            const certificatesList = document.getElementById('certificatesList');
+            certificatesList.innerHTML = `
+                <div class="certificate-card">
+                    <div class="certificate-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3>Mathematics Excellence</h3>
+                    <p>Awarded to John Smith</p>
+                    <div class="certificate-actions">
+                        <button class="btn btn-outline">View</button>
+                        <button class="btn btn-outline">Download</button>
+                    </div>
+                </div>
+                <div class="certificate-card">
+                    <div class="certificate-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3>Science Achievement</h3>
+                    <p>Awarded to Emily Johnson</p>
+                    <div class="certificate-actions">
+                        <button class="btn btn-outline">View</button>
+                        <button class="btn btn-outline">Download</button>
+                    </div>
+                </div>
+            `;
+
+            // Add sample announcements
+            const announcementsList = document.getElementById('announcementsList');
+            announcementsList.innerHTML = `
+                <div class="announcement-item">
+                    <div class="announcement-header">
+                        <div class="announcement-title">System Maintenance</div>
+                        <div class="announcement-date">2023-10-10</div>
+                    </div>
+                    <div class="announcement-content">
+                        <p>The system will be undergoing maintenance on October 15th from 2:00 AM to 4:00 AM. During this time, the platform may be temporarily unavailable.</p>
+                    </div>
+                    <div class="announcement-actions">
+                        <button class="btn btn-outline">Edit</button>
+                        <button class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+                <div class="announcement-item">
+                    <div class="announcement-header">
+                        <div class="announcement-title">New Course Available</div>
+                        <div class="announcement-date">2023-10-08</div>
+                    </div>
+                    <div class="announcement-content">
+                        <p>We're excited to announce our new Advanced Physics course, starting next month. Registration is now open!</p>
+                    </div>
+                    <div class="announcement-actions">
+                        <button class="btn btn-outline">Edit</button>
+                        <button class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+    </script>
+</body>
+</html>

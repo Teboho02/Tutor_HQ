@@ -1,0 +1,391 @@
+.student-materials-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.materials-container {
+    flex: 1;
+    padding: 2rem 4rem;
+    width: 100%;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    font-size: 1.1rem;
+    color: #666;
+}
+
+/* Subjects Grid */
+.subjects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.subject-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 1rem;
+    background: white;
+    border: 2px solid #e5e5e5;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.subject-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.subject-card.active {
+    border-width: 3px;
+    box-shadow: 0 8px 25px rgba(0, 102, 255, 0.15);
+}
+
+.subject-icon {
+    font-size: 2.5rem;
+}
+
+.subject-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Content Tabs */
+.content-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e5e5e5;
+}
+
+.tab-btn {
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.2s ease;
+    margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+    color: #0066ff;
+    background: rgba(0, 102, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: #0066ff;
+    border-bottom-color: #0066ff;
+}
+
+/* Materials Content */
+.materials-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.materials-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Material Card */
+.material-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.material-card:hover {
+    border-color: #0066ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.material-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.video-icon {
+    color: #ff3b30;
+}
+
+.material-info {
+    flex: 1;
+}
+
+.material-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.material-info p {
+    color: #666;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.material-meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.85rem;
+    color: #999;
+}
+
+/* Grades List */
+.grades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.grade-card {
+    padding: 1.5rem;
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.grade-card:hover {
+    border-color: #0066ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.grade-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.grade-header h3 {
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.grade-score {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.grade-score .score {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.grade-score .percentage {
+    padding: 0.25rem 0.75rem;
+    background: #ff9500;
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.grade-score .percentage.high {
+    background: #34c759;
+}
+
+.grade-date {
+    font-size: 0.85rem;
+    color: #999;
+    margin-bottom: 0.75rem;
+}
+
+.grade-feedback {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-left: 3px solid #0066ff;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.grade-feedback strong {
+    color: #333;
+}
+
+.grade-bar {
+    height: 8px;
+    background: #e5e5e5;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.grade-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0066ff, #5856d6);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+/* Buttons */
+.btn {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #0066ff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0052cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+}
+
+.btn-outline {
+    background: white;
+    color: #0066ff;
+    border: 2px solid #0066ff;
+}
+
+.btn-outline:hover {
+    background: #0066ff;
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: #999;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .materials-container {
+        padding: 1.5rem;
+    }
+
+    .subjects-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .subjects-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .content-tabs {
+        gap: 0.5rem;
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    .materials-content {
+        padding: 1.5rem;
+    }
+
+    .material-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .grade-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .grade-score {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .materials-container {
+        padding: 1rem 1.5rem;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .subjects-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .subject-icon {
+        font-size: 2rem;
+    }
+
+    .subject-name {
+        font-size: 0.85rem;
+    }
+
+    .materials-content {
+        padding: 1rem;
+    }
+
+    .material-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}

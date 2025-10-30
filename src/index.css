@@ -54,6 +54,16 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Fix for user portal pages - ensure content is not cut off by fixed header */
+[class*="-page"] {
+  padding-top: 165px !important;
+}
+
+/* Ensure containers within portal pages have proper spacing */
+[class*="-page"] [class*="-container"] {
+  padding-top: 30px !important;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
