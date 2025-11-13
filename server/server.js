@@ -4,6 +4,12 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
+// Import routes
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import classRoutes from './routes/classes.js';
+import testRoutes from './routes/tests.js';
+
 dotenv.config();
 
 const app = express();
@@ -18,11 +24,22 @@ const io = new Server(httpServer, {
 app.use(cors());
 app.use(express.json());
 
-// Store active rooms and participants
-const rooms = new Map();
-const scheduledClasses = new Map();
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-// Room structure
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/classes', classRoutes);
+app.use('/api/tests', testRoutes);
+
+// Store active video call rooms and participants
+// Note: Class scheduling is now handled by Supabase database via /api/classes routes
+const rooms = new Map();
+
+// Room structure for WebRTC video calls
 class Room {
     constructor(classId, classInfo) {
         this.classId = classId;
@@ -61,72 +78,37 @@ class Room {
     }
 }
 
-// API Endpoints
-app.post('/api/classes/schedule', (req, res) => {
-    const { title, subject, instructor, students, tutors, startTime, duration, description } = req.body;
-
-    const classId = `class_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    const classInfo = {
-        id: classId,
-        title,
-        subject,
-        instructor,
-        students: students || [],
-        tutors: tutors || [],
-        startTime: new Date(startTime),
-        duration,
-        description,
-        status: 'scheduled',
-        createdAt: new Date(),
-    };
-
-    scheduledClasses.set(classId, classInfo);
-
-    // In production, you'd save this to a database
-    console.log(`Class scheduled: ${classId}`, classInfo);
-
-    res.json({
-        success: true,
-        classId,
-        classInfo,
-    });
-});
-
-app.get('/api/classes/:classId', (req, res) => {
+// WebRTC room status endpoint
+app.get('/api/video/rooms/:classId', (req, res) => {
     const { classId } = req.params;
-    const classInfo = scheduledClasses.get(classId);
+    const room = rooms.get(classId);
 
-    if (!classInfo) {
-        return res.status(404).json({ error: 'Class not found' });
+    if (!room) {
+        return res.json({
+            isActive: false,
+            participants: []
+        });
     }
 
-    const room = rooms.get(classId);
-    const participants = room ? room.getParticipants() : [];
-
     res.json({
-        ...classInfo,
-        participants,
-        isActive: room !== null,
+        isActive: true,
+        participantCount: room.participants.size,
+        participants: room.getParticipants()
     });
-});
-
-app.get('/api/classes', (req, res) => {
-    const allClasses = Array.from(scheduledClasses.values());
-    res.json(allClasses);
 });
 
 // Socket.IO Events
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    // Join a room
+    // Join a video call room
     socket.on('join-room', ({ classId, userInfo }) => {
-        console.log(`${userInfo.name} joining room: ${classId}`);
+        console.log(`${userInfo.name} joining video room: ${classId}`);
 
         let room = rooms.get(classId);
         if (!room) {
-            const classInfo = scheduledClasses.get(classId) || {
+            // Create new room for this class
+            const classInfo = {
                 id: classId,
                 title: 'Live Class',
                 subject: 'General',
@@ -287,5 +269,9 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
-    console.log(`🚀 Signaling server running on port ${PORT}`);
+    console.log(`🚀 Tutor HQ Backend Server running on port ${PORT}`);
+    console.log(`📡 API Routes: http://localhost:${PORT}/api`);
+    console.log(`🎥 WebRTC Signaling: Active`);
+    console.log(`💾 Database: Supabase PostgreSQL`);
+    console.log(`🔐 Authentication: Supabase Auth`);
 });
