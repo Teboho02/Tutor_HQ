@@ -4,6 +4,7 @@ import './App.css';
 
 // Import components
 import ScrollToTop from './components/ScrollToTop.tsx';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Import page components
 import LandingPage from './pages/LandingPage.tsx';
@@ -57,10 +58,11 @@ import ParentAccount from './pages/users/parents/ParentAccount.tsx';
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="app">
-        <Routes>
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <div className="app">
+          <Routes>
           {/* Main landing page */}
           <Route path="/" element={<LandingPage />} />
 
@@ -129,6 +131,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+    </AuthProvider>
   );
 }
 
