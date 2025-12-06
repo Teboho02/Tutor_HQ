@@ -26,7 +26,6 @@ const TutorClasses: React.FC = () => {
         { label: 'Schedule', href: '/tutor/schedule' },
         { label: 'Students', href: '/tutor/students' },
         { label: 'Materials', href: '/tutor/materials' },
-        { label: 'Messages', href: '/tutor/messages' },
         { label: 'Account', href: '/tutor/account' },
     ];
 

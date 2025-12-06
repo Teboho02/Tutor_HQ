@@ -8,7 +8,6 @@ import ScrollToTop from './components/ScrollToTop.tsx';
 // Import page components
 import LandingPage from './pages/LandingPage.tsx';
 import MainPage from './pages/MainPage.tsx';
-import TutoringMainPage from './pages/TutoringMainPage.tsx';
 import Dashboard from './pages/Dashboard.tsx';
 import Analytics from './pages/Analytics.tsx';
 import LiveClasses from './pages/LiveClasses.tsx';
@@ -17,25 +16,32 @@ import Payment from './pages/Payment.tsx';
 import TestAssignment from './pages/TestAssignment.tsx';
 import StudentTestPage from './pages/StudentTestPage.tsx';
 import ParentsDash from './pages/ParentsDash.tsx';
-import AdminHQ from './pages/AdminHQ.tsx';
+import AdminDashboard from './pages/admin/AdminDashboard.tsx';
+import AdminOnboarding from './pages/admin/AdminOnboarding.tsx';
+import AdminPayments from './pages/admin/AdminPayments.tsx';
+import AdminScheduling from './pages/admin/AdminScheduling.tsx';
+import AdminUsers from './pages/admin/AdminUsers.tsx';
+import AdminPerformance from './pages/admin/AdminPerformance.tsx';
+import AdminReports from './pages/admin/AdminReports.tsx';
+import AdminSettings from './pages/admin/AdminSettings.tsx';
+import AdminActivity from './pages/admin/AdminActivity.tsx';
 import About from './pages/About.tsx';
-import Tutors from './pages/Tutors.tsx';
 import Contact from './pages/Contact.tsx';
 import Login from './pages/Login.tsx';
 import Signup from './pages/Signup.tsx';
 
 // Import student portal pages
 import StudentDashboard from './pages/users/students/StudentDashboard.tsx';
-import StudentLiveClasses from './pages/users/students/StudentLiveClasses.tsx';
 import StudentCalendar from './pages/users/students/StudentCalendar.tsx';
 import StudentMaterials from './pages/users/students/StudentMaterials.tsx';
 import StudentProgress from './pages/users/students/StudentProgress.tsx';
-import StudentMessages from './pages/users/students/StudentMessages.tsx';
+
 import StudentTests from './pages/users/students/StudentTests.tsx';
 import TakeTest from './pages/users/students/TakeTest.tsx';
 import TestResults from './pages/users/students/TestResults.tsx';
 import SubmitAssignment from './pages/users/students/SubmitAssignment.tsx';
-import VideoCall from './pages/users/students/VideoCall';
+import StudentGoals from './pages/users/students/StudentGoals.tsx';
+
 import ScheduleClass from './pages/users/students/ScheduleClass.tsx';
 
 // Import tutor portal pages
@@ -44,13 +50,13 @@ import TutorClasses from './pages/users/tutors/TutorClasses.tsx';
 import TutorSchedule from './pages/users/tutors/TutorSchedule.tsx';
 import TutorStudents from './pages/users/tutors/TutorStudents.tsx';
 import TutorMaterials from './pages/users/tutors/TutorMaterials.tsx';
-import TutorMessages from './pages/users/tutors/TutorMessages.tsx';
+
 import TutorAccount from './pages/users/tutors/TutorAccount.tsx';
 
 // Import parent portal pages
 import ParentDashboard from './pages/users/parents/ParentDashboard.tsx';
 import ChildProgress from './pages/users/parents/ChildProgress.tsx';
-import ParentMessages from './pages/users/parents/ParentMessages.tsx';
+
 import ParentPayments from './pages/users/parents/ParentPayments.tsx';
 import ParentSchedule from './pages/users/parents/ParentSchedule.tsx';
 import ParentAccount from './pages/users/parents/ParentAccount.tsx';
@@ -66,7 +72,6 @@ function App() {
 
           {/* Main application pages */}
           <Route path="/main" element={<MainPage />} />
-          <Route path="/tutoring" element={<TutoringMainPage />} />
 
           {/* Dashboard and user pages */}
           <Route path="/dashboard" element={<Dashboard />} />
@@ -85,11 +90,18 @@ function App() {
 
           {/* User-specific dashboards */}
           <Route path="/parents" element={<ParentsDash />} />
-          <Route path="/admin" element={<AdminHQ />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/onboarding" element={<AdminOnboarding />} />
+          <Route path="/admin/payments" element={<AdminPayments />} />
+          <Route path="/admin/scheduling" element={<AdminScheduling />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/performance" element={<AdminPerformance />} />
+          <Route path="/admin/reports" element={<AdminReports />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/activity" element={<AdminActivity />} />
 
           {/* Student Portal */}
           <Route path="/student/dashboard" element={<StudentDashboard />} />
-          <Route path="/student/live-classes" element={<StudentLiveClasses />} />
           <Route path="/student/calendar" element={<StudentCalendar />} />
           <Route path="/student/materials" element={<StudentMaterials />} />
           <Route path="/student/progress" element={<StudentProgress />} />
@@ -97,8 +109,7 @@ function App() {
           <Route path="/student/take-test/:testId" element={<TakeTest />} />
           <Route path="/student/test-results/:testId" element={<TestResults />} />
           <Route path="/student/submit-assignment/:assignmentId" element={<SubmitAssignment />} />
-          <Route path="/student/messages" element={<StudentMessages />} />
-          <Route path="/student/video-call/:classId" element={<VideoCall />} />
+          <Route path="/student/goals" element={<StudentGoals />} />
           <Route path="/student/schedule-class" element={<ScheduleClass />} />
 
           {/* Tutor Portal */}
@@ -107,20 +118,17 @@ function App() {
           <Route path="/tutor/schedule" element={<TutorSchedule />} />
           <Route path="/tutor/students" element={<TutorStudents />} />
           <Route path="/tutor/materials" element={<TutorMaterials />} />
-          <Route path="/tutor/messages" element={<TutorMessages />} />
           <Route path="/tutor/account" element={<TutorAccount />} />
 
           {/* Parent Portal */}
           <Route path="/parent/dashboard" element={<ParentDashboard />} />
           <Route path="/parent/child/:childId" element={<ChildProgress />} />
-          <Route path="/parent/messages" element={<ParentMessages />} />
           <Route path="/parent/payments" element={<ParentPayments />} />
           <Route path="/parent/schedule" element={<ParentSchedule />} />
           <Route path="/parent/account" element={<ParentAccount />} />
 
           {/* Information pages */}
           <Route path="/about" element={<About />} />
-          <Route path="/tutors" element={<Tutors />} />
           <Route path="/contact" element={<Contact />} />
 
           {/* Authentication pages */}

@@ -1,0 +1,330 @@
+.payfast-payment-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.payfast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.payfast-header h2 {
+    margin: 0;
+    font-size: 2rem;
+    color: #333;
+}
+
+.payment-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #00a3ff 0%, #0066cc 100%);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.sandbox-badge {
+    background: #ff9800;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+}
+
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.package-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.package-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.package-header h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.package-description {
+    margin: 0 0 20px 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+.package-details {
+    flex: 1;
+}
+
+.price-section {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.price-label {
+    display: block;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.price-value {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #0066cc;
+    margin-bottom: 4px;
+}
+
+.price-breakdown {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.package-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.info-icon {
+    font-size: 1.5rem;
+}
+
+.package-features h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.package-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.package-features li {
+    padding: 6px 0;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.select-package-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #00a3ff 0%, #0066cc 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 20px;
+}
+
+.select-package-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.3);
+}
+
+.payment-form-container {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #0066cc;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 20px;
+    transition: color 0.2s;
+}
+
+.back-btn:hover {
+    color: #0052a3;
+}
+
+.selected-package-summary {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.selected-package-summary h3 {
+    margin: 0 0 12px 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.total-amount {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0066cc;
+}
+
+.payment-form h4 {
+    margin: 0 0 24px 0;
+    font-size: 1.25rem;
+    color: #333;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #0066cc;
+}
+
+.payment-info {
+    background: #f0f9ff;
+    padding: 16px;
+    border-radius: 8px;
+    margin: 24px 0;
+    text-align: center;
+}
+
+.payment-info p {
+    margin: 4px 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.pay-now-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #00a3ff 0%, #0066cc 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pay-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.3);
+}
+
+.payment-methods {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.payment-methods h4 {
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.methods-icons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.method-badge {
+    padding: 8px 16px;
+    background: #f0f9ff;
+    color: #0066cc;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .payfast-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .packages-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-form-container {
+        padding: 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .price-value {
+        font-size: 2rem;
+    }
+}

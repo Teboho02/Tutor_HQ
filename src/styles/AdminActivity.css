@@ -1,0 +1,307 @@
+/* Admin Activity Page Styles */
+
+.admin-activity .admin-main {
+    padding: 2rem;
+}
+
+.admin-activity .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.admin-activity .page-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: var(--text-primary);
+}
+
+.admin-activity .page-header p {
+    margin: 0.5rem 0 0;
+    color: var(--text-secondary);
+}
+
+.admin-activity .export-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-activity .export-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* Filter Bar */
+.admin-activity .filter-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.admin-activity .search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.admin-activity .search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.admin-activity .category-filter {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    background: white;
+    min-width: 180px;
+}
+
+.admin-activity .category-filter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Activity Stats */
+.admin-activity .activity-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.admin-activity .stat-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    min-width: 140px;
+}
+
+.admin-activity .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.admin-activity .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Activity Timeline */
+.admin-activity .activity-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.admin-activity .activity-item {
+    display: grid;
+    grid-template-columns: 100px 50px 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.admin-activity .activity-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.admin-activity .activity-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.admin-activity .activity-date {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.admin-activity .activity-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+
+.admin-activity .activity-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.admin-activity .activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-activity .activity-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.admin-activity .category-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-transform: capitalize;
+}
+
+.admin-activity .activity-description {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.admin-activity .activity-meta {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.admin-activity .meta-item {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Empty State */
+.admin-activity .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.admin-activity .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.admin-activity .empty-state h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.admin-activity .empty-state p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-activity .admin-main {
+        padding: 1rem;
+    }
+
+    .admin-activity .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .admin-activity .export-btn {
+        width: 100%;
+    }
+
+    .admin-activity .filter-bar {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .admin-activity .category-filter {
+        width: 100%;
+    }
+
+    .admin-activity .activity-stats {
+        flex-direction: column;
+    }
+
+    .admin-activity .stat-pill {
+        width: 100%;
+    }
+
+    .admin-activity .activity-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .admin-activity .activity-time {
+        align-items: flex-start;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .admin-activity .activity-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+
+    .admin-activity .activity-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .admin-activity .activity-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+
+    .admin-activity .admin-header,
+    .admin-activity .back-btn,
+    .admin-activity .export-btn,
+    .admin-activity .filter-bar {
+        display: none;
+    }
+
+    .admin-activity .activity-item {
+        break-inside: avoid;
+    }
+}

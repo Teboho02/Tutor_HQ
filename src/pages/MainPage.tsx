@@ -17,7 +17,6 @@ const MainPage: React.FC = () => {
         { label: 'Home', href: '/' },
         { label: 'Dashboard', href: '/main' },
         { label: 'About', href: '/about' },
-        { label: 'Tutors', href: '/tutors' },
         { label: 'Contact', href: '/contact' },
     ];
 
@@ -29,40 +28,40 @@ const MainPage: React.FC = () => {
                 <div className="dashboard-card">
                     <div className="dashboard-header">
                         <h3>Student Dashboard</h3>
-                        <button className="btn btn-primary">Join Live Class</button>
+                        <button className="btn btn-primary">Schedule Class</button>
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
+                            <div className="stat-value">4</div>
+                            <div className="stat-label">Upcoming Sessions</div>
+                        </div>
+                        <div className="stat-card">
                             <div className="stat-value">3</div>
-                            <div className="stat-label">Upcoming Classes</div>
+                            <div className="stat-label">Tests This Week</div>
                         </div>
                         <div className="stat-card">
-                            <div className="stat-value">2</div>
-                            <div className="stat-label">Pending Assignments</div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-value">87%</div>
-                            <div className="stat-label">Average Grade</div>
+                            <div className="stat-value">85%</div>
+                            <div className="stat-label">Overall Progress</div>
                         </div>
                     </div>
-                    <h4>Recent Activity</h4>
+                    <h4>Quick Access</h4>
                     <ul className="activity-list">
+                        <li className="activity-item">
+                            <div className="activity-icon">
+                                📅
+                            </div>
+                            <div>
+                                <p><strong>Calendar</strong></p>
+                                <small>View your class schedule</small>
+                            </div>
+                        </li>
                         <li className="activity-item">
                             <div className="activity-icon">
                                 📚
                             </div>
                             <div>
-                                <p><strong>Math Assignment</strong> due tomorrow</p>
-                                <small>Algebra - Chapter 5</small>
-                            </div>
-                        </li>
-                        <li className="activity-item">
-                            <div className="activity-icon">
-                                📹
-                            </div>
-                            <div>
-                                <p><strong>Live Science Class</strong> at 2:00 PM</p>
-                                <small>Chemistry - Organic Compounds</small>
+                                <p><strong>Study Materials</strong></p>
+                                <small>Access notes and resources</small>
                             </div>
                         </li>
                         <li className="activity-item">
@@ -70,8 +69,17 @@ const MainPage: React.FC = () => {
                                 📊
                             </div>
                             <div>
-                                <p><strong>History Test</strong> graded: 92%</p>
-                                <small>View feedback from instructor</small>
+                                <p><strong>Progress Tracking</strong></p>
+                                <small>Monitor your performance</small>
+                            </div>
+                        </li>
+                        <li className="activity-item">
+                            <div className="activity-icon">
+                                📝
+                            </div>
+                            <div>
+                                <p><strong>Tests & Assignments</strong></p>
+                                <small>View and submit assignments</small>
                             </div>
                         </li>
                     </ul>
@@ -85,40 +93,49 @@ const MainPage: React.FC = () => {
                 <div className="dashboard-card">
                     <div className="dashboard-header">
                         <h3>Parent Dashboard</h3>
-                        <button className="btn btn-primary">Message Tutor</button>
+                        <button className="btn btn-primary">View Payments</button>
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div className="stat-value">95%</div>
-                            <div className="stat-label">Attendance</div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-value">B+</div>
-                            <div className="stat-label">Current Grade</div>
-                        </div>
-                        <div className="stat-card">
                             <div className="stat-value">2</div>
-                            <div className="stat-label">Upcoming Tests</div>
+                            <div className="stat-label">Active Children</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">R3,200</div>
+                            <div className="stat-label">Monthly Fees</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">8</div>
+                            <div className="stat-label">Upcoming Sessions</div>
                         </div>
                     </div>
-                    <h4>Child Progress</h4>
+                    <h4>Children Overview</h4>
                     <ul className="activity-list">
                         <li className="activity-item">
                             <div className="activity-icon">
-                                ✅
+                                👦
                             </div>
                             <div>
-                                <p><strong>Math Test</strong> completed: A-</p>
-                                <small>Great improvement in problem solving</small>
+                                <p><strong>Thabo Mabaso</strong> - Grade 11</p>
+                                <small>Overall Grade: 76% • Attendance: 95%</small>
                             </div>
                         </li>
                         <li className="activity-item">
                             <div className="activity-icon">
-                                📅
+                                👧
                             </div>
                             <div>
-                                <p><strong>Parent-Teacher Meeting</strong> scheduled</p>
-                                <small>Tomorrow at 3:00 PM</small>
+                                <p><strong>Sarah Mabaso</strong> - Grade 9</p>
+                                <small>Overall Grade: 82% • Attendance: 92%</small>
+                            </div>
+                        </li>
+                        <li className="activity-item">
+                            <div className="activity-icon">
+                                💳
+                            </div>
+                            <div>
+                                <p><strong>Payment Due</strong></p>
+                                <small>Next payment: R1,600 on Feb 15</small>
                             </div>
                         </li>
                     </ul>
@@ -132,87 +149,58 @@ const MainPage: React.FC = () => {
                 <div className="dashboard-card">
                     <div className="dashboard-header">
                         <h3>Tutor Dashboard</h3>
-                        <button className="btn btn-primary">Start Class</button>
+                        <button className="btn btn-primary">View Schedule</button>
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div className="stat-value">12</div>
-                            <div className="stat-label">Active Students</div>
+                            <div className="stat-value">15</div>
+                            <div className="stat-label">Total Students</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">R19,950</div>
+                            <div className="stat-label">Pending Payout</div>
                         </div>
                         <div className="stat-card">
                             <div className="stat-value">5</div>
-                            <div className="stat-label">Classes Today</div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-value">4.8</div>
-                            <div className="stat-label">Rating</div>
+                            <div className="stat-label">Classes This Week</div>
                         </div>
                     </div>
-                    <h4>Today's Schedule</h4>
+                    <h4>Quick Actions</h4>
                     <ul className="activity-list">
+                        <li className="activity-item">
+                            <div className="activity-icon">
+                                📅
+                            </div>
+                            <div>
+                                <p><strong>Schedule Management</strong></p>
+                                <small>View and manage your class schedule</small>
+                            </div>
+                        </li>
                         <li className="activity-item">
                             <div className="activity-icon">
                                 👥
                             </div>
                             <div>
-                                <p><strong>Math Class</strong> - 10:00 AM</p>
-                                <small>Grade 10 - Quadratic Equations</small>
+                                <p><strong>My Students</strong></p>
+                                <small>Track student progress and performance</small>
                             </div>
                         </li>
                         <li className="activity-item">
                             <div className="activity-icon">
-                                📄
+                                📚
                             </div>
                             <div>
-                                <p><strong>Grade Assignments</strong></p>
-                                <small>8 assignments pending review</small>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            )
-        },
-        {
-            id: 'admin',
-            label: 'Admin',
-            content: (
-                <div className="dashboard-card">
-                    <div className="dashboard-header">
-                        <h3>Admin Dashboard</h3>
-                        <button className="btn btn-primary">Generate Reports</button>
-                    </div>
-                    <div className="stats-grid">
-                        <div className="stat-card">
-                            <div className="stat-value">150</div>
-                            <div className="stat-label">Total Students</div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-value">25</div>
-                            <div className="stat-label">Active Tutors</div>
-                        </div>
-                        <div className="stat-card">
-                            <div className="stat-value">$12.5K</div>
-                            <div className="stat-label">Monthly Revenue</div>
-                        </div>
-                    </div>
-                    <h4>System Overview</h4>
-                    <ul className="activity-list">
-                        <li className="activity-item">
-                            <div className="activity-icon">
-                                🔔
-                            </div>
-                            <div>
-                                <p><strong>New Registration</strong></p>
-                                <small>3 new students this week</small>
+                                <p><strong>Teaching Materials</strong></p>
+                                <small>Upload and manage course materials</small>
                             </div>
                         </li>
                         <li className="activity-item">
                             <div className="activity-icon">
-                                ⚙️
+                                👤
                             </div>
                             <div>
-                                <p><strong>System Maintenance</strong></p>
-                                <small>Scheduled for Sunday 2:00 AM</small>
+                                <p><strong>Account Settings</strong></p>
+                                <small>Update profile and banking details</small>
                             </div>
                         </li>
                     </ul>

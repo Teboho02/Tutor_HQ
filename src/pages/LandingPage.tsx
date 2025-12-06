@@ -9,7 +9,6 @@ const LandingPage: React.FC = () => {
         { label: 'Home', href: '/' },
         { label: 'Dashboard', href: '/main' },
         { label: 'About', href: '/about' },
-        { label: 'Tutors', href: '/tutors' },
         { label: 'Contact', href: '/contact' },
     ];
 

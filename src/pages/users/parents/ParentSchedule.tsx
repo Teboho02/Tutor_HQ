@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { TutorCruncherCalendar } from '../../../components/TutorCruncherCalendar';
 import type { NavigationLink } from '../../../types';
 import './ParentSchedule.css';
 
@@ -23,10 +24,9 @@ const ParentSchedule: React.FC = () => {
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
-        { label: 'Messages', href: '/parent/messages' },
         { label: 'Payments', href: '/parent/payments' },
         { label: 'Schedule', href: '/parent/schedule' },
-        { label: 'My Account', href: '/parent/account' },
+        { label: 'Account', href: '/parent/account' },
     ];
 
     const children = ['All Children', 'Emma Johnson', 'James Johnson', 'Sophie Johnson'];
@@ -292,6 +292,15 @@ const ParentSchedule: React.FC = () => {
                         ))}
                     </div>
                 )}
+
+                {/* TutorCruncher Integration */}
+                <div className="tutorcruncher-section" style={{ marginTop: '40px' }}>
+                    <TutorCruncherCalendar
+                        userId="parent-789"
+                        userType="parent"
+                        height="600px"
+                    />
+                </div>
             </div>
 
             <Footer />

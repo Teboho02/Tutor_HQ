@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { PayFastPayment } from '../../../components/PayFastPayment';
 import type { NavigationLink } from '../../../types';
+import type { TutoringPackage } from '../../../types/payment';
 import './ParentPayments.css';
 
 interface Payment {
@@ -17,13 +19,71 @@ interface Payment {
 const ParentPayments: React.FC = () => {
     const [selectedChild, setSelectedChild] = useState<string>('all');
     const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showPayFast, setShowPayFast] = useState(false);
+
+    // Tutoring packages for PayFast integration
+    const tutoringPackages: TutoringPackage[] = [
+        {
+            id: 'pkg-1',
+            name: 'Starter Package',
+            description: 'Perfect for trying out our tutoring services',
+            sessions: 4,
+            pricePerSession: 450,
+            totalPrice: 1800,
+            duration: '1 hour',
+            subjects: ['Mathematics', 'Science', 'English'],
+            features: [
+                'One-on-one tutoring sessions',
+                'Personalized learning plan',
+                'Progress tracking',
+                'Email support'
+            ]
+        },
+        {
+            id: 'pkg-2',
+            name: 'Standard Package',
+            description: 'Most popular choice for consistent learning',
+            sessions: 8,
+            pricePerSession: 425,
+            totalPrice: 3400,
+            duration: '1 hour',
+            subjects: ['All subjects available'],
+            features: [
+                'One-on-one tutoring sessions',
+                'Personalized learning plan',
+                'Weekly progress reports',
+                'Priority scheduling',
+                'Email & WhatsApp support',
+                'Free study materials'
+            ]
+        },
+        {
+            id: 'pkg-3',
+            name: 'Premium Package',
+            description: 'Best value for intensive learning',
+            sessions: 16,
+            pricePerSession: 400,
+            totalPrice: 6400,
+            duration: '1 hour',
+            subjects: ['All subjects available'],
+            features: [
+                'One-on-one tutoring sessions',
+                'Comprehensive learning plan',
+                'Twice-weekly progress reports',
+                'Priority scheduling',
+                '24/7 support',
+                'Free study materials',
+                'Exam preparation resources',
+                'Monthly parent consultations'
+            ]
+        }
+    ];
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
-        { label: 'Messages', href: '/parent/messages' },
         { label: 'Payments', href: '/parent/payments' },
         { label: 'Schedule', href: '/parent/schedule' },
-        { label: 'My Account', href: '/parent/account' },
+        { label: 'Account', href: '/parent/account' },
     ];
 
     const payments: Payment[] = [
@@ -281,6 +341,39 @@ const ParentPayments: React.FC = () => {
                                 </div>
                             </form>
                         </div>
+                    </div>
+                )}
+
+                {/* PayFast Integration Section */}
+                {!showPayFast ? (
+                    <div className="payfast-cta" style={{ marginTop: '40px', textAlign: 'center', padding: '40px', background: 'white', borderRadius: '12px' }}>
+                        <h2>Purchase Tutoring Packages</h2>
+                        <p>Save money with our tutoring packages - secure payment via PayFast</p>
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => setShowPayFast(true)}
+                            style={{ marginTop: '20px', padding: '12px 32px', fontSize: '1.1rem' }}
+                        >
+                            View Available Packages
+                        </button>
+                    </div>
+                ) : (
+                    <div style={{ marginTop: '40px' }}>
+                        <button
+                            onClick={() => setShowPayFast(false)}
+                            style={{ marginBottom: '20px', padding: '10px 20px', background: '#f5f5f5', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                        >
+                            ← Back to Payments
+                        </button>
+                        <PayFastPayment
+                            packages={tutoringPackages}
+                            studentName="Parent User"
+                            studentEmail="parent@example.com"
+                            onPaymentInitiated={(paymentId) => {
+                                console.log('Payment initiated:', paymentId);
+                                // Handle payment tracking
+                            }}
+                        />
                     </div>
                 )}
 

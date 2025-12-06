@@ -56,13 +56,7 @@ const Header: React.FC<HeaderProps> = ({
                             src="/src/assets/logo-hq2.png"
                             alt="Tutor HQ"
                             className="logo-image"
-                            onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                                const nextEl = e.currentTarget.nextElementSibling as HTMLElement;
-                                if (nextEl) nextEl.style.display = 'block';
-                            }}
                         />
-                        <span className="logo-text">Tutor HQ</span>
                     </Link>
                 </div>
 

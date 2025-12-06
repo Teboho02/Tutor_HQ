@@ -13,10 +13,9 @@ const ParentAccount: React.FC = () => {
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
-        { label: 'Messages', href: '/parent/messages' },
         { label: 'Payments', href: '/parent/payments' },
         { label: 'Schedule', href: '/parent/schedule' },
-        { label: 'My Account', href: '/parent/account' },
+        { label: 'Account', href: '/parent/account' },
     ];
 
     const parentInfo = {

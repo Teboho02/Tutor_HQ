@@ -20,12 +20,11 @@ const TestResults: React.FC = () => {
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
-        { label: 'Live Classes', href: '/student/live-classes' },
         { label: 'Calendar', href: '/student/calendar' },
         { label: 'Materials', href: '/student/materials' },
         { label: 'Progress', href: '/student/progress' },
         { label: 'Tests', href: '/student/tests' },
-        { label: 'Messages', href: '/student/messages' },
+        { label: 'Goals', href: '/student/goals' },
     ];
 
     useEffect(() => {

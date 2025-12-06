@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import TestBuilder from '../../../components/TestBuilder';
+import { TutorCruncherCalendar } from '../../../components/TutorCruncherCalendar';
 import type { NavigationLink } from '../../../types';
 import type { Question } from '../../../types/test';
 import './TutorSchedule.css';
@@ -36,7 +37,6 @@ const TutorSchedule: React.FC = () => {
         { label: 'Schedule', href: '/tutor/schedule' },
         { label: 'Students', href: '/tutor/students' },
         { label: 'Materials', href: '/tutor/materials' },
-        { label: 'Messages', href: '/tutor/messages' },
         { label: 'Account', href: '/tutor/account' },
     ];
 
@@ -409,6 +409,15 @@ const TutorSchedule: React.FC = () => {
                         </button>
                     </div>
                 </form>
+
+                {/* TutorCruncher Integration */}
+                <div className="tutorcruncher-section" style={{ marginTop: '40px' }}>
+                    <TutorCruncherCalendar
+                        userId="tutor-456"
+                        userType="tutor"
+                        height="600px"
+                    />
+                </div>
             </div>
 
             <Footer />

@@ -1,0 +1,339 @@
+/* Admin Performance Page Styles */
+
+.admin-performance .admin-main {
+    padding: 2rem;
+}
+
+.admin-performance .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.admin-performance .page-header h2 {
+    margin: 0;
+    font-size: 1.75rem;
+    color: var(--text-primary);
+}
+
+.admin-performance .page-header p {
+    margin: 0.5rem 0 0;
+    color: var(--text-secondary);
+}
+
+.admin-performance .view-toggle {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.25rem;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.admin-performance .toggle-btn {
+    padding: 0.5rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.admin-performance .toggle-btn.active {
+    background: white;
+    color: var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Individual Performance View */
+.admin-performance .performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.admin-performance .student-card {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.admin-performance .student-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.admin-performance .student-card.flagged {
+    border-left: 4px solid #ef4444;
+}
+
+.admin-performance .student-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.admin-performance .student-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.admin-performance .grade-badge {
+    padding: 0.25rem 0.75rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.admin-performance .student-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-performance .stat-box {
+    text-align: center;
+}
+
+.admin-performance .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+
+.admin-performance .stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.admin-performance .subject-breakdown {
+    margin-top: 1rem;
+}
+
+.admin-performance .subject-breakdown-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.admin-performance .subject-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-performance .subject-row:last-child {
+    border-bottom: none;
+}
+
+.admin-performance .subject-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.admin-performance .subject-grade {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.admin-performance .trend-indicator {
+    margin-left: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.admin-performance .trend-indicator.improving {
+    color: #10b981;
+}
+
+.admin-performance .trend-indicator.declining {
+    color: #ef4444;
+}
+
+.admin-performance .trend-indicator.stable {
+    color: #6b7280;
+}
+
+.admin-performance .flagged-warning {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #fef2f2;
+    border-left: 3px solid #ef4444;
+    border-radius: 6px;
+}
+
+.admin-performance .flagged-warning p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #991b1b;
+}
+
+/* Class Performance View */
+.admin-performance .class-card {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s;
+}
+
+.admin-performance .class-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.admin-performance .class-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.admin-performance .class-info h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.2rem;
+    color: var(--text-primary);
+}
+
+.admin-performance .class-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.admin-performance .class-average {
+    text-align: right;
+}
+
+.admin-performance .class-average-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.admin-performance .class-average-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.admin-performance .class-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem 0;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-performance .class-stat {
+    text-align: center;
+}
+
+.admin-performance .class-stat-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.admin-performance .class-stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.admin-performance .class-students {
+    margin-top: 1rem;
+}
+
+.admin-performance .student-list-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.admin-performance .student-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+}
+
+.admin-performance .student-item:last-child {
+    margin-bottom: 0;
+}
+
+.admin-performance .student-item.top-performer {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+}
+
+.admin-performance .student-item.needs-attention {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+.admin-performance .student-item-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.admin-performance .student-item-grade {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-performance .admin-main {
+        padding: 1rem;
+    }
+
+    .admin-performance .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .admin-performance .performance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-performance .student-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-performance .class-stats {
+        grid-template-columns: 1fr;
+    }
+}

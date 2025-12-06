@@ -37,11 +37,11 @@ const Footer: React.FC = () => {
                     <div className="footer-column">
                         <h5>Platform</h5>
                         <ul className="footer-links">
-                            <li><Link to="/dashboard">Dashboard</Link></li>
-                            <li><Link to="/main">Courses</Link></li>
-                            <li><Link to="/live-classes">Live Classes</Link></li>
-                            <li><Link to="/tests">Tests & Assignments</Link></li>
-                            <li><Link to="/schedule">Schedule</Link></li>
+                            <li><Link to="/main">Dashboard</Link></li>
+                            <li><Link to="/student/dashboard">Student Portal</Link></li>
+                            <li><Link to="/tutor/dashboard">Tutor Portal</Link></li>
+                            <li><Link to="/parent/dashboard">Parent Portal</Link></li>
+                            <li><Link to="/admin">Admin Portal</Link></li>
                         </ul>
                     </div>
 
@@ -49,20 +49,17 @@ const Footer: React.FC = () => {
                         <h5>Company</h5>
                         <ul className="footer-links">
                             <li><Link to="/about">About Us</Link></li>
-                            <li><Link to="/tutors">Our Tutors</Link></li>
                             <li><Link to="/contact">Contact</Link></li>
-                            <li><Link to="/careers">Careers</Link></li>
-                            <li><Link to="/blog">Blog</Link></li>
+                            <li><Link to="/">Home</Link></li>
                         </ul>
                     </div>
 
                     <div className="footer-column">
                         <h5>Support</h5>
                         <ul className="footer-links">
-                            <li><Link to="/help">Help Center</Link></li>
-                            <li><Link to="/documentation">Documentation</Link></li>
-                            <li><Link to="/privacy">Privacy Policy</Link></li>
-                            <li><Link to="/terms">Terms of Service</Link></li>
+                            <li><a href="mailto:info@tutorhq.co.za">Email Support</a></li>
+                            <li><a href="tel:+27123456789">Call Us</a></li>
+                            <li><Link to="/contact">Contact Form</Link></li>
                         </ul>
                     </div>
                 </div>
