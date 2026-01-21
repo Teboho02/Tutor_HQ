@@ -20,14 +20,6 @@ interface BankingInfo {
     accountType: string;
 }
 
-interface PaymentRecord {
-    id: number;
-    date: string;
-    description: string;
-    amount: number;
-    status: 'paid' | 'pending' | 'processing';
-}
-
 const TutorAccount: React.FC = () => {
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showEditBanking, setShowEditBanking] = useState(false);
@@ -50,52 +42,6 @@ const TutorAccount: React.FC = () => {
         accountHolderName: 'John Smith',
         accountType: 'Cheque Account'
     });
-
-    // Mock payment history
-    const paymentHistory: PaymentRecord[] = [
-        {
-            id: 1,
-            date: '2024-01-15',
-            description: 'January 2024 - Teaching Fees (Mathematics A)',
-            amount: 15000,
-            status: 'paid'
-        },
-        {
-            id: 2,
-            date: '2024-01-15',
-            description: 'January 2024 - Teaching Fees (Physics B)',
-            amount: 12000,
-            status: 'paid'
-        },
-        {
-            id: 3,
-            date: '2024-01-10',
-            description: 'Bonus - Excellent Student Feedback',
-            amount: 2000,
-            status: 'paid'
-        },
-        {
-            id: 4,
-            date: '2024-01-05',
-            description: 'December 2023 - Teaching Fees (Chemistry C)',
-            amount: 18000,
-            status: 'paid'
-        },
-        {
-            id: 5,
-            date: '2024-02-01',
-            description: 'February 2024 - Teaching Fees (Mathematics A)',
-            amount: 15000,
-            status: 'processing'
-        },
-        {
-            id: 6,
-            date: '2024-02-01',
-            description: 'February 2024 - Teaching Fees (Physics B)',
-            amount: 12000,
-            status: 'pending'
-        }
-    ];
 
     const tutorNavigation = [
         { label: 'Dashboard', href: '/tutor/dashboard' },
@@ -123,14 +69,6 @@ const TutorAccount: React.FC = () => {
         alert('Signing out...');
         window.location.href = '/login';
     };
-
-    const totalEarnings = paymentHistory
-        .filter(p => p.status === 'paid')
-        .reduce((sum, payment) => sum + payment.amount, 0);
-
-    const pendingEarnings = paymentHistory
-        .filter(p => p.status === 'pending' || p.status === 'processing')
-        .reduce((sum, payment) => sum + payment.amount, 0);
 
     return (
         <div className="tutor-account-page">
@@ -215,67 +153,6 @@ const TutorAccount: React.FC = () => {
                             <span className="info-label">Account Type</span>
                             <span className="info-value">{bankingInfo.accountType}</span>
                         </div>
-                    </div>
-                </div>
-
-                {/* Earnings Summary Section */}
-                <div className="account-section">
-                    <div className="section-header">
-                        <h2>💰 Earnings Summary</h2>
-                    </div>
-
-                    <div className="earnings-cards">
-                        <div className="earnings-card">
-                            <div className="card-icon">✅</div>
-                            <div className="card-content">
-                                <h3>Total Paid</h3>
-                                <p className="earnings-amount">R{totalEarnings.toLocaleString()}</p>
-                                <span className="earnings-label">All time earnings</span>
-                            </div>
-                        </div>
-
-                        <div className="earnings-card pending">
-                            <div className="card-icon">⏳</div>
-                            <div className="card-content">
-                                <h3>Pending Payment</h3>
-                                <p className="earnings-amount">R{pendingEarnings.toLocaleString()}</p>
-                                <span className="earnings-label">Processing & Pending</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Payment History Section */}
-                <div className="account-section">
-                    <div className="section-header">
-                        <h2>📊 Payment History</h2>
-                    </div>
-
-                    <div className="payment-history-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {paymentHistory.map((payment) => (
-                                    <tr key={payment.id}>
-                                        <td>{new Date(payment.date).toLocaleDateString('en-ZA')}</td>
-                                        <td>{payment.description}</td>
-                                        <td className="amount">R{payment.amount.toLocaleString()}</td>
-                                        <td>
-                                            <span className={`status-badge status-${payment.status}`}>
-                                                {payment.status.charAt(0).toUpperCase() + payment.status.slice(1)}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>

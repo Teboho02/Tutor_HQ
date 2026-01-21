@@ -81,20 +81,11 @@ export interface Analytics {
 
 export interface Activity {
     id: string;
-    type: 'enrollment' | 'completion' | 'payment' | 'review';
+    type: 'enrollment' | 'completion' | 'review';
     description: string;
     date: Date;
     userId: string;
     userName: string;
-}
-
-export interface Notification {
-    id: string;
-    title: string;
-    message: string;
-    type: 'info' | 'success' | 'warning' | 'error';
-    read: boolean;
-    date: Date;
 }
 
 // Component Props Types

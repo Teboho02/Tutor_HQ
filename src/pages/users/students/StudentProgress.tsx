@@ -23,6 +23,17 @@ interface RecentActivity {
     date: string;
 }
 
+interface Achievement {
+    id: string;
+    name: string;
+    description: string;
+    icon: string;
+    unlockedAt?: Date;
+    locked: boolean;
+    category: 'academic' | 'attendance' | 'participation' | 'milestone';
+    points: number;
+}
+
 const StudentProgress: React.FC = () => {
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -47,6 +58,67 @@ const StudentProgress: React.FC = () => {
         { subject: 'Biology', icon: '🧬', color: '#ff9500', average: 87, assignments: 5, attendance: 90, trend: 'down' },
         { subject: 'English', icon: '📖', color: '#ff3b30', average: 91, assignments: 6, attendance: 97, trend: 'up' },
         { subject: 'History', icon: '🏛️', color: '#af52de', average: 86, assignments: 4, attendance: 88, trend: 'stable' },
+    ];
+
+    const achievements: Achievement[] = [
+        {
+            id: 'top-performer',
+            name: 'Top Performer',
+            description: 'Achieve 90%+ in Mathematics',
+            icon: '🏆',
+            unlockedAt: new Date('2025-01-15'),
+            locked: false,
+            category: 'academic',
+            points: 50
+        },
+        {
+            id: 'perfect-attendance',
+            name: 'Perfect Attendance',
+            description: 'Attend all classes for a month',
+            icon: '⭐',
+            unlockedAt: new Date('2025-01-10'),
+            locked: false,
+            category: 'attendance',
+            points: 75
+        },
+        {
+            id: 'assignment-streak',
+            name: 'Assignment Streak',
+            description: 'Submit 10 assignments in a row',
+            icon: '🎯',
+            unlockedAt: new Date('2024-12-20'),
+            locked: false,
+            category: 'participation',
+            points: 40
+        },
+        {
+            id: 'speedster',
+            name: 'Speedster',
+            description: 'Complete quiz in under 5 minutes',
+            icon: '⚡',
+            unlockedAt: new Date('2024-12-15'),
+            locked: false,
+            category: 'academic',
+            points: 25
+        },
+        {
+            id: 'class-leader',
+            name: 'Class Leader',
+            description: 'Reach #1 rank in class',
+            icon: '👑',
+            locked: true,
+            category: 'milestone',
+            points: 100
+        },
+        {
+            id: 'all-rounder',
+            name: 'All-Rounder',
+            description: '85%+ in all subjects',
+            icon: '🌟',
+            locked: true,
+            category: 'academic',
+            points: 150
+        },
     ];
 
     const recentActivity: RecentActivity[] = [
@@ -200,27 +272,58 @@ const StudentProgress: React.FC = () => {
 
                 {/* Achievements Section */}
                 <div className="achievements-section">
-                    <h2>Achievements</h2>
-                    <div className="achievements-grid">
-                        <div className="achievement-card">
-                            <div className="achievement-icon">🏆</div>
-                            <h4>Top Performer</h4>
-                            <p>Mathematics</p>
+                    <h2>🎖️ Achievements</h2>
+                    <div className="achievements-stats">
+                        <div className="stat">
+                            <span className="stat-label">Unlocked</span>
+                            <span className="stat-value">{achievements.filter(a => !a.locked).length}</span>
                         </div>
-                        <div className="achievement-card">
-                            <div className="achievement-icon">⭐</div>
-                            <h4>Perfect Attendance</h4>
-                            <p>Last Month</p>
+                        <div className="stat">
+                            <span className="stat-label">Points Earned</span>
+                            <span className="stat-value">{achievements.filter(a => !a.locked).reduce((sum, a) => sum + a.points, 0)}</span>
                         </div>
-                        <div className="achievement-card">
-                            <div className="achievement-icon">🎯</div>
-                            <h4>Assignment Streak</h4>
-                            <p>10 in a row</p>
+                        <div className="stat">
+                            <span className="stat-label">Total Available</span>
+                            <span className="stat-value">{achievements.length}</span>
                         </div>
-                        <div className="achievement-card locked">
-                            <div className="achievement-icon">🔒</div>
-                            <h4>Class Leader</h4>
-                            <p>Reach #1 Rank</p>
+                    </div>
+
+                    {/* Unlocked Achievements */}
+                    <div className="achievements-category">
+                        <h3>Unlocked</h3>
+                        <div className="achievements-grid">
+                            {achievements.filter(a => !a.locked).map(achievement => (
+                                <div key={achievement.id} className="achievement-card unlocked">
+                                    <div className="achievement-header">
+                                        <div className="achievement-icon">{achievement.icon}</div>
+                                        <span className="achievement-points">+{achievement.points}</span>
+                                    </div>
+                                    <h4>{achievement.name}</h4>
+                                    <p>{achievement.description}</p>
+                                    <span className="achievement-category">{achievement.category}</span>
+                                    <small className="achievement-date">
+                                        Unlocked: {achievement.unlockedAt?.toLocaleDateString('en-ZA')}
+                                    </small>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Locked Achievements */}
+                    <div className="achievements-category">
+                        <h3>Locked</h3>
+                        <div className="achievements-grid">
+                            {achievements.filter(a => a.locked).map(achievement => (
+                                <div key={achievement.id} className="achievement-card locked">
+                                    <div className="achievement-header">
+                                        <div className="achievement-icon">🔒</div>
+                                        <span className="achievement-points">+{achievement.points}</span>
+                                    </div>
+                                    <h4>{achievement.name}</h4>
+                                    <p>{achievement.description}</p>
+                                    <span className="achievement-category">{achievement.category}</span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

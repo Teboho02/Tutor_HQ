@@ -1,25 +1,17 @@
 import React, { useState } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
-import { TutorCruncherCalendar } from '../../../components/TutorCruncherCalendar';
+import { useCalendarEvents } from '../../../hooks/useCalendarEvents';
 import type { NavigationLink } from '../../../types';
 import './StudentCalendar.css';
-
-interface CalendarEvent {
-    id: number;
-    type: 'class' | 'assignment' | 'test';
-    title: string;
-    subject: string;
-    date: string;
-    time: string;
-    description?: string;
-    dateObj?: Date;
-}
 
 const StudentCalendar: React.FC = () => {
     const [selectedView, setSelectedView] = useState<'month' | 'week' | 'list'>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+    // Fetch merged calendar events from all sources
+    const { events: allEvents, loading, error } = useCalendarEvents();
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -30,151 +22,41 @@ const StudentCalendar: React.FC = () => {
         { label: 'Goals', href: '/student/goals' },
     ];
 
-    // Sample events with Date objects
-    const allEvents: CalendarEvent[] = (() => {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const dayAfterTomorrow = new Date(today);
-        dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-
-        const in3Days = new Date(today);
-        in3Days.setDate(in3Days.getDate() + 3);
-
-        const in4Days = new Date(today);
-        in4Days.setDate(in4Days.getDate() + 4);
-
-        const in7Days = new Date(today);
-        in7Days.setDate(in7Days.getDate() + 7);
-
-        const in10Days = new Date(today);
-        in10Days.setDate(in10Days.getDate() + 10);
-
-        return [
-            {
-                id: 1,
-                type: 'class' as const,
-                title: 'Mathematics Live Class',
-                subject: 'Mathematics',
-                date: 'Today',
-                dateObj: today,
-                time: '2:00 PM',
-                description: 'Advanced Calculus - Integration Techniques',
-            },
-            {
-                id: 2,
-                type: 'assignment' as const,
-                title: 'Math Assignment 5',
-                subject: 'Mathematics',
-                date: 'Tomorrow',
-                dateObj: tomorrow,
-                time: '11:59 PM',
-                description: 'Complete exercises on differential equations',
-            },
-            {
-                id: 3,
-                type: 'test' as const,
-                title: 'Physics Midterm',
-                subject: 'Physics',
-                date: '',
-                dateObj: dayAfterTomorrow,
-                time: '10:00 AM',
-                description: 'Chapters 1-5: Mechanics and Thermodynamics',
-            },
-            {
-                id: 4,
-                type: 'class' as const,
-                title: 'Chemistry Lab Session',
-                subject: 'Chemistry',
-                date: '',
-                dateObj: dayAfterTomorrow,
-                time: '3:00 PM',
-                description: 'Organic Chemistry - Reaction Mechanisms',
-            },
-            {
-                id: 5,
-                type: 'assignment' as const,
-                title: 'Biology Research Paper',
-                subject: 'Biology',
-                date: '',
-                dateObj: in3Days,
-                time: '11:59 PM',
-                description: 'Submit 10-page paper on genetics',
-            },
-            {
-                id: 6,
-                type: 'class' as const,
-                title: 'English Literature Discussion',
-                subject: 'English',
-                date: '',
-                dateObj: in3Days,
-                time: '1:00 PM',
-                description: 'Analyzing Shakespeare\'s Hamlet',
-            },
-            {
-                id: 7,
-                type: 'test' as const,
-                title: 'Chemistry Quiz',
-                subject: 'Chemistry',
-                date: '',
-                dateObj: in4Days,
-                time: '2:00 PM',
-                description: 'Quick assessment on chemical bonding',
-            },
-            {
-                id: 8,
-                type: 'class' as const,
-                title: 'Physics Lab',
-                subject: 'Physics',
-                date: '',
-                dateObj: in7Days,
-                time: '2:00 PM',
-                description: 'Electromagnetic Induction Experiment',
-            },
-            {
-                id: 9,
-                type: 'assignment' as const,
-                title: 'Chemistry Report',
-                subject: 'Chemistry',
-                date: '',
-                dateObj: in10Days,
-                time: '11:59 PM',
-                description: 'Lab report on titration experiment',
-            },
-        ];
-    })();
-
     const getEventIcon = (type: string) => {
         switch (type) {
             case 'class': return '📚';
             case 'assignment': return '📝';
             case 'test': return '📋';
+            case 'goal': return '🎯';
+            case 'task': return '✓';
+            case 'coordinator': return '📢';
             default: return '📅';
         }
     };
 
     const getEventColor = (type: string) => {
         switch (type) {
-            case 'class': return '#0066ff';
-            case 'assignment': return '#ff9500';
-            case 'test': return '#ff3b30';
+            case 'class': return '#667eea';
+            case 'assignment': return '#3b82f6';
+            case 'test': return '#ef4444';
+            case 'goal': return '#ec4899';
+            case 'task': return '#f59e0b';
+            case 'coordinator': return '#06b6d4';
             default: return '#5856d6';
         }
     };
 
-    const formatDate = (dateObj?: Date) => {
-        if (!dateObj) return '';
+    const formatDate = (date: Date) => {
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        if (dateObj.toDateString() === today.toDateString()) {
+        if (date.toDateString() === today.toDateString()) {
             return 'Today';
-        } else if (dateObj.toDateString() === tomorrow.toDateString()) {
+        } else if (date.toDateString() === tomorrow.toDateString()) {
             return 'Tomorrow';
         } else {
-            return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
         }
     };
 
@@ -203,7 +85,7 @@ const StudentCalendar: React.FC = () => {
     const getEventsForDate = (date: Date | null) => {
         if (!date) return [];
         return allEvents.filter(event =>
-            event.dateObj?.toDateString() === date.toDateString()
+            event.date.toDateString() === date.toDateString()
         );
     };
 
@@ -253,6 +135,21 @@ const StudentCalendar: React.FC = () => {
                     <h1>My Calendar</h1>
                     <p>Keep track of your classes, assignments, and tests</p>
                 </div>
+
+                {/* Loading/Error States */}
+                {loading && (
+                    <div className="loading-state">
+                        <div className="spinner">⏳</div>
+                        <p>Loading calendar events...</p>
+                    </div>
+                )}
+
+                {error && (
+                    <div className="error-state">
+                        <p>⚠️ {error}</p>
+                        <small>Showing cached events if available</small>
+                    </div>
+                )}
 
                 {/* View Selector */}
                 <div className="view-selector">
@@ -412,14 +309,14 @@ const StudentCalendar: React.FC = () => {
                         <div className="list-view">
                             <div className="events-timeline">
                                 {allEvents
-                                    .sort((a, b) => (a.dateObj?.getTime() || 0) - (b.dateObj?.getTime() || 0))
+                                    .sort((a, b) => a.date.getTime() - b.date.getTime())
                                     .map((event) => (
                                         <div key={event.id} className="event-card" style={{ borderLeftColor: getEventColor(event.type) }}>
                                             <div className="event-icon">{getEventIcon(event.type)}</div>
                                             <div className="event-details">
                                                 <h4>{event.title}</h4>
                                                 <div className="event-meta">
-                                                    <span>📅 {formatDate(event.dateObj)}</span>
+                                                    <span>📅 {formatDate(event.date)}</span>
                                                     <span>⏰ {event.time}</span>
                                                     <span>📚 {event.subject}</span>
                                                 </div>
@@ -452,15 +349,6 @@ const StudentCalendar: React.FC = () => {
                             <span>Tests & Exams</span>
                         </div>
                     </div>
-                </div>
-
-                {/* TutorCruncher Integration */}
-                <div className="tutorcruncher-section" style={{ marginTop: '40px' }}>
-                    <TutorCruncherCalendar
-                        userId="student-123"
-                        userType="student"
-                        height="600px"
-                    />
                 </div>
             </div>
 

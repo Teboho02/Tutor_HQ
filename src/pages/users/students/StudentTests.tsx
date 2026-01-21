@@ -18,11 +18,22 @@ interface TestItem {
     score?: number;
     submittedAt?: string;
     type: 'test' | 'assignment';
+    allowRetakes?: boolean;
+    maxRetakes?: number;
+    retakeHistory?: TestRetake[];
+}
+
+interface TestRetake {
+    attempt: number;
+    score: number;
+    date: string;
+    time?: string;
 }
 
 const StudentTests: React.FC = () => {
     const navigate = useNavigate();
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'available' | 'completed'>('all');
+    const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -46,6 +57,8 @@ const StudentTests: React.FC = () => {
             totalPoints: 100,
             status: 'available',
             type: 'test',
+            allowRetakes: true,
+            maxRetakes: 3,
         },
         {
             id: '2',
@@ -58,6 +71,8 @@ const StudentTests: React.FC = () => {
             totalPoints: 50,
             status: 'upcoming',
             type: 'test',
+            allowRetakes: true,
+            maxRetakes: 2,
         },
         {
             id: '3',
@@ -72,6 +87,8 @@ const StudentTests: React.FC = () => {
             score: 27,
             submittedAt: '2025-10-27T15:30:00',
             type: 'assignment',
+            allowRetakes: false,
+            retakeHistory: [],
         },
         {
             id: '4',
@@ -82,8 +99,16 @@ const StudentTests: React.FC = () => {
             scheduledTime: '09:00',
             duration: 120,
             totalPoints: 150,
-            status: 'upcoming',
+            status: 'completed',
+            score: 92,
+            submittedAt: '2025-11-05T11:45:00',
             type: 'test',
+            allowRetakes: true,
+            maxRetakes: 2,
+            retakeHistory: [
+                { attempt: 1, score: 85, date: '2025-11-05', time: '11:45' },
+                { attempt: 2, score: 92, date: '2025-11-12', time: '14:20' }
+            ],
         },
         {
             id: '5',
@@ -98,6 +123,7 @@ const StudentTests: React.FC = () => {
             score: 45,
             submittedAt: '2025-10-24T20:15:00',
             type: 'assignment',
+            allowRetakes: false,
         },
     ];
 
@@ -205,65 +231,130 @@ const StudentTests: React.FC = () => {
                 <div className="tests-grid">
                     {filteredTests.length > 0 ? (
                         filteredTests.map(test => (
-                            <div
-                                key={test.id}
-                                className={`test-card ${test.status}`}
-                                onClick={() => handleTestClick(test)}
-                            >
-                                <div className="test-card-header">
-                                    <div className="test-icon">{getTypeIcon(test.type)}</div>
-                                    {getStatusBadge(test.status)}
-                                </div>
-
-                                <div className="test-card-body">
-                                    <h3>{test.title}</h3>
-                                    <div className="test-meta">
-                                        <span className="test-subject">{test.subject}</span>
-                                        <span className="test-teacher">👨‍🏫 {test.teacher}</span>
+                            <div key={test.id}>
+                                <div
+                                    className={`test-card ${test.status}`}
+                                    onClick={() => handleTestClick(test)}
+                                >
+                                    <div className="test-card-header">
+                                        <div className="test-icon">{getTypeIcon(test.type)}</div>
+                                        {getStatusBadge(test.status)}
                                     </div>
 
-                                    <div className="test-details">
-                                        <div className="detail-item">
-                                            <span className="detail-label">📅 Date:</span>
-                                            <span className="detail-value">{formatDate(test.scheduledDate)}</span>
+                                    <div className="test-card-body">
+                                        <h3>{test.title}</h3>
+                                        <div className="test-meta">
+                                            <span className="test-subject">{test.subject}</span>
+                                            <span className="test-teacher">👨‍🏫 {test.teacher}</span>
                                         </div>
-                                        {test.duration > 0 && (
+
+                                        <div className="test-details">
                                             <div className="detail-item">
-                                                <span className="detail-label">⏱️ Duration:</span>
-                                                <span className="detail-value">{test.duration} min</span>
+                                                <span className="detail-label">📅 Date:</span>
+                                                <span className="detail-value">{formatDate(test.scheduledDate)}</span>
+                                            </div>
+                                            {test.duration > 0 && (
+                                                <div className="detail-item">
+                                                    <span className="detail-label">⏱️ Duration:</span>
+                                                    <span className="detail-value">{test.duration} min</span>
+                                                </div>
+                                            )}
+                                            <div className="detail-item">
+                                                <span className="detail-label">📊 Points:</span>
+                                                <span className="detail-value">{test.totalPoints}</span>
+                                            </div>
+                                        </div>
+
+                                        {test.status === 'completed' && test.score !== undefined && (
+                                            <div className="test-score">
+                                                <div className="score-display" style={{ color: getScoreColor(test.score, test.totalPoints) }}>
+                                                    <span className="score">{test.score}</span>
+                                                    <span className="separator">/</span>
+                                                    <span className="total">{test.totalPoints}</span>
+                                                </div>
+                                                <div className="score-percentage">
+                                                    {Math.round((test.score / test.totalPoints) * 100)}%
+                                                </div>
                                             </div>
                                         )}
-                                        <div className="detail-item">
-                                            <span className="detail-label">📊 Points:</span>
-                                            <span className="detail-value">{test.totalPoints}</span>
-                                        </div>
                                     </div>
 
-                                    {test.status === 'completed' && test.score !== undefined && (
-                                        <div className="test-score">
-                                            <div className="score-display" style={{ color: getScoreColor(test.score, test.totalPoints) }}>
-                                                <span className="score">{test.score}</span>
-                                                <span className="separator">/</span>
-                                                <span className="total">{test.totalPoints}</span>
-                                            </div>
-                                            <div className="score-percentage">
-                                                {Math.round((test.score / test.totalPoints) * 100)}%
-                                            </div>
-                                        </div>
-                                    )}
+                                    <div className="test-card-footer">
+                                        {test.status === 'available' && (
+                                            <span className="action-text">🎯 Click to start {test.type}</span>
+                                        )}
+                                        {test.status === 'upcoming' && (
+                                            <span className="action-text">⏳ Available on {formatDate(test.scheduledDate)}</span>
+                                        )}
+                                        {test.status === 'completed' && test.allowRetakes && (
+                                            <span className="action-text">👁️ View results • 🔄 Retake available</span>
+                                        )}
+                                        {test.status === 'completed' && !test.allowRetakes && (
+                                            <span className="action-text">👁️ View results</span>
+                                        )}
+                                    </div>
                                 </div>
 
-                                <div className="test-card-footer">
-                                    {test.status === 'available' && (
-                                        <span className="action-text">🎯 Click to start {test.type}</span>
-                                    )}
-                                    {test.status === 'upcoming' && (
-                                        <span className="action-text">⏳ Available on {formatDate(test.scheduledDate)}</span>
-                                    )}
-                                    {test.status === 'completed' && (
-                                        <span className="action-text">👁️ View results & answers</span>
-                                    )}
-                                </div>
+                                {/* Retake History and Options */}
+                                {test.status === 'completed' && test.allowRetakes && (
+                                    <div className="retake-section">
+                                        <button
+                                            className="retake-toggle"
+                                            onClick={() => setExpandedTestId(expandedTestId === test.id ? null : test.id)}
+                                        >
+                                            {expandedTestId === test.id ? '▼' : '▶'} Retake History & Options
+                                        </button>
+
+                                        {expandedTestId === test.id && (
+                                            <div className="retake-content">
+                                                {test.retakeHistory && test.retakeHistory.length > 0 && (
+                                                    <div className="retake-history">
+                                                        <h4>Attempt History</h4>
+                                                        <div className="attempts-list">
+                                                            {test.retakeHistory.map((attempt) => (
+                                                                <div key={attempt.attempt} className="attempt-item">
+                                                                    <div className="attempt-badge">Attempt {attempt.attempt}</div>
+                                                                    <div className="attempt-info">
+                                                                        <div className="attempt-score">
+                                                                            <strong>{attempt.score}/{test.totalPoints}</strong>
+                                                                            ({Math.round((attempt.score / test.totalPoints) * 100)}%)
+                                                                        </div>
+                                                                        <div className="attempt-date">📅 {attempt.date} {attempt.time && `at ${attempt.time}`}</div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <div className="retake-info">
+                                                    <p>
+                                                        <strong>Retakes allowed:</strong> {test.maxRetakes ? `${test.retakeHistory?.length || 0}/${test.maxRetakes}` : 'Unlimited'}
+                                                    </p>
+                                                    {test.maxRetakes && test.retakeHistory && test.retakeHistory.length < test.maxRetakes && (
+                                                        <button
+                                                            className="btn btn-primary"
+                                                            onClick={() => {
+                                                                if (test.type === 'assignment') {
+                                                                    navigate(`/student/submit-assignment/${test.id}?retake=true`);
+                                                                } else {
+                                                                    navigate(`/student/take-test/${test.id}?retake=true`);
+                                                                }
+                                                            }}
+                                                        >
+                                                            🔄 Retake This {test.type === 'test' ? 'Test' : 'Assignment'}
+                                                        </button>
+                                                    )}
+                                                    {test.maxRetakes && test.retakeHistory && test.retakeHistory.length >= test.maxRetakes && (
+                                                        <div className="no-retakes-message">
+                                                            ⚠️ Maximum retakes ({test.maxRetakes}) reached
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         ))
                     ) : (

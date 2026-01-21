@@ -41,7 +41,6 @@ const Footer: React.FC = () => {
                             <li><Link to="/student/dashboard">Student Portal</Link></li>
                             <li><Link to="/tutor/dashboard">Tutor Portal</Link></li>
                             <li><Link to="/parent/dashboard">Parent Portal</Link></li>
-                            <li><Link to="/admin">Admin Portal</Link></li>
                         </ul>
                     </div>
 

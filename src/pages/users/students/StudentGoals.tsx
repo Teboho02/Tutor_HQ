@@ -1,15 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import Header from '../../../components/Header';
+import Footer from '../../../components/Footer';
 import type { Goal, WeeklyGoalSummary } from '../../../types/goals';
+import type { NavigationLink } from '../../../types';
 import { GoalStatus, GoalCategory } from '../../../types/goals';
 import { GoalCard } from '../../../components/GoalCard';
 import { AddGoalModal } from '../../../components/AddGoalModal';
 import '../../../styles/StudentGoals.css';
-
-interface NavigationLink {
-    label: string;
-    path: string;
-}
 
 // Mock data - replace with API calls
 const mockGoals: Goal[] = [
@@ -60,12 +58,12 @@ const StudentGoals: React.FC = () => {
     const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
     const navigationLinks: NavigationLink[] = [
-        { label: 'Dashboard', path: '/student/dashboard' },
-        { label: 'Calendar', path: '/student/calendar' },
-        { label: 'Materials', path: '/student/materials' },
-        { label: 'Progress', path: '/student/progress' },
-        { label: 'Tests', path: '/student/tests' },
-        { label: 'Goals', path: '/student/goals' }
+        { label: 'Dashboard', href: '/student/dashboard' },
+        { label: 'Calendar', href: '/student/calendar' },
+        { label: 'Materials', href: '/student/materials' },
+        { label: 'Progress', href: '/student/progress' },
+        { label: 'Tests', href: '/student/tests' },
+        { label: 'Goals', href: '/student/goals' },
     ];
 
     const getWeekNumber = (date: Date): number => {
@@ -157,41 +155,25 @@ const StudentGoals: React.FC = () => {
         setEditingGoal(null);
     };
 
-    const handleLogout = () => {
-        navigate('/');
-    };
-
     return (
         <div className="student-goals-page">
-            {/* Header */}
-            <header className="dashboard-header">
-                <div className="header-content">
-                    <h1>TutorHQ</h1>
-                    <nav className="header-nav">
-                        {navigationLinks.map((link) => (
-                            <Link
-                                key={link.path}
-                                to={link.path}
-                                className={`nav-link ${window.location.pathname === link.path ? 'active' : ''}`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
-                    <button onClick={handleLogout} className="logout-btn">Logout</button>
-                </div>
-            </header>
+            <Header navigationLinks={navigationLinks} />
 
-            {/* Main Content */}
-            <main className="goals-main">
-                <div className="goals-header-section">
-                    <div className="goals-title">
-                        <h2>My Goals</h2>
-                        <p>Track your weekly goals and stay motivated</p>
+            <div className="goals-container">
+                <div className="page-header">
+                    <div className="header-content">
+                        <div className="header-text">
+                            <h1>My Goals</h1>
+                            <p>Track your weekly goals and stay motivated</p>
+                        </div>
+                        <button
+                            onClick={() => { setEditingGoal(null); setIsModalOpen(true); }}
+                            className="create-goal-btn"
+                            title="Create a new goal"
+                        >
+                            ➕ New Goal
+                        </button>
                     </div>
-                    <button onClick={() => { setEditingGoal(null); setIsModalOpen(true); }} className="add-goal-btn">
-                        + Create New Goal
-                    </button>
                 </div>
 
                 {/* Weekly Stats */}
@@ -277,15 +259,17 @@ const StudentGoals: React.FC = () => {
                         ))
                     )}
                 </div>
-            </main>
 
-            {/* Add/Edit Goal Modal */}
-            <AddGoalModal
-                isOpen={isModalOpen}
-                onClose={() => { setIsModalOpen(false); setEditingGoal(null); }}
-                onSave={handleSaveGoal}
-                editGoal={editingGoal}
-            />
+                {/* Add/Edit Goal Modal */}
+                <AddGoalModal
+                    isOpen={isModalOpen}
+                    onClose={() => { setIsModalOpen(false); setEditingGoal(null); }}
+                    onSave={handleSaveGoal}
+                    editGoal={editingGoal}
+                />
+            </div>
+
+            <Footer />
         </div>
     );
 };

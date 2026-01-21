@@ -1,140 +1,130 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import './styles/global.css';
 import './App.css';
 
-// Import components
+// Import components (not lazy - needed immediately)
 import ScrollToTop from './components/ScrollToTop.tsx';
 
-// Import page components
-import LandingPage from './pages/LandingPage.tsx';
-import MainPage from './pages/MainPage.tsx';
-import Dashboard from './pages/Dashboard.tsx';
-import Analytics from './pages/Analytics.tsx';
-import LiveClasses from './pages/LiveClasses.tsx';
-import Schedule from './pages/Schedule.tsx';
-import Payment from './pages/Payment.tsx';
-import TestAssignment from './pages/TestAssignment.tsx';
-import StudentTestPage from './pages/StudentTestPage.tsx';
-import ParentsDash from './pages/ParentsDash.tsx';
-import AdminDashboard from './pages/admin/AdminDashboard.tsx';
-import AdminOnboarding from './pages/admin/AdminOnboarding.tsx';
-import AdminPayments from './pages/admin/AdminPayments.tsx';
-import AdminScheduling from './pages/admin/AdminScheduling.tsx';
-import AdminUsers from './pages/admin/AdminUsers.tsx';
-import AdminPerformance from './pages/admin/AdminPerformance.tsx';
-import AdminReports from './pages/admin/AdminReports.tsx';
-import AdminSettings from './pages/admin/AdminSettings.tsx';
-import AdminActivity from './pages/admin/AdminActivity.tsx';
-import About from './pages/About.tsx';
-import Contact from './pages/Contact.tsx';
-import Login from './pages/Login.tsx';
-import Signup from './pages/Signup.tsx';
+// Lazy load page components for code splitting
+const LandingPage = lazy(() => import('./pages/LandingPage.tsx'));
+const MainPage = lazy(() => import('./pages/MainPage.tsx'));
+const Dashboard = lazy(() => import('./pages/Dashboard.tsx'));
+const Analytics = lazy(() => import('./pages/Analytics.tsx'));
+const LiveClasses = lazy(() => import('./pages/LiveClasses.tsx'));
+const Schedule = lazy(() => import('./pages/Schedule.tsx'));
+const TestAssignment = lazy(() => import('./pages/TestAssignment.tsx'));
+const StudentTestPage = lazy(() => import('./pages/StudentTestPage.tsx'));
+const ParentsDash = lazy(() => import('./pages/ParentsDash.tsx'));
+const About = lazy(() => import('./pages/About.tsx'));
+const Contact = lazy(() => import('./pages/Contact.tsx'));
+const Login = lazy(() => import('./pages/Login.tsx'));
+const Signup = lazy(() => import('./pages/Signup.tsx'));
 
-// Import student portal pages
-import StudentDashboard from './pages/users/students/StudentDashboard.tsx';
-import StudentCalendar from './pages/users/students/StudentCalendar.tsx';
-import StudentMaterials from './pages/users/students/StudentMaterials.tsx';
-import StudentProgress from './pages/users/students/StudentProgress.tsx';
+// Lazy load student portal pages
+const StudentDashboard = lazy(() => import('./pages/users/students/StudentDashboard.tsx'));
+const StudentCalendar = lazy(() => import('./pages/users/students/StudentCalendar.tsx'));
+const StudentMaterials = lazy(() => import('./pages/users/students/StudentMaterials.tsx'));
+const StudentProgress = lazy(() => import('./pages/users/students/StudentProgress.tsx'));
+const StudentTests = lazy(() => import('./pages/users/students/StudentTests.tsx'));
+const TakeTest = lazy(() => import('./pages/users/students/TakeTest.tsx'));
+const TestResults = lazy(() => import('./pages/users/students/TestResults.tsx'));
+const SubmitAssignment = lazy(() => import('./pages/users/students/SubmitAssignment.tsx'));
+const StudentGoals = lazy(() => import('./pages/users/students/StudentGoals.tsx'));
+const ScheduleClass = lazy(() => import('./pages/users/students/ScheduleClass.tsx'));
 
-import StudentTests from './pages/users/students/StudentTests.tsx';
-import TakeTest from './pages/users/students/TakeTest.tsx';
-import TestResults from './pages/users/students/TestResults.tsx';
-import SubmitAssignment from './pages/users/students/SubmitAssignment.tsx';
-import StudentGoals from './pages/users/students/StudentGoals.tsx';
+// Lazy load tutor portal pages
+const TutorDashboard = lazy(() => import('./pages/users/tutors/TutorDashboard.tsx'));
+const TutorClasses = lazy(() => import('./pages/users/tutors/TutorClasses.tsx'));
+const TutorSchedule = lazy(() => import('./pages/users/tutors/TutorSchedule.tsx'));
+const TutorStudents = lazy(() => import('./pages/users/tutors/TutorStudents.tsx'));
+const TutorMaterials = lazy(() => import('./pages/users/tutors/TutorMaterials.tsx'));
+const TutorAccount = lazy(() => import('./pages/users/tutors/TutorAccount.tsx'));
 
-import ScheduleClass from './pages/users/students/ScheduleClass.tsx';
+// Lazy load parent portal pages
+const ParentDashboard = lazy(() => import('./pages/users/parents/ParentDashboard.tsx'));
+const ChildProgress = lazy(() => import('./pages/users/parents/ChildProgress.tsx'));
+const ParentSchedule = lazy(() => import('./pages/users/parents/ParentSchedule.tsx'));
+const ParentAccount = lazy(() => import('./pages/users/parents/ParentAccount.tsx'));
 
-// Import tutor portal pages
-import TutorDashboard from './pages/users/tutors/TutorDashboard.tsx';
-import TutorClasses from './pages/users/tutors/TutorClasses.tsx';
-import TutorSchedule from './pages/users/tutors/TutorSchedule.tsx';
-import TutorStudents from './pages/users/tutors/TutorStudents.tsx';
-import TutorMaterials from './pages/users/tutors/TutorMaterials.tsx';
+// Loading component for Suspense fallback
+const LoadingFallback = () => (
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '100vh',
+    fontSize: '1.2rem',
+    color: 'var(--primary-blue)'
+  }}>
+    <div>Loading...</div>
+  </div>
+);
 
-import TutorAccount from './pages/users/tutors/TutorAccount.tsx';
-
-// Import parent portal pages
-import ParentDashboard from './pages/users/parents/ParentDashboard.tsx';
-import ChildProgress from './pages/users/parents/ChildProgress.tsx';
-
-import ParentPayments from './pages/users/parents/ParentPayments.tsx';
-import ParentSchedule from './pages/users/parents/ParentSchedule.tsx';
-import ParentAccount from './pages/users/parents/ParentAccount.tsx';
 
 function App() {
   return (
     <Router>
       <ScrollToTop />
       <div className="app">
-        <Routes>
-          {/* Main landing page */}
-          <Route path="/" element={<LandingPage />} />
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            {/* Main landing page */}
+            <Route path="/" element={<LandingPage />} />
 
-          {/* Main application pages */}
-          <Route path="/main" element={<MainPage />} />
+            {/* Main application pages */}
+            <Route path="/main" element={<MainPage />} />
 
-          {/* Dashboard and user pages */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analytics" element={<Analytics />} />
+            {/* Dashboard and user pages */}
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analytics" element={<Analytics />} />
 
-          {/* Learning and classes */}
-          <Route path="/live-classes" element={<LiveClasses />} />
-          <Route path="/schedule" element={<Schedule />} />
+            {/* Learning and classes */}
+            <Route path="/live-classes" element={<LiveClasses />} />
+            <Route path="/schedule" element={<Schedule />} />
 
-          {/* Tests and assignments */}
-          <Route path="/tests" element={<TestAssignment />} />
-          <Route path="/student-test" element={<StudentTestPage />} />
+            {/* Tests and assignments */}
+            <Route path="/tests" element={<TestAssignment />} />
+            <Route path="/student-test" element={<StudentTestPage />} />
 
-          {/* Payment and billing */}
-          <Route path="/payment" element={<Payment />} />
+            {/* User-specific dashboards */}
+            <Route path="/parents" element={<ParentsDash />} />
 
-          {/* User-specific dashboards */}
-          <Route path="/parents" element={<ParentsDash />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/onboarding" element={<AdminOnboarding />} />
-          <Route path="/admin/payments" element={<AdminPayments />} />
-          <Route path="/admin/scheduling" element={<AdminScheduling />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/performance" element={<AdminPerformance />} />
-          <Route path="/admin/reports" element={<AdminReports />} />
-          <Route path="/admin/settings" element={<AdminSettings />} />
-          <Route path="/admin/activity" element={<AdminActivity />} />
+            {/* Student Portal */}
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/calendar" element={<StudentCalendar />} />
+            <Route path="/student/materials" element={<StudentMaterials />} />
+            <Route path="/student/progress" element={<StudentProgress />} />
+            <Route path="/student/tests" element={<StudentTests />} />
+            <Route path="/student/take-test/:testId" element={<TakeTest />} />
+            <Route path="/student/test-results/:testId" element={<TestResults />} />
+            <Route path="/student/submit-assignment/:assignmentId" element={<SubmitAssignment />} />
+            <Route path="/student/goals" element={<StudentGoals />} />
+            <Route path="/student/schedule-class" element={<ScheduleClass />} />
 
-          {/* Student Portal */}
-          <Route path="/student/dashboard" element={<StudentDashboard />} />
-          <Route path="/student/calendar" element={<StudentCalendar />} />
-          <Route path="/student/materials" element={<StudentMaterials />} />
-          <Route path="/student/progress" element={<StudentProgress />} />
-          <Route path="/student/tests" element={<StudentTests />} />
-          <Route path="/student/take-test/:testId" element={<TakeTest />} />
-          <Route path="/student/test-results/:testId" element={<TestResults />} />
-          <Route path="/student/submit-assignment/:assignmentId" element={<SubmitAssignment />} />
-          <Route path="/student/goals" element={<StudentGoals />} />
-          <Route path="/student/schedule-class" element={<ScheduleClass />} />
+            {/* Tutor Portal */}
+            <Route path="/tutor/dashboard" element={<TutorDashboard />} />
+            <Route path="/tutor/classes" element={<TutorClasses />} />
+            <Route path="/tutor/schedule" element={<TutorSchedule />} />
+            <Route path="/tutor/students" element={<TutorStudents />} />
+            <Route path="/tutor/materials" element={<TutorMaterials />} />
+            <Route path="/tutor/account" element={<TutorAccount />} />
 
-          {/* Tutor Portal */}
-          <Route path="/tutor/dashboard" element={<TutorDashboard />} />
-          <Route path="/tutor/classes" element={<TutorClasses />} />
-          <Route path="/tutor/schedule" element={<TutorSchedule />} />
-          <Route path="/tutor/students" element={<TutorStudents />} />
-          <Route path="/tutor/materials" element={<TutorMaterials />} />
-          <Route path="/tutor/account" element={<TutorAccount />} />
+            {/* Parent Portal */}
+            <Route path="/parent/dashboard" element={<ParentDashboard />} />
+            <Route path="/parent/child/:childId" element={<ChildProgress />} />
+            <Route path="/parent/schedule" element={<ParentSchedule />} />
+            <Route path="/parent/account" element={<ParentAccount />} />
 
-          {/* Parent Portal */}
-          <Route path="/parent/dashboard" element={<ParentDashboard />} />
-          <Route path="/parent/child/:childId" element={<ChildProgress />} />
-          <Route path="/parent/payments" element={<ParentPayments />} />
-          <Route path="/parent/schedule" element={<ParentSchedule />} />
-          <Route path="/parent/account" element={<ParentAccount />} />
+            {/* Information pages */}
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
 
-          {/* Information pages */}
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-
-          {/* Authentication pages */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-        </Routes>
+            {/* Authentication pages */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+          </Routes>
+        </Suspense>
       </div>
     </Router>
   );

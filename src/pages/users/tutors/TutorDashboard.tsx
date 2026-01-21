@@ -1,10 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import type { NavigationLink } from '../../../types';
 import './TutorDashboard.css';
 
+interface ClassItem {
+    id: number;
+    subject: string;
+    topic: string;
+    time: string;
+    students: number;
+    duration: number;
+    classType: '1-1' | 'group';
+    classLink?: string;
+    studentNames?: string[];
+}
+
 const TutorDashboard: React.FC = () => {
+    const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/tutor/dashboard' },
         { label: 'My Classes', href: '/tutor/classes' },
@@ -21,7 +36,10 @@ const TutorDashboard: React.FC = () => {
             topic: 'Advanced Calculus',
             time: '2:00 PM',
             students: 18,
-            duration: '60 min',
+            duration: 60,
+            classType: 'group' as const,
+            classLink: 'https://meet.google.com/abc-defg-hij',
+            studentNames: ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams', '+14 more'],
         },
         {
             id: 2,
@@ -29,7 +47,10 @@ const TutorDashboard: React.FC = () => {
             topic: 'Quantum Mechanics',
             time: '4:00 PM',
             students: 15,
-            duration: '90 min',
+            duration: 90,
+            classType: '1-1' as const,
+            classLink: 'https://zoom.us/j/123456789',
+            studentNames: ['Emma Davis'],
         },
     ];
 
@@ -114,12 +135,34 @@ const TutorDashboard: React.FC = () => {
                                         <div className="class-details">
                                             <span>🕒 {classItem.time}</span>
                                             <span>👥 {classItem.students} students</span>
-                                            <span>⏱️ {classItem.duration}</span>
+                                            <span>⏱️ {classItem.duration} min</span>
+                                            <span className="class-type-badge">
+                                                {classItem.classType === '1-1' ? '👤 1-1' : '👥 Group'}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="class-actions">
-                                        <button className="btn btn-primary">Start Class</button>
-                                        <button className="btn btn-outline">View Details</button>
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={() => {
+                                                if (classItem.classLink) {
+                                                    window.open(classItem.classLink, '_blank');
+                                                } else {
+                                                    alert('No class link set for this class. Please configure it in the schedule.');
+                                                }
+                                            }}
+                                        >
+                                            Start Class
+                                        </button>
+                                        <button
+                                            className="btn btn-outline"
+                                            onClick={() => {
+                                                setSelectedClass(classItem);
+                                                setIsDetailsModalOpen(true);
+                                            }}
+                                        >
+                                            View Details
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -176,6 +219,95 @@ const TutorDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Class Details Modal */}
+            {isDetailsModalOpen && selectedClass && (
+                <div className="modal-overlay" onClick={() => setIsDetailsModalOpen(false)}>
+                    <div className="modal-content class-details-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h2>{selectedClass.topic}</h2>
+                            <button className="modal-close" onClick={() => setIsDetailsModalOpen(false)}>✕</button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="details-grid">
+                                <div className="detail-section">
+                                    <h3>📚 Class Information</h3>
+                                    <p><strong>Subject:</strong> {selectedClass.subject}</p>
+                                    <p><strong>Topic:</strong> {selectedClass.topic}</p>
+                                    <p><strong>Class Type:</strong> {selectedClass.classType === '1-1' ? '1-1 Class' : 'Group Class'}</p>
+                                </div>
+
+                                <div className="detail-section">
+                                    <h3>⏰ Schedule</h3>
+                                    <p><strong>Time:</strong> {selectedClass.time}</p>
+                                    <p><strong>Duration:</strong> {selectedClass.duration} minutes</p>
+                                </div>
+
+                                <div className="detail-section">
+                                    <h3>👥 Students</h3>
+                                    <p><strong>Total:</strong> {selectedClass.students} student{selectedClass.students !== 1 ? 's' : ''}</p>
+                                    <div className="student-list">
+                                        {selectedClass.studentNames?.map((name, idx) => (
+                                            <span key={idx} className="student-badge">{name}</span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="detail-section">
+                                    <h3>🔗 Class Link</h3>
+                                    {selectedClass.classLink ? (
+                                        <div className="link-display">
+                                            <input
+                                                type="text"
+                                                value={selectedClass.classLink}
+                                                readOnly
+                                                className="link-input"
+                                            />
+                                            <button
+                                                className="btn btn-small"
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(selectedClass.classLink!);
+                                                    alert('Link copied to clipboard!');
+                                                }}
+                                            >
+                                                📋 Copy
+                                            </button>
+                                            <button
+                                                className="btn btn-small btn-primary"
+                                                onClick={() => window.open(selectedClass.classLink!, '_blank')}
+                                            >
+                                                🔗 Open
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="warning-text">No class link configured. Update in schedule settings.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => {
+                                    if (selectedClass.classLink) {
+                                        window.open(selectedClass.classLink, '_blank');
+                                    }
+                                }}
+                            >
+                                🎥 Start Class Now
+                            </button>
+                            <button
+                                className="btn"
+                                onClick={() => setIsDetailsModalOpen(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>

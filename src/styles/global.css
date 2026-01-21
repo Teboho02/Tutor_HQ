@@ -48,6 +48,23 @@
     --transition-normal: 0.3s ease;
     --transition-slow: 0.5s ease;
 
+    /* Responsive Breakpoints */
+    --breakpoint-xs: 320px;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    --breakpoint-xxl: 1536px;
+
+    /* Spacing Scale */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+
     /* Border Radius */
     --border-radius-sm: 4px;
     --border-radius-md: 8px;
@@ -227,29 +244,193 @@ body {
 }
 
 /* Responsive breakpoints */
-@media (max-width: 1200px) {
-    .container {
-        padding: 0 1.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 0 1rem;
-    }
-
-    .btn {
-        padding: 0.6rem 1.4rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 480px) {
+/* Extra Small Devices (Portrait Phones) */
+@media (max-width: 575px) {
     html {
         font-size: 14px;
     }
 
     .container {
-        padding: 0 0.75rem;
+        padding: 0 var(--space-md);
+        max-width: 100%;
+    }
+
+    .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+
+    /* Stack elements vertically on mobile */
+    .row {
+        flex-direction: column;
+    }
+
+    /* Full-width cards on mobile */
+    .card {
+        margin-bottom: var(--space-md);
+    }
+
+    /* Hide desktop-only elements */
+    .desktop-only {
+        display: none !important;
+    }
+
+    /* Optimize tables for mobile */
+    table {
+        font-size: 0.85rem;
+    }
+
+    th,
+    td {
+        padding: 0.5rem 0.25rem;
+    }
+}
+
+/* Small Devices (Landscape Phones) */
+@media (min-width: 576px) and (max-width: 767px) {
+    .container {
+        padding: 0 var(--space-lg);
+        max-width: 540px;
+    }
+
+    .btn {
+        padding: 0.65rem 1.4rem;
+    }
+}
+
+/* Medium Devices (Tablets) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        padding: 0 var(--space-lg);
+        max-width: 720px;
+    }
+
+    /* 2-column grid on tablets */
+    .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Hide mobile-only elements */
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+/* Large Devices (Laptops) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .container {
+        max-width: 960px;
+    }
+
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+/* Extra Large Devices (Desktops) */
+@media (min-width: 1280px) {
+    .container {
+        max-width: 1200px;
+    }
+
+    .mobile-only {
+        display: none !important;
+    }
+}
+
+/* Ultra Wide Screens */
+@media (min-width: 1536px) {
+    .container {
+        max-width: 1400px;
+    }
+}
+
+/* Mobile-First Utilities */
+.flex-mobile-column {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 768px) {
+    .flex-mobile-column {
+        flex-direction: row;
+    }
+}
+
+/* Touch-Friendly Elements */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Increase button sizes for touch */
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Increase clickable area */
+    a,
+    button {
+        padding: var(--space-sm);
+    }
+
+    /* Remove hover effects on touch devices */
+    .btn:hover,
+    .card:hover {
+        transform: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-dark: #ffffff;
+        --text-medium: #e0e0e0;
+        --text-light: #b0b0b0;
+        --white: #121212;
+        --light-bg: #1e1e1e;
+        --light-gray: #2a2a2a;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .btn {
+        border: 2px solid currentColor;
+    }
+
+    .card {
+        border: 2px solid var(--text-dark);
     }
 }

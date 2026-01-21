@@ -56,14 +56,6 @@ const Signup: React.FC = () => {
             return;
         }
 
-        // Check if admin code is provided for tutors (secret admin signup)
-        if (signupType === 'tutor' && formData.adminCode === 'ADMIN2025') {
-            console.log('Admin signup detected');
-            // Redirect to admin dashboard
-            navigate('/admin');
-            return;
-        }
-
         // In a real app, you would send this to your backend
         console.log('Signup data:', { ...formData, signupType });
 

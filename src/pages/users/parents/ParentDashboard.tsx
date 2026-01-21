@@ -24,7 +24,6 @@ const ParentDashboard: React.FC = () => {
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
-        { label: 'Payments', href: '/parent/payments' },
         { label: 'Schedule', href: '/parent/schedule' },
         { label: 'Account', href: '/parent/account' },
     ];

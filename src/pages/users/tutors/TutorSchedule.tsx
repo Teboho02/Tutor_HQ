@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import TestBuilder from '../../../components/TestBuilder';
-import { TutorCruncherCalendar } from '../../../components/TutorCruncherCalendar';
 import type { NavigationLink } from '../../../types';
 import type { Question } from '../../../types/test';
 import './TutorSchedule.css';
@@ -21,6 +20,7 @@ const TutorSchedule: React.FC = () => {
         time: '',
         duration: '60',
         description: '',
+        classLink: '',
         // Test/Assignment specific
         dueDate: '',
         totalMarks: '',
@@ -137,6 +137,21 @@ const TutorSchedule: React.FC = () => {
                         <h2>Basic Information</h2>
 
                         <div className="form-group">
+                            <label htmlFor="module">Module / Class *</label>
+                            <select
+                                id="module"
+                                required
+                                value={formData.module}
+                                onChange={(e) => setFormData({ ...formData, module: e.target.value })}
+                            >
+                                <option value="">Select a module</option>
+                                {modules.map(mod => (
+                                    <option key={mod.id} value={mod.id}>{mod.name} ({mod.students} students)</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
                             <label htmlFor="title">Title *</label>
                             <input
                                 type="text"
@@ -219,6 +234,21 @@ const TutorSchedule: React.FC = () => {
                                 </div>
                             )}
                         </div>
+
+                        {scheduleType === 'liveClass' && (
+                            <div className="form-group">
+                                <label htmlFor="classLink">Live Class Link * (Zoom, Google Meet, or Custom)</label>
+                                <input
+                                    type="url"
+                                    id="classLink"
+                                    required
+                                    value={formData.classLink}
+                                    onChange={(e) => setFormData({ ...formData, classLink: e.target.value })}
+                                    placeholder="e.g., https://meet.google.com/abc-defg-hij or https://zoom.us/j/123456789"
+                                />
+                                <small>This link will be shared with all students in the module for the live class</small>
+                            </div>
+                        )}
 
                         {scheduleType !== 'liveClass' && (
                             <div className="form-row">
@@ -409,15 +439,6 @@ const TutorSchedule: React.FC = () => {
                         </button>
                     </div>
                 </form>
-
-                {/* TutorCruncher Integration */}
-                <div className="tutorcruncher-section" style={{ marginTop: '40px' }}>
-                    <TutorCruncherCalendar
-                        userId="tutor-456"
-                        userType="tutor"
-                        height="600px"
-                    />
-                </div>
             </div>
 
             <Footer />
