@@ -1,17 +1,21 @@
-export enum GoalStatus {
-    NOT_STARTED = 'not_started',
-    IN_PROGRESS = 'in_progress',
-    COMPLETED = 'completed',
-    OVERDUE = 'overdue'
-}
+export const GoalStatus = {
+    NOT_STARTED: 'not_started',
+    IN_PROGRESS: 'in_progress',
+    COMPLETED: 'completed',
+    OVERDUE: 'overdue'
+} as const;
 
-export enum GoalCategory {
-    ACADEMIC = 'academic',
-    HOMEWORK = 'homework',
-    TEST_PREP = 'test_prep',
-    SKILL_DEVELOPMENT = 'skill_development',
-    PERSONAL = 'personal'
-}
+export type GoalStatus = typeof GoalStatus[keyof typeof GoalStatus];
+
+export const GoalCategory = {
+    ACADEMIC: 'academic',
+    HOMEWORK: 'homework',
+    TEST_PREP: 'test_prep',
+    SKILL_DEVELOPMENT: 'skill_development',
+    PERSONAL: 'personal'
+} as const;
+
+export type GoalCategory = typeof GoalCategory[keyof typeof GoalCategory];
 
 export interface Goal {
     id: string;

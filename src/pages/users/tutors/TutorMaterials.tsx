@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import { useToast } from '../../../components/Toast';
+import { materialService } from '../../../services/material.service';
+import type { Material as MaterialType } from '../../../services/material.service';
+import { classService } from '../../../services/class.service';
 import type { NavigationLink } from '../../../types';
 import './TutorMaterials.css';
 
-interface Material {
-    id: number;
+interface ClassOption {
+    id: string;
     title: string;
-    type: 'pdf' | 'video' | 'doc' | 'link';
-    class: string;
-    uploadDate: string;
-    downloads: number;
+    subject: string;
 }
 
 interface ScheduledTest {
@@ -34,14 +36,20 @@ interface StudentPerformance {
 }
 
 const TutorMaterials: React.FC = () => {
+    const { showToast } = useToast();
     const [selectedClass, setSelectedClass] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<'materials' | 'tests'>('materials');
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedTest, setSelectedTest] = useState<ScheduledTest | null>(null);
     const [showTestModal, setShowTestModal] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+    const [materials, setMaterials] = useState<MaterialType[]>([]);
+    const [classes, setClasses] = useState<ClassOption[]>([]);
     const [uploadForm, setUploadForm] = useState({
         title: '',
-        class: '',
+        classId: '',
+        description: '',
         type: 'pdf' as 'pdf' | 'video' | 'doc' | 'link',
         file: null as File | null,
         url: ''
@@ -57,50 +65,44 @@ const TutorMaterials: React.FC = () => {
         { label: 'Account', href: '/tutor/account' },
     ];
 
-    const classes = ['All Classes', 'Mathematics A', 'Physics B', 'Chemistry C'];
+    // Fetch materials and classes on mount
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
 
-    const materials: Material[] = [
-        {
-            id: 1,
-            title: 'Calculus Chapter 5 - Integration Techniques',
-            type: 'pdf',
-            class: 'Mathematics A',
-            uploadDate: '2024-01-15',
-            downloads: 45,
-        },
-        {
-            id: 2,
-            title: 'Lecture: Advanced Integration Methods',
-            type: 'video',
-            class: 'Mathematics A',
-            uploadDate: '2024-01-14',
-            downloads: 38,
-        },
-        {
-            id: 3,
-            title: 'Quantum Mechanics Notes',
-            type: 'pdf',
-            class: 'Physics B',
-            uploadDate: '2024-01-13',
-            downloads: 52,
-        },
-        {
-            id: 4,
-            title: 'Organic Chemistry Reactions Guide',
-            type: 'doc',
-            class: 'Chemistry C',
-            uploadDate: '2024-01-12',
-            downloads: 41,
-        },
-        {
-            id: 5,
-            title: 'Additional Practice Problems',
-            type: 'link',
-            class: 'Mathematics A',
-            uploadDate: '2024-01-11',
-            downloads: 29,
-        },
-    ];
+                // Fetch materials
+                const materialsResponse = await materialService.getTutorMaterials();
+                if (materialsResponse.success) {
+                    setMaterials(materialsResponse.data.materials);
+                }
+
+                // Fetch classes for filter and upload
+                const classesResponse = await classService.listClasses();
+                if (classesResponse.success) {
+                    interface ClassItem {
+                        id: string;
+                        title: string;
+                        subject: string;
+                    }
+                    setClasses(classesResponse.data.classes.map((c: ClassItem) => ({
+                        id: c.id,
+                        title: c.title,
+                        subject: c.subject
+                    })));
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { error?: string } } };
+                showToast(err.response?.data?.error || 'Failed to load materials', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [showToast]);
+
+    const classOptions = ['All Classes', ...classes.map(c => c.title)];
 
     const scheduledTests: ScheduledTest[] = [
         {
@@ -114,54 +116,17 @@ const TutorMaterials: React.FC = () => {
             passRate: 91,
             type: 'test',
         },
-        {
-            id: '2',
-            title: 'Calculus Practice Quiz',
-            class: 'Mathematics A',
-            date: '2024-01-18',
-            totalQuestions: 10,
-            totalSubmissions: 15,
-            averageScore: 78,
-            passRate: 86,
-            type: 'test',
-        },
-        {
-            id: '3',
-            title: 'Physics Lab Report Assignment',
-            class: 'Physics B',
-            date: '2024-01-25',
-            totalQuestions: 1,
-            totalSubmissions: 8,
-            averageScore: 85,
-            passRate: 100,
-            type: 'assignment',
-        },
-        {
-            id: '4',
-            title: 'Chemistry Reaction Identification',
-            class: 'Chemistry C',
-            date: '2024-01-22',
-            totalQuestions: 20,
-            totalSubmissions: 14,
-            averageScore: 79,
-            passRate: 78,
-            type: 'test',
-        },
     ];
 
     const testPerformanceData: { [testId: string]: StudentPerformance[] } = {
         '1': [
             { studentId: '1', studentName: 'John Doe', score: 88, submitted: true, submittedDate: '2024-01-20' },
-            { studentId: '2', studentName: 'Jane Smith', score: 92, submitted: true, submittedDate: '2024-01-20' },
-            { studentId: '3', studentName: 'Mike Johnson', score: 75, submitted: true, submittedDate: '2024-01-20' },
-            { studentId: '5', studentName: 'Tom Brown', score: 70, submitted: true, submittedDate: '2024-01-20' },
-            { studentId: '4', studentName: 'Sarah Williams', score: 95, submitted: true, submittedDate: '2024-01-20' },
         ],
     };
 
     const filteredMaterials = selectedClass === 'all'
         ? materials
-        : materials.filter(m => m.class === selectedClass);
+        : materials.filter(m => m.classes?.title === selectedClass);
 
     const filteredTests = selectedClass === 'all'
         ? scheduledTests
@@ -185,41 +150,111 @@ const TutorMaterials: React.FC = () => {
         }
     };
 
-    const handleUploadSubmit = (e: React.FormEvent) => {
+    const handleUploadSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!uploadForm.title || !uploadForm.class) {
-            alert('Please fill in all required fields!');
+        if (!uploadForm.title || !uploadForm.classId) {
+            showToast('Please fill in all required fields!', 'error');
             return;
         }
 
         if (uploadForm.type === 'link' && !uploadForm.url) {
-            alert('Please enter a URL for the external link!');
+            showToast('Please enter a URL for the external link!', 'error');
             return;
         }
 
         if (uploadForm.type !== 'link' && !uploadForm.file) {
-            alert('Please select a file to upload!');
+            showToast('Please select a file to upload!', 'error');
             return;
         }
 
-        const fileInfo = uploadForm.file
-            ? `File: ${uploadForm.file.name} (${(uploadForm.file.size / 1024).toFixed(2)} KB)`
-            : `URL: ${uploadForm.url}`;
+        try {
+            setUploading(true);
 
-        alert(`Material uploaded successfully!\n\nTitle: ${uploadForm.title}\nClass: ${uploadForm.class}\nType: ${uploadForm.type.toUpperCase()}\n${fileInfo}`);
+            let fileUrl = '';
+            let fileSize = 0;
 
-        // Reset form
-        setUploadForm({
-            title: '',
-            class: '',
-            type: 'pdf',
-            file: null,
-            url: ''
-        });
-        setFileName('');
-        setShowUploadModal(false);
+            // Upload file if not a link
+            if (uploadForm.type !== 'link' && uploadForm.file) {
+                const uploadResponse = await materialService.uploadFile(uploadForm.file);
+                if (uploadResponse.success) {
+                    fileUrl = uploadResponse.data.fileUrl;
+                    fileSize = uploadForm.file.size;
+                }
+            }
+
+            // Create material record
+            const materialData = {
+                title: uploadForm.title,
+                description: uploadForm.description,
+                classId: uploadForm.classId,
+                type: uploadForm.type,
+                fileUrl: uploadForm.type === 'link' ? undefined : fileUrl,
+                fileName: uploadForm.file?.name,
+                fileSize: fileSize,
+                externalUrl: uploadForm.type === 'link' ? uploadForm.url : undefined,
+            };
+
+            const response = await materialService.createMaterial(materialData);
+
+            if (response.success) {
+                showToast('Material uploaded successfully!', 'success');
+
+                // Add to local state
+                setMaterials(prev => [response.data.material, ...prev]);
+
+                // Reset form
+                setUploadForm({
+                    title: '',
+                    classId: '',
+                    description: '',
+                    type: 'pdf',
+                    file: null,
+                    url: ''
+                });
+                setFileName('');
+                setShowUploadModal(false);
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
+            showToast(err.response?.data?.error || 'Failed to upload material', 'error');
+        } finally {
+            setUploading(false);
+        }
     };
+
+    const handleDeleteMaterial = async (materialId: string) => {
+        if (!confirm('Are you sure you want to delete this material?')) return;
+
+        try {
+            const response = await materialService.deleteMaterial(materialId);
+            if (response.success) {
+                setMaterials(prev => prev.filter(m => m.id !== materialId));
+                showToast('Material deleted successfully', 'success');
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { error?: string } } };
+            showToast(err.response?.data?.error || 'Failed to delete material', 'error');
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="tutor-materials-page">
+                <Header navigationLinks={navigationLinks} />
+                <LoadingSpinner />
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="tutor-materials-page">
@@ -260,7 +295,7 @@ const TutorMaterials: React.FC = () => {
                     <>
                         {/* Class Filter */}
                         <div className="class-filter">
-                            {classes.map((cls, index) => (
+                            {classOptions.map((cls, index) => (
                                 <button
                                     key={index}
                                     className={`filter-btn ${selectedClass === (index === 0 ? 'all' : cls) ? 'active' : ''}`}
@@ -273,30 +308,43 @@ const TutorMaterials: React.FC = () => {
 
                         {/* Materials Grid */}
                         <div className="materials-grid">
-                            {filteredMaterials.map(material => (
-                                <div key={material.id} className="material-card">
-                                    <div className="material-header">
-                                        <span className="material-icon">{getTypeIcon(material.type)}</span>
-                                        <div className="material-type-badge">{material.type.toUpperCase()}</div>
-                                    </div>
+                            {filteredMaterials.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>No materials uploaded yet. Click "Upload Material" to get started.</p>
+                                </div>
+                            ) : (
+                                filteredMaterials.map(material => (
+                                    <div key={material.id} className="material-card">
+                                        <div className="material-header">
+                                            <span className="material-icon">{getTypeIcon(material.type)}</span>
+                                            <div className="material-type-badge">{material.type.toUpperCase()}</div>
+                                        </div>
 
-                                    <h3>{material.title}</h3>
+                                        <h3>{material.title}</h3>
+                                        {material.description && (
+                                            <p className="material-description">{material.description}</p>
+                                        )}
 
-                                    <div className="material-meta">
-                                        <span className="class-tag">{material.class}</span>
-                                        <div className="material-stats">
-                                            <span>📅 {material.uploadDate}</span>
-                                            <span>⬇️ {material.downloads} downloads</span>
+                                        <div className="material-meta">
+                                            <span className="class-tag">{material.classes?.title || 'Unknown Class'}</span>
+                                            <div className="material-stats">
+                                                <span>📅 {formatDate(material.created_at)}</span>
+                                                <span>⬇️ {material.downloads} downloads</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="material-actions">
+                                            {material.file_url && (
+                                                <a href={material.file_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline">View</a>
+                                            )}
+                                            {material.external_url && (
+                                                <a href={material.external_url} target="_blank" rel="noopener noreferrer" className="btn btn-outline">Open Link</a>
+                                            )}
+                                            <button className="btn btn-outline delete" onClick={() => handleDeleteMaterial(material.id)}>Delete</button>
                                         </div>
                                     </div>
-
-                                    <div className="material-actions">
-                                        <button className="btn btn-outline">View</button>
-                                        <button className="btn btn-outline">Edit</button>
-                                        <button className="btn btn-outline delete">Delete</button>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </>
                 )}
@@ -306,7 +354,7 @@ const TutorMaterials: React.FC = () => {
                     <>
                         {/* Class Filter */}
                         <div className="class-filter">
-                            {classes.map((cls, index) => (
+                            {classOptions.map((cls, index) => (
                                 <button
                                     key={index}
                                     className={`filter-btn ${selectedClass === (index === 0 ? 'all' : cls) ? 'active' : ''}`}
@@ -332,19 +380,19 @@ const TutorMaterials: React.FC = () => {
                                     <div className="test-stats">
                                         <div className="stat">
                                             <label>Total Questions</label>
-                                            <value>{test.totalQuestions}</value>
+                                            <span className="value">{test.totalQuestions}</span>
                                         </div>
                                         <div className="stat">
                                             <label>Submissions</label>
-                                            <value>{test.totalSubmissions}</value>
+                                            <span className="value">{test.totalSubmissions}</span>
                                         </div>
                                         <div className="stat">
                                             <label>Avg Score</label>
-                                            <value>{test.averageScore}%</value>
+                                            <span className="value">{test.averageScore}%</span>
                                         </div>
                                         <div className="stat">
                                             <label>Pass Rate</label>
-                                            <value>{test.passRate}%</value>
+                                            <span className="value">{test.passRate}%</span>
                                         </div>
                                     </div>
 
@@ -400,15 +448,25 @@ const TutorMaterials: React.FC = () => {
                                 <div className="form-group">
                                     <label>Class *</label>
                                     <select
-                                        value={uploadForm.class}
-                                        onChange={(e) => setUploadForm({ ...uploadForm, class: e.target.value })}
+                                        value={uploadForm.classId}
+                                        onChange={(e) => setUploadForm({ ...uploadForm, classId: e.target.value })}
                                         required
                                     >
                                         <option value="">Select class</option>
-                                        {classes.slice(1).map(cls => (
-                                            <option key={cls} value={cls}>{cls}</option>
+                                        {classes.map(cls => (
+                                            <option key={cls.id} value={cls.id}>{cls.title} - {cls.subject}</option>
                                         ))}
                                     </select>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Description</label>
+                                    <textarea
+                                        placeholder="Brief description of the material..."
+                                        value={uploadForm.description}
+                                        onChange={(e) => setUploadForm({ ...uploadForm, description: e.target.value })}
+                                        rows={3}
+                                    />
                                 </div>
 
                                 <div className="form-group">
@@ -461,8 +519,8 @@ const TutorMaterials: React.FC = () => {
                                     <button type="button" className="btn btn-outline" onClick={() => setShowUploadModal(false)}>
                                         Cancel
                                     </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        Upload
+                                    <button type="submit" className="btn btn-primary" disabled={uploading}>
+                                        {uploading ? 'Uploading...' : 'Upload'}
                                     </button>
                                 </div>
                             </form>
@@ -486,19 +544,19 @@ const TutorMaterials: React.FC = () => {
                                 <div className="results-summary">
                                     <div className="summary-stat">
                                         <label>Total Submissions</label>
-                                        <value>{selectedTest.totalSubmissions}</value>
+                                        <span className="value">{selectedTest.totalSubmissions}</span>
                                     </div>
                                     <div className="summary-stat">
                                         <label>Average Score</label>
-                                        <value>{selectedTest.averageScore}%</value>
+                                        <span className="value">{selectedTest.averageScore}%</span>
                                     </div>
                                     <div className="summary-stat">
                                         <label>Pass Rate</label>
-                                        <value>{selectedTest.passRate}%</value>
+                                        <span className="value">{selectedTest.passRate}%</span>
                                     </div>
                                     <div className="summary-stat">
                                         <label>Questions</label>
-                                        <value>{selectedTest.totalQuestions}</value>
+                                        <span className="value">{selectedTest.totalQuestions}</span>
                                     </div>
                                 </div>
 

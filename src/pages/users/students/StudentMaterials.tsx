@@ -1,26 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import { useToast } from '../../../components/Toast';
+import { useAuth } from '../../../contexts/AuthContext';
+import { materialService } from '../../../services/material.service';
+import type { Material as APIMaterial } from '../../../services/material.service';
 import type { NavigationLink } from '../../../types';
 import './StudentMaterials.css';
-
-interface Material {
-    id: number;
-    type: 'note' | 'video' | 'assignment';
-    title: string;
-    description: string;
-    date: string;
-    size?: string;
-    duration?: string;
-}
-
-interface Grade {
-    assignment: string;
-    score: number;
-    maxScore: number;
-    date: string;
-    feedback: string;
-}
 
 interface UploadedTestScore {
     id: string;
@@ -34,35 +21,18 @@ interface UploadedTestScore {
 }
 
 const StudentMaterials: React.FC = () => {
-    const [selectedSubject, setSelectedSubject] = useState<string>('Mathematics');
+    const { user } = useAuth();
+    const { showToast } = useToast();
+    const [selectedSubject, setSelectedSubject] = useState<string>('All');
     const [activeTab, setActiveTab] = useState<'notes' | 'videos' | 'grades' | 'upload'>('notes');
-    const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
-    const [uploadedScores, setUploadedScores] = useState<UploadedTestScore[]>([
-        {
-            id: '1',
-            testName: 'School Midterm Exam',
-            subject: 'Mathematics',
-            score: 92,
-            maxScore: 100,
-            imageUrl: 'https://via.placeholder.com/300x400?text=Test+Score+92%',
-            uploadedDate: '2 days ago',
-            notes: 'Scored well in calculus section'
-        },
-        {
-            id: '2',
-            testName: 'Physics Quarterly Test',
-            subject: 'Physics',
-            score: 88,
-            maxScore: 100,
-            imageUrl: 'https://via.placeholder.com/300x400?text=Test+Score+88%',
-            uploadedDate: '1 week ago',
-            notes: 'Good performance overall'
-        }
-    ]);
+    const [selectedMaterial, setSelectedMaterial] = useState<APIMaterial | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [materials, setMaterials] = useState<APIMaterial[]>([]);
+    const [uploadedScores, setUploadedScores] = useState<UploadedTestScore[]>([]);
     const [showUploadForm, setShowUploadForm] = useState(false);
     const [uploadForm, setUploadForm] = useState({
         testName: '',
-        subject: selectedSubject,
+        subject: 'Mathematics',
         score: '',
         maxScore: '100',
         notes: '',
@@ -79,6 +49,7 @@ const StudentMaterials: React.FC = () => {
     ];
 
     const subjects = [
+        { name: 'All', icon: '📚', color: '#333' },
         { name: 'Mathematics', icon: '🔢', color: '#0066ff' },
         { name: 'Physics', icon: '⚛️', color: '#5856d6' },
         { name: 'Chemistry', icon: '🧪', color: '#34c759' },
@@ -87,47 +58,85 @@ const StudentMaterials: React.FC = () => {
         { name: 'History', icon: '🏛️', color: '#af52de' },
     ];
 
-    const materials: Record<string, Material[]> = {
-        Mathematics: [
-            { id: 1, type: 'note', title: 'Calculus Chapter 5 Notes', description: 'Integration techniques and applications', date: '2 days ago', size: '2.5 MB' },
-            { id: 2, type: 'note', title: 'Differential Equations Summary', description: 'Quick reference guide', date: '1 week ago', size: '1.2 MB' },
-            { id: 3, type: 'note', title: 'Linear Algebra Formulas', description: 'Essential formulas and theorems', date: '2 weeks ago', size: '800 KB' },
-        ],
-        Physics: [
-            { id: 4, type: 'note', title: 'Newton\'s Laws of Motion', description: 'Comprehensive study guide', date: '3 days ago', size: '1.8 MB' },
-            { id: 5, type: 'note', title: 'Thermodynamics Basics', description: 'Heat, work, and energy principles', date: '1 week ago', size: '2.1 MB' },
-        ],
+    // Fetch materials on mount
+    useEffect(() => {
+        const fetchMaterials = async () => {
+            if (!user?.id) return;
+
+            try {
+                setLoading(true);
+                const response = await materialService.getStudentMaterials(user.id);
+                if (response.success) {
+                    setMaterials(response.data.materials);
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { error?: string } } };
+                showToast(err.response?.data?.error || 'Failed to load materials', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMaterials();
+    }, [user, showToast]);
+
+    // Filter materials by subject and type
+    const filteredMaterials = materials.filter(m => {
+        if (selectedSubject !== 'All' && m.classes?.subject !== selectedSubject) {
+            return false;
+        }
+        return true;
+    });
+
+    const notesMaterials = filteredMaterials.filter(m => ['pdf', 'doc', 'slides'].includes(m.type));
+    const videoMaterials = filteredMaterials.filter(m => ['video', 'audio'].includes(m.type));
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
     };
 
-    const videos: Record<string, Material[]> = {
-        Mathematics: [
-            { id: 1, type: 'video', title: 'Integration by Parts Tutorial', description: 'Step-by-step explanation with examples', date: '3 days ago', duration: '45 min' },
-            { id: 2, type: 'video', title: 'Solving Differential Equations', description: 'Methods and practice problems', date: '1 week ago', duration: '60 min' },
-            { id: 3, type: 'video', title: 'Matrix Operations', description: 'Addition, multiplication, and inverse', date: '2 weeks ago', duration: '38 min' },
-        ],
-        Physics: [
-            { id: 4, type: 'video', title: 'Understanding Force and Motion', description: 'Real-world applications of Newton\'s laws', date: '4 days ago', duration: '52 min' },
-            { id: 5, type: 'video', title: 'Energy Conservation Principles', description: 'Kinetic and potential energy', date: '1 week ago', duration: '41 min' },
-        ],
+    const handleDownload = async (material: APIMaterial) => {
+        try {
+            await materialService.trackDownload(material.id);
+            if (material.file_url) {
+                window.open(material.file_url, '_blank');
+            } else if (material.external_url) {
+                window.open(material.external_url, '_blank');
+            }
+        } catch {
+            // Still allow viewing even if tracking fails
+            if (material.file_url) {
+                window.open(material.file_url, '_blank');
+            }
+        }
     };
 
-    const grades: Record<string, Grade[]> = {
-        Mathematics: [
-            { assignment: 'Assignment 5 - Integration', score: 92, maxScore: 100, date: '2 days ago', feedback: 'Excellent work! Clear understanding of concepts.' },
-            { assignment: 'Midterm Exam', score: 88, maxScore: 100, date: '1 week ago', feedback: 'Good performance. Review differential equations.' },
-            { assignment: 'Assignment 4 - Derivatives', score: 95, maxScore: 100, date: '2 weeks ago', feedback: 'Outstanding! Perfect execution.' },
-        ],
-        Physics: [
-            { assignment: 'Lab Report 3', score: 85, maxScore: 100, date: '3 days ago', feedback: 'Good analysis. Include more data interpretation.' },
-            { assignment: 'Quiz 2 - Mechanics', score: 90, maxScore: 100, date: '1 week ago', feedback: 'Very good understanding of core concepts.' },
-        ],
+    const getTypeIcon = (type: string) => {
+        const icons: Record<string, string> = {
+            pdf: '📄',
+            video: '📹',
+            doc: '📝',
+            link: '🔗',
+            image: '🖼️',
+            audio: '🎵',
+            slides: '📊'
+        };
+        return icons[type] || '📁';
     };
 
-    const currentMaterials = materials[selectedSubject] || [];
-    const currentVideos = videos[selectedSubject] || [];
-    const currentGrades = grades[selectedSubject] || [];
-
-    const getPercentage = (score: number, max: number) => ((score / max) * 100).toFixed(0);
+    if (loading) {
+        return (
+            <div className="student-materials-page">
+                <Header navigationLinks={navigationLinks} />
+                <LoadingSpinner />
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="student-materials-page">
@@ -162,19 +171,13 @@ const StudentMaterials: React.FC = () => {
                         className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
                         onClick={() => setActiveTab('notes')}
                     >
-                        📄 Notes ({currentMaterials.length})
+                        📄 Notes ({notesMaterials.length})
                     </button>
                     <button
                         className={`tab-btn ${activeTab === 'videos' ? 'active' : ''}`}
                         onClick={() => setActiveTab('videos')}
                     >
-                        📹 Videos ({currentVideos.length})
-                    </button>
-                    <button
-                        className={`tab-btn ${activeTab === 'grades' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('grades')}
-                    >
-                        📊 Grades ({currentGrades.length})
+                        📹 Videos ({videoMaterials.length})
                     </button>
                     <button
                         className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
@@ -189,22 +192,23 @@ const StudentMaterials: React.FC = () => {
                     {/* Notes Tab */}
                     {activeTab === 'notes' && (
                         <div className="materials-list">
-                            {currentMaterials.length > 0 ? (
-                                currentMaterials.map((material) => (
+                            {notesMaterials.length > 0 ? (
+                                notesMaterials.map((material) => (
                                     <div key={material.id} className="material-card">
-                                        <div className="material-icon">📄</div>
+                                        <div className="material-icon">{getTypeIcon(material.type)}</div>
                                         <div className="material-info">
                                             <h3>{material.title}</h3>
-                                            <p>{material.description}</p>
+                                            <p>{material.description || 'No description'}</p>
                                             <div className="material-meta">
-                                                <span>📅 {material.date}</span>
-                                                <span>📦 {material.size}</span>
+                                                <span>📅 {formatDate(material.created_at)}</span>
+                                                <span>📦 {materialService.formatFileSize(material.file_size)}</span>
+                                                <span className="class-tag">{material.classes?.title}</span>
                                             </div>
                                         </div>
                                         <button
                                             className="btn btn-outline btn-sm"
-                                            onClick={() => setSelectedMaterial(material)}
-                                            title="Click to view materials"
+                                            onClick={() => handleDownload(material)}
+                                            title="Click to view/download"
                                         >
                                             View
                                         </button>
@@ -213,7 +217,7 @@ const StudentMaterials: React.FC = () => {
                             ) : (
                                 <div className="empty-state">
                                     <span className="empty-icon">📄</span>
-                                    <p>No notes available for {selectedSubject}</p>
+                                    <p>No notes available{selectedSubject !== 'All' ? ` for ${selectedSubject}` : ''}</p>
                                 </div>
                             )}
                         </div>
@@ -222,61 +226,31 @@ const StudentMaterials: React.FC = () => {
                     {/* Videos Tab */}
                     {activeTab === 'videos' && (
                         <div className="materials-list">
-                            {currentVideos.length > 0 ? (
-                                currentVideos.map((video) => (
+                            {videoMaterials.length > 0 ? (
+                                videoMaterials.map((video) => (
                                     <div key={video.id} className="material-card">
-                                        <div className="material-icon video-icon">📹</div>
+                                        <div className="material-icon video-icon">{getTypeIcon(video.type)}</div>
                                         <div className="material-info">
                                             <h3>{video.title}</h3>
-                                            <p>{video.description}</p>
+                                            <p>{video.description || 'No description'}</p>
                                             <div className="material-meta">
-                                                <span>📅 {video.date}</span>
-                                                <span>⏱️ {video.duration}</span>
+                                                <span>📅 {formatDate(video.created_at)}</span>
+                                                {video.duration && <span>⏱️ {materialService.formatDuration(video.duration)}</span>}
+                                                <span className="class-tag">{video.classes?.title}</span>
                                             </div>
                                         </div>
-                                        <button className="btn btn-primary btn-sm">Watch</button>
+                                        <button
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => handleDownload(video)}
+                                        >
+                                            Watch
+                                        </button>
                                     </div>
                                 ))
                             ) : (
                                 <div className="empty-state">
                                     <span className="empty-icon">📹</span>
-                                    <p>No videos available for {selectedSubject}</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Grades Tab */}
-                    {activeTab === 'grades' && (
-                        <div className="grades-list">
-                            {currentGrades.length > 0 ? (
-                                currentGrades.map((grade, index) => (
-                                    <div key={index} className="grade-card">
-                                        <div className="grade-header">
-                                            <h3>{grade.assignment}</h3>
-                                            <div className="grade-score">
-                                                <span className="score">{grade.score}/{grade.maxScore}</span>
-                                                <span className={`percentage ${parseInt(getPercentage(grade.score, grade.maxScore)) >= 80 ? 'high' : ''}`}>
-                                                    {getPercentage(grade.score, grade.maxScore)}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="grade-date">📅 {grade.date}</div>
-                                        <div className="grade-feedback">
-                                            <strong>Feedback:</strong> {grade.feedback}
-                                        </div>
-                                        <div className="grade-bar">
-                                            <div
-                                                className="grade-fill"
-                                                style={{ width: `${getPercentage(grade.score, grade.maxScore)}%` }}
-                                            />
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="empty-state">
-                                    <span className="empty-icon">📊</span>
-                                    <p>No grades available for {selectedSubject}</p>
+                                    <p>No videos available{selectedSubject !== 'All' ? ` for ${selectedSubject}` : ''}</p>
                                 </div>
                             )}
                         </div>
@@ -472,19 +446,22 @@ const StudentMaterials: React.FC = () => {
                         </div>
                         <div className="modal-body">
                             <div className="material-preview">
-                                <div className="preview-icon">{selectedMaterial.type === 'note' ? '📄' : '📹'}</div>
+                                <div className="preview-icon">{getTypeIcon(selectedMaterial.type)}</div>
                                 <h3>{selectedMaterial.title}</h3>
                                 <p>{selectedMaterial.description}</p>
                                 <div className="material-details">
-                                    <span>📅 {selectedMaterial.date}</span>
-                                    {selectedMaterial.size && <span>📦 {selectedMaterial.size}</span>}
-                                    {selectedMaterial.duration && <span>⏱️ {selectedMaterial.duration}</span>}
+                                    <span>📅 {formatDate(selectedMaterial.created_at)}</span>
+                                    {selectedMaterial.file_size && <span>📦 {materialService.formatFileSize(selectedMaterial.file_size)}</span>}
+                                    {selectedMaterial.duration && <span>⏱️ {materialService.formatDuration(selectedMaterial.duration)}</span>}
                                 </div>
                                 <p className="note-text">Screenshots are allowed for studying purposes.</p>
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-primary" onClick={() => setSelectedMaterial(null)}>Close</button>
+                            <button className="btn btn-primary" onClick={() => handleDownload(selectedMaterial)}>
+                                {selectedMaterial.type === 'video' ? 'Watch' : 'Download'}
+                            </button>
+                            <button className="btn" onClick={() => setSelectedMaterial(null)}>Close</button>
                         </div>
                     </div>
                 </div>

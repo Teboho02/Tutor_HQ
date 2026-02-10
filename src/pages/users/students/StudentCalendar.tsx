@@ -1,17 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
-import { useCalendarEvents } from '../../../hooks/useCalendarEvents';
+import Toast from '../../../components/Toast';
+import { studentService } from '../../../services/student.service';
 import type { NavigationLink } from '../../../types';
 import './StudentCalendar.css';
+
+interface CalendarEvent {
+    id: string;
+    type: 'class';
+    title: string;
+    subject: string;
+    date: Date;
+    time: string;
+    description?: string;
+    color?: string;
+    tutorName?: string;
+    meetingLink?: string;
+}
 
 const StudentCalendar: React.FC = () => {
     const [selectedView, setSelectedView] = useState<'month' | 'week' | 'list'>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-    // Fetch merged calendar events from all sources
-    const { events: allEvents, loading, error } = useCalendarEvents();
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
+
+    useEffect(() => {
+        const fetchSchedule = async () => {
+            try {
+                setLoading(true);
+                const response = await studentService.getSchedule();
+
+                if (response.success && response.data.schedule) {
+                    // Transform backend data to calendar events
+                    interface ScheduleItem {
+                        id: string;
+                        title: string;
+                        subject: string;
+                        scheduledAt: string;
+                        description?: string;
+                        tutor?: { name?: string };
+                        meetingLink?: string;
+                    }
+                    const events: CalendarEvent[] = response.data.schedule.map((item: ScheduleItem) => ({
+                        id: item.id,
+                        type: 'class' as const,
+                        title: item.title,
+                        subject: item.subject,
+                        date: new Date(item.scheduledAt),
+                        time: new Date(item.scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                        description: item.description,
+                        color: '#667eea',
+                        tutorName: item.tutor?.name,
+                        meetingLink: item.meetingLink,
+                    }));
+                    setAllEvents(events);
+                }
+                setError(null);
+            } catch (err: unknown) {
+                const error = err as { response?: { data?: { message?: string } } };
+                const errorMessage = error.response?.data?.message || 'Failed to load schedule';
+                setError(errorMessage);
+                showToast(errorMessage, 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSchedule();
+    }, []);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -353,6 +419,7 @@ const StudentCalendar: React.FC = () => {
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

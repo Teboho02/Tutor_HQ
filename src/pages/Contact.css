@@ -40,14 +40,14 @@
 .contact-info h2,
 .contact-form-container h2 {
     font-size: 2rem;
-    color: var(--text-dark);
+    color: #1a1a1a;
     margin-bottom: 1.5rem;
     font-weight: 700;
 }
 
 .contact-intro {
     font-size: 1.1rem;
-    color: var(--text-light);
+    color: #666666;
     line-height: 1.7;
     margin-bottom: 2rem;
 }

@@ -1,0 +1,275 @@
+.student-assignments {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.assignments-header {
+    margin-bottom: 2rem;
+}
+
+.assignments-header h1 {
+    font-size: 2rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.assignments-header .subtitle {
+    color: #666;
+    font-size: 1rem;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e0e0e0;
+    overflow-x: auto;
+}
+
+.filter-tabs button {
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 1rem;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.3s;
+    white-space: nowrap;
+}
+
+.filter-tabs button:hover {
+    color: #4F46E5;
+}
+
+.filter-tabs button.active {
+    color: #4F46E5;
+    font-weight: 600;
+}
+
+.filter-tabs button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #4F46E5;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-icon {
+    width: 80px;
+    height: 80px;
+    color: #ccc;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    color: #666;
+    font-size: 1rem;
+}
+
+.assignments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.assignment-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.assignment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.assignment-card.overdue-card {
+    border-left: 4px solid #ef4444;
+}
+
+.card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.card-header h3 {
+    font-size: 1.25rem;
+    color: #1a1a1a;
+    margin: 0;
+    flex: 1;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.status-badge.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.submitted {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-badge.graded {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.overdue {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.assignment-description {
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.assignment-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.meta-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.overdue-text {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.submission-info {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.score-display {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.score {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4F46E5;
+}
+
+.percentage {
+    font-size: 1rem;
+    color: #666;
+}
+
+.feedback {
+    color: #666;
+    font-size: 0.875rem;
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+.submitted-text {
+    color: #666;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.late-badge {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.card-footer {
+    padding: 1rem 1.5rem;
+    background: #f9fafb;
+    border-top: 1px solid #f0f0f0;
+}
+
+.view-btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background-color: #4F46E5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.view-btn:hover {
+    background-color: #4338ca;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .student-assignments {
+        padding: 1rem;
+    }
+
+    .assignments-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .assignments-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-tabs {
+        gap: 0.5rem;
+    }
+
+    .filter-tabs button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+}

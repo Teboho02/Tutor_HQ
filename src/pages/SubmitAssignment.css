@@ -1,0 +1,391 @@
+.submit-assignment {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    color: #4F46E5;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    transition: opacity 0.3s;
+}
+
+.back-btn:hover {
+    opacity: 0.7;
+}
+
+.back-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.assignment-header {
+    margin-bottom: 2rem;
+}
+
+.assignment-header h1 {
+    font-size: 2rem;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.assignment-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 1rem;
+}
+
+.separator {
+    color: #ccc;
+}
+
+.assignment-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.assignment-details-card,
+.submission-card,
+.submission-form-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.detail-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.detail-icon {
+    width: 24px;
+    height: 24px;
+    color: #4F46E5;
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: #666;
+    margin: 0 0 0.25rem 0;
+}
+
+.detail-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.detail-value.overdue {
+    color: #ef4444;
+}
+
+.description-section,
+.instructions-section {
+    margin-top: 1.5rem;
+}
+
+.description-section h3,
+.instructions-section h3 {
+    font-size: 1.125rem;
+    color: #1a1a1a;
+    margin-bottom: 0.75rem;
+}
+
+.description-section p,
+.instructions-section p {
+    color: #666;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+.submission-card h2,
+.submission-form-card h2 {
+    font-size: 1.5rem;
+    color: #1a1a1a;
+    margin-bottom: 1.5rem;
+}
+
+.submission-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.submitted-date {
+    color: #666;
+    font-size: 1rem;
+}
+
+.late-badge {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.file-info svg {
+    width: 24px;
+    height: 24px;
+    color: #4F46E5;
+}
+
+.file-info a {
+    color: #4F46E5;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.file-info a:hover {
+    text-decoration: underline;
+}
+
+.submission-description {
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.submission-description p {
+    margin: 0;
+    color: #666;
+}
+
+.grading-section {
+    border-top: 2px solid #f0f0f0;
+    padding-top: 1.5rem;
+}
+
+.score-display {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+    margin-bottom: 1.5rem;
+}
+
+.score-label {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+}
+
+.score-value {
+    font-size: 3rem;
+    font-weight: 700;
+}
+
+.percentage {
+    font-size: 1.5rem;
+    opacity: 0.9;
+    margin-left: 0.5rem;
+}
+
+.feedback-section h4 {
+    font-size: 1rem;
+    color: #1a1a1a;
+    margin-bottom: 0.75rem;
+}
+
+.feedback-section p {
+    color: #666;
+    line-height: 1.6;
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.pending-grading {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: #fef3c7;
+    border-radius: 8px;
+    border-left: 4px solid #f59e0b;
+}
+
+.pending-grading svg {
+    width: 24px;
+    height: 24px;
+    color: #f59e0b;
+}
+
+.pending-grading p {
+    margin: 0;
+    color: #92400e;
+    font-weight: 500;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f9fafb;
+}
+
+.file-upload-label:hover {
+    border-color: #4F46E5;
+    background: #f3f4f6;
+}
+
+.file-upload-label svg {
+    width: 48px;
+    height: 48px;
+    color: #9ca3af;
+}
+
+.file-upload-label span {
+    color: #666;
+    font-weight: 500;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-hint {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+}
+
+textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #4F46E5;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
+.cancel-btn,
+.submit-btn {
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.cancel-btn {
+    background: #f3f4f6;
+    color: #666;
+}
+
+.cancel-btn:hover {
+    background: #e5e7eb;
+}
+
+.submit-btn {
+    background-color: #4F46E5;
+    color: white;
+}
+
+.submit-btn:hover {
+    background-color: #4338ca;
+}
+
+.submit-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.error-message {
+    text-align: center;
+    padding: 3rem;
+    font-size: 1.25rem;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .submit-assignment {
+        padding: 1rem;
+    }
+
+    .assignment-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .detail-row {
+        grid-template-columns: 1fr;
+    }
+
+    .score-value {
+        font-size: 2rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .cancel-btn,
+    .submit-btn {
+        width: 100%;
+    }
+}

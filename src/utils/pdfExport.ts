@@ -136,7 +136,7 @@ class PDFExporter {
 
         // Comments section if available
         if (data.comments) {
-            const finalY = (this.doc as any).lastAutoTable.finalY || yPos + 50;
+            const finalY = (this.doc as unknown as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY || yPos + 50;
             this.doc.setFontSize(14);
             this.doc.setTextColor(this.primaryColor);
             this.doc.text('Comments', 14, finalY + 10);
@@ -357,7 +357,7 @@ class PDFExporter {
         });
 
         // Subject Performance
-        const topPerformersEndY = (this.doc as any).lastAutoTable.finalY || yPos + 30;
+        const topPerformersEndY = (this.doc as unknown as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY || yPos + 30;
         this.doc.setFontSize(14);
         this.doc.setTextColor(this.primaryColor);
         this.doc.text('Subject Performance', 14, topPerformersEndY + 10);

@@ -45,6 +45,19 @@ const Header: React.FC<HeaderProps> = ({
         setIsMenuOpen(false);
     };
 
+    const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        closeMenu();
+
+        // Handle anchor links
+        if (href.startsWith('#')) {
+            e.preventDefault();
+            const element = document.querySelector(href);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    };
+
     const headerClasses = `header ${variant} ${isScrolled ? 'scrolled' : ''}`;
 
     return (
@@ -68,17 +81,23 @@ const Header: React.FC<HeaderProps> = ({
                                     href={link.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className={`nav-links__link ${location.pathname === link.href ? 'active' : ''
-                                        }`}
+                                    className={`nav-links__link ${location.pathname === link.href ? 'active' : ''}`}
                                     onClick={closeMenu}
+                                >
+                                    {link.label}
+                                </a>
+                            ) : link.href.startsWith('#') ? (
+                                <a
+                                    href={link.href}
+                                    className="nav-links__link"
+                                    onClick={(e) => handleLinkClick(e, link.href)}
                                 >
                                     {link.label}
                                 </a>
                             ) : (
                                 <Link
                                     to={link.href}
-                                    className={`nav-links__link ${location.pathname === link.href ? 'active' : ''
-                                        }`}
+                                    className={`nav-links__link ${location.pathname === link.href ? 'active' : ''}`}
                                     onClick={closeMenu}
                                 >
                                     {link.label}

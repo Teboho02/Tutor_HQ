@@ -10,7 +10,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    role: 'student' | 'tutor' | 'parent' | 'admin';
+    role: 'student' | 'tutor' | 'parent';
     avatar?: string;
 }
 

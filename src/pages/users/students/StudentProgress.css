@@ -519,9 +519,6 @@
     margin-top: auto;
 }
 
-opacity: 0.9;
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
     .progress-container {

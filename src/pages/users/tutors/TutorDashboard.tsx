@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { SkeletonCard } from '../../../components/SkeletonLoader';
+import { useToast } from '../../../components/Toast';
+import { tutorService } from '../../../services/tutor.service';
 import type { NavigationLink } from '../../../types';
 import './TutorDashboard.css';
 
@@ -16,9 +19,44 @@ interface ClassItem {
     studentNames?: string[];
 }
 
+interface DashboardStats {
+    totalStudents?: number;
+    totalClasses?: number;
+    upcomingClasses?: ClassItem[];
+    recentAssignments?: Array<{
+        id: string;
+        title: string;
+        subject: string;
+        status: string;
+        submissions?: number;
+        total?: number;
+    }>;
+    quickStats?: Array<{
+        icon: string;
+        value: string | number;
+        label: string;
+        color: string;
+    }>;
+    recentActivity?: Array<{
+        id: string;
+        type: string;
+        message: string;
+        timestamp: string;
+    }>;
+    stats?: {
+        totalStudents: number;
+        activeClasses: number;
+        teachingHours: number;
+        averageRating: number;
+    };
+}
+
 const TutorDashboard: React.FC = () => {
+    const [dashboardData, setDashboardData] = useState<DashboardStats | null>(null);
+    const [loading, setLoading] = useState(true);
     const [selectedClass, setSelectedClass] = useState<ClassItem | null>(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const { showToast } = useToast();
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/tutor/dashboard' },
@@ -29,36 +67,81 @@ const TutorDashboard: React.FC = () => {
         { label: 'Account', href: '/tutor/account' },
     ];
 
-    const upcomingClasses = [
-        {
-            id: 1,
-            subject: 'Mathematics',
-            topic: 'Advanced Calculus',
-            time: '2:00 PM',
-            students: 18,
-            duration: 60,
-            classType: 'group' as const,
-            classLink: 'https://meet.google.com/abc-defg-hij',
-            studentNames: ['John Doe', 'Jane Smith', 'Mike Johnson', 'Sarah Williams', '+14 more'],
-        },
-        {
-            id: 2,
-            subject: 'Physics',
-            topic: 'Quantum Mechanics',
-            time: '4:00 PM',
-            students: 15,
-            duration: 90,
-            classType: '1-1' as const,
-            classLink: 'https://zoom.us/j/123456789',
-            studentNames: ['Emma Davis'],
-        },
-    ];
+    const fetchDashboard = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await tutorService.getDashboard();
+            if (response.success) {
+                setDashboardData(response.data);
+            }
+        } catch (error: unknown) {
+            const axiosError = error as { response?: { data?: { message?: string } } };
+            showToast(axiosError.response?.data?.message || 'Failed to load dashboard', 'error');
+            // Don't set fallback data - let error state show
+            setDashboardData(null);
+        } finally {
+            setLoading(false);
+        }
+    }, [showToast]);
 
-    const recentActivity = [
-        { type: 'assignment', message: 'New assignment submitted by John Doe', time: '10 mins ago' },
-        { type: 'message', message: 'Sarah Williams sent you a message', time: '1 hour ago' },
-        { type: 'feedback', message: 'Feedback request from Mike Johnson', time: '2 hours ago' },
-    ];
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
+
+    const upcomingClasses = dashboardData?.upcomingClasses || [];
+    const recentActivity = dashboardData?.recentActivity || [];
+    const stats = dashboardData?.stats || { totalStudents: 0, activeClasses: 0, teachingHours: 0, averageRating: 0 };
+
+    if (loading) {
+        return (
+            <div className="tutor-dashboard-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="dashboard-container">
+                    <div className="dashboard-header">
+                        <div>
+                            <h1>Loading Dashboard...</h1>
+                        </div>
+                    </div>
+                    <div className="stats-grid">
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </div>
+                    <div className="dashboard-content">
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (!dashboardData) {
+        return (
+            <div className="tutor-dashboard-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="dashboard-container" style={{ textAlign: 'center' }}>
+                    <div style={{ maxWidth: '500px', margin: '60px auto' }}>
+                        <div style={{ fontSize: '4rem', marginBottom: '20px' }}>⚠️</div>
+                        <h1 style={{ marginBottom: '15px' }}>Failed to Load Dashboard</h1>
+                        <p style={{ color: '#666666', marginBottom: '30px' }}>
+                            Unable to connect to the server. Please check your internet connection and try again.
+                        </p>
+                        <button
+                            onClick={fetchDashboard}
+                            className="btn btn-primary"
+                            style={{ padding: '12px 40px', fontSize: '1rem' }}
+                        >
+                            🔄 Retry
+                        </button>
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="tutor-dashboard-page">
@@ -80,7 +163,7 @@ const TutorDashboard: React.FC = () => {
                         </div>
                         <div className="stat-content">
                             <h3>Total Students</h3>
-                            <p className="stat-value">127</p>
+                            <p className="stat-value">{stats.totalStudents}</p>
                             <span className="stat-change positive">+12 this month</span>
                         </div>
                     </div>
@@ -91,7 +174,7 @@ const TutorDashboard: React.FC = () => {
                         </div>
                         <div className="stat-content">
                             <h3>Active Classes</h3>
-                            <p className="stat-value">8</p>
+                            <p className="stat-value">{stats.activeClasses}</p>
                             <span className="stat-change positive">2 today</span>
                         </div>
                     </div>
@@ -102,7 +185,7 @@ const TutorDashboard: React.FC = () => {
                         </div>
                         <div className="stat-content">
                             <h3>Teaching Hours</h3>
-                            <p className="stat-value">142</p>
+                            <p className="stat-value">{stats.teachingHours}</p>
                             <span className="stat-change positive">+8 this week</span>
                         </div>
                     </div>
@@ -113,7 +196,7 @@ const TutorDashboard: React.FC = () => {
                         </div>
                         <div className="stat-content">
                             <h3>Average Rating</h3>
-                            <p className="stat-value">4.8</p>
+                            <p className="stat-value">{stats.averageRating}</p>
                             <span className="stat-change positive">Excellent</span>
                         </div>
                     </div>
@@ -184,7 +267,7 @@ const TutorDashboard: React.FC = () => {
                                     </div>
                                     <div className="activity-content">
                                         <p>{activity.message}</p>
-                                        <span className="activity-time">{activity.time}</span>
+                                        <span className="activity-time">{activity.timestamp}</span>
                                     </div>
                                 </div>
                             ))}

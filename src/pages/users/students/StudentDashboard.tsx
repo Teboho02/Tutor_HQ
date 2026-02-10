@@ -1,11 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { SkeletonCard } from '../../../components/SkeletonLoader';
+import { useToast } from '../../../components/Toast';
+import { studentService } from '../../../services/student.service';
 import type { NavigationLink } from '../../../types';
 import './StudentDashboard.css';
 
+interface DashboardData {
+    upcomingClasses?: Array<{
+        id: string;
+        subject: string;
+        topic: string;
+        time: string;
+        tutor: string;
+    }>;
+    recentAssignments?: Array<{
+        id: string;
+        title: string;
+        subject: string;
+        status: 'completed' | 'pending';
+        grade?: string;
+        dueDate?: string;
+    }>;
+    quickStats?: Array<{
+        icon: string;
+        value: string | number;
+        label: string;
+        color: string;
+    }>;
+}
+
 const StudentDashboard: React.FC = () => {
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
+
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
         { label: 'Calendar', href: '/student/calendar' },
@@ -15,24 +46,56 @@ const StudentDashboard: React.FC = () => {
         { label: 'Goals', href: '/student/goals' },
     ];
 
-    const upcomingClasses = [
-        { id: 1, subject: 'Mathematics', topic: 'Quadratic Equations', time: 'Today, 2:00 PM', tutor: 'Dr. Smith' },
-        { id: 2, subject: 'Physics', topic: 'Newton\'s Laws', time: 'Tomorrow, 10:00 AM', tutor: 'Prof. Johnson' },
-        { id: 3, subject: 'Chemistry', topic: 'Organic Compounds', time: 'Thursday, 3:00 PM', tutor: 'Dr. Williams' },
-    ];
+    const fetchDashboard = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await studentService.getDashboard();
+            if (response.success) {
+                setDashboardData(response.data);
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to load dashboard', 'error');
+            // Don't set fallback data - let error state show
+            setDashboardData(null);
+        } finally {
+            setLoading(false);
+        }
+    }, [showToast]);
 
-    const recentAssignments = [
-        { id: 1, title: 'Math Assignment 5', subject: 'Mathematics', dueDate: 'Tomorrow', status: 'pending' },
-        { id: 2, title: 'Physics Lab Report', subject: 'Physics', dueDate: 'In 3 days', status: 'pending' },
-        { id: 3, title: 'Chemistry Quiz', subject: 'Chemistry', dueDate: 'Completed', status: 'completed', grade: '92%' },
-    ];
+    useEffect(() => {
+        fetchDashboard();
+    }, [fetchDashboard]);
 
-    const quickStats = [
-        { label: 'Upcoming Classes', value: '3', icon: '📚', color: '#0066ff' },
-        { label: 'Pending Assignments', value: '2', icon: '📝', color: '#ff9500' },
-        { label: 'Average Grade', value: '87%', icon: '⭐', color: '#34c759' },
-        { label: 'Attendance', value: '95%', icon: '✅', color: '#5856d6' },
-    ];
+    const upcomingClasses = dashboardData?.upcomingClasses || [];
+    const recentAssignments = dashboardData?.recentAssignments || [];
+    const quickStats = dashboardData?.quickStats || [];
+
+    if (loading) {
+        return (
+            <div className="student-dashboard-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="student-dashboard-container">
+                    <div className="dashboard-header">
+                        <div className="welcome-section">
+                            <h1>Loading Dashboard...</h1>
+                        </div>
+                    </div>
+                    <div className="quick-stats-grid">
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </div>
+                    <div className="dashboard-content">
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </div>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="student-dashboard-page">

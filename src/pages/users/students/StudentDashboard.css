@@ -3,7 +3,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--light-gray);
+    background: #f5f5f5;
 }
 
 .student-dashboard-container {
@@ -18,26 +18,28 @@
     align-items: center;
     margin-bottom: 40px;
     padding: 30px;
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    background: linear-gradient(135deg, #0066ff, #4285f4);
     border-radius: 16px;
-    color: var(--white);
-    box-shadow: var(--shadow-medium);
+    color: #ffffff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .welcome-section h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
     font-weight: 700;
+    color: #ffffff;
 }
 
 .welcome-section p {
     font-size: 1.1rem;
     opacity: 0.9;
+    color: #ffffff;
 }
 
 .quick-actions .btn {
-    background: var(--white);
-    color: var(--primary-blue);
+    background: #ffffff;
+    color: #0066ff;
     font-weight: 600;
 }
 
@@ -55,20 +57,20 @@
 }
 
 .stat-card {
-    background: var(--white);
+    background: #ffffff;
     padding: 25px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 20px;
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     border-left: 4px solid;
-    transition: all var(--transition-normal);
+    transition: all 0.3s ease;
 }
 
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .stat-icon {
@@ -82,13 +84,13 @@
 .stat-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--text-dark);
+    color: #1a1a1a;
     margin-bottom: 5px;
 }
 
 .stat-label {
     font-size: 0.95rem;
-    color: var(--text-light);
+    color: #666666;
     font-weight: 500;
 }
 
@@ -99,10 +101,10 @@
 }
 
 .dashboard-section {
-    background: var(--white);
+    background: #ffffff;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .section-header {
@@ -111,25 +113,25 @@
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 2px solid var(--border-light);
+    border-bottom: 2px solid rgba(0, 102, 255, 0.1);
 }
 
 .section-header h2 {
     font-size: 1.5rem;
-    color: var(--text-dark);
+    color: #1a1a1a;
     font-weight: 600;
 }
 
 .view-all-link {
-    color: var(--primary-blue);
+    color: #0066ff;
     text-decoration: none;
     font-weight: 600;
     font-size: 0.95rem;
-    transition: color var(--transition-normal);
+    transition: color 0.3s ease;
 }
 
 .view-all-link:hover {
-    color: var(--alt-primary-blue);
+    color: #1a73e8;
 }
 
 /* Classes List */
@@ -144,14 +146,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border: 2px solid var(--border-light);
+    border: 2px solid rgba(0, 102, 255, 0.1);
     border-radius: 10px;
-    transition: all var(--transition-normal);
+    transition: all 0.3s ease;
+    background: #ffffff;
 }
 
 .class-card:hover {
-    border-color: var(--primary-blue);
-    background: var(--alt-light-blue);
+    border-color: #0066ff;
+    background: #e8f0fe;
     transform: translateX(5px);
 }
 
@@ -162,13 +165,13 @@
 .class-subject {
     font-size: 1.2rem;
     font-weight: 600;
-    color: var(--text-dark);
+    color: #1a1a1a;
     margin-bottom: 5px;
 }
 
 .class-topic {
     font-size: 1rem;
-    color: var(--text-light);
+    color: #666666;
     margin-bottom: 10px;
 }
 
@@ -176,7 +179,7 @@
     display: flex;
     gap: 20px;
     font-size: 0.9rem;
-    color: var(--text-light);
+    color: #666666;
 }
 
 .class-time,
@@ -198,14 +201,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border: 2px solid var(--border-light);
+    border: 2px solid rgba(0, 102, 255, 0.1);
     border-radius: 10px;
-    transition: all var(--transition-normal);
+    transition: all 0.3s ease;
+    background: #ffffff;
 }
 
 .assignment-card:hover {
-    border-color: var(--primary-blue);
-    background: var(--alt-light-blue);
+    border-color: #0066ff;
+    background: #e8f0fe;
 }
 
 .assignment-info {
@@ -215,13 +219,13 @@
 .assignment-title {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-dark);
+    color: #1a1a1a;
     margin-bottom: 5px;
 }
 
 .assignment-subject {
     font-size: 0.9rem;
-    color: var(--text-light);
+    color: #666666;
 }
 
 .assignment-status {
@@ -250,12 +254,12 @@
 .grade {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--success-green);
+    color: #34a853;
 }
 
 .due-date {
     font-size: 0.9rem;
-    color: var(--text-light);
+    color: #666666;
 }
 
 /* Quick Links */
@@ -275,18 +279,18 @@
     align-items: center;
     gap: 15px;
     padding: 30px;
-    border: 2px solid var(--border-light);
+    border: 2px solid rgba(0, 102, 255, 0.1);
     border-radius: 12px;
     text-decoration: none;
-    transition: all var(--transition-normal);
-    background: var(--white);
+    transition: all 0.3s ease;
+    background: #ffffff;
 }
 
 .quick-link-card:hover {
-    border-color: var(--primary-blue);
-    background: var(--alt-light-blue);
+    border-color: #0066ff;
+    background: #e8f0fe;
     transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .link-icon {
@@ -296,7 +300,7 @@
 .link-text {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-dark);
+    color: #1a1a1a;
 }
 
 /* Responsive Design */

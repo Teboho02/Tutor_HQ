@@ -42,7 +42,7 @@ export interface Achievement {
     unlockedAt?: Date;
     isUnlocked: boolean;
     icon: string; // emoji
-    metadata?: Record<string, any>; // flexible data storage
+    metadata?: Record<string, unknown>; // flexible data storage
 }
 
 /**

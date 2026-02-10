@@ -9,7 +9,7 @@ const ParentAccount: React.FC = () => {
     const navigate = useNavigate();
     const [showAddChildModal, setShowAddChildModal] = useState(false);
     const [showEnrollModal, setShowEnrollModal] = useState(false);
-    const [selectedChild, setSelectedChild] = useState<string>('');
+    const [, setSelectedChild] = useState<string>('');
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },

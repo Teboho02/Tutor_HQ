@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { useToast } from '../../../components/Toast';
+import { studentService } from '../../../services/student.service';
 import type { NavigationLink } from '../../../types';
 import './StudentProgress.css';
 
@@ -35,6 +37,27 @@ interface Achievement {
 }
 
 const StudentProgress: React.FC = () => {
+    const [loading, setLoading] = useState(true);
+    const { showToast } = useToast();
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                setLoading(true);
+                await studentService.getProfile();
+                // Profile data can be used here for future enhancements
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load profile data', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
         { label: 'Calendar', href: '/student/calendar' },
@@ -156,177 +179,188 @@ const StudentProgress: React.FC = () => {
                     <p>Track your academic performance and achievements</p>
                 </div>
 
-                {/* Overall Stats */}
-                <div className="stats-grid">
-                    {overallStats.map((stat, index) => (
-                        <div key={index} className="stat-card" style={{ borderLeftColor: stat.color }}>
-                            <div className="stat-icon" style={{ color: stat.color }}>{stat.icon}</div>
-                            <div className="stat-info">
-                                <div className="stat-label">{stat.label}</div>
-                                <div className="stat-value">{stat.value}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {loading && (
+                    <div className="loading-state">
+                        <div className="spinner">⏳</div>
+                        <p>Loading progress data...</p>
+                    </div>
+                )}
 
-                {/* Progress Chart Placeholder */}
-                <div className="chart-section">
-                    <h2>Performance Overview</h2>
-                    <div className="chart-placeholder">
-                        <div className="chart-bars">
-                            {subjectProgress.map((subject) => (
-                                <div key={subject.subject} className="chart-bar-wrapper">
-                                    <div className="chart-bar">
-                                        <div
-                                            className="chart-bar-fill"
-                                            style={{
-                                                height: `${subject.average}%`,
-                                                backgroundColor: subject.color
-                                            }}
-                                        />
+                {!loading && (
+                    <>
+                        {/* Overall Stats */}
+                        <div className="stats-grid">
+                            {overallStats.map((stat, index) => (
+                                <div key={index} className="stat-card" style={{ borderLeftColor: stat.color }}>
+                                    <div className="stat-icon" style={{ color: stat.color }}>{stat.icon}</div>
+                                    <div className="stat-info">
+                                        <div className="stat-label">{stat.label}</div>
+                                        <div className="stat-value">{stat.value}</div>
                                     </div>
-                                    <div className="chart-label">{subject.icon}</div>
-                                    <div className="chart-percentage">{subject.average}%</div>
                                 </div>
                             ))}
                         </div>
-                        <div className="chart-y-axis">
-                            <span>100%</span>
-                            <span>75%</span>
-                            <span>50%</span>
-                            <span>25%</span>
-                            <span>0%</span>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Subject Progress Cards */}
-                <div className="subject-progress-section">
-                    <h2>Subject-wise Progress</h2>
-                    <div className="subject-progress-grid">
-                        {subjectProgress.map((subject) => (
-                            <div key={subject.subject} className="subject-progress-card">
-                                <div className="subject-header">
-                                    <div className="subject-icon-badge" style={{ backgroundColor: `${subject.color}20`, color: subject.color }}>
-                                        {subject.icon}
-                                    </div>
-                                    <div className="subject-title">
-                                        <h3>{subject.subject}</h3>
-                                        <span className="trend-badge">{getTrendIcon(subject.trend)} {subject.trend}</span>
-                                    </div>
-                                </div>
-
-                                <div className="subject-stats">
-                                    <div className="stat-row">
-                                        <span className="stat-label">Average</span>
-                                        <span className="stat-value">{subject.average}%</span>
-                                    </div>
-                                    <div className="progress-bar">
-                                        <div
-                                            className="progress-fill"
-                                            style={{ width: `${subject.average}%`, backgroundColor: subject.color }}
-                                        />
-                                    </div>
-
-                                    <div className="subject-metrics">
-                                        <div className="metric">
-                                            <span>📝 Assignments</span>
-                                            <strong>{subject.assignments}</strong>
+                        {/* Progress Chart Placeholder */}
+                        <div className="chart-section">
+                            <h2>Performance Overview</h2>
+                            <div className="chart-placeholder">
+                                <div className="chart-bars">
+                                    {subjectProgress.map((subject) => (
+                                        <div key={subject.subject} className="chart-bar-wrapper">
+                                            <div className="chart-bar">
+                                                <div
+                                                    className="chart-bar-fill"
+                                                    style={{
+                                                        height: `${subject.average}%`,
+                                                        backgroundColor: subject.color
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="chart-label">{subject.icon}</div>
+                                            <div className="chart-percentage">{subject.average}%</div>
                                         </div>
-                                        <div className="metric">
-                                            <span>📅 Attendance</span>
-                                            <strong>{subject.attendance}%</strong>
+                                    ))}
+                                </div>
+                                <div className="chart-y-axis">
+                                    <span>100%</span>
+                                    <span>75%</span>
+                                    <span>50%</span>
+                                    <span>25%</span>
+                                    <span>0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Subject Progress Cards */}
+                        <div className="subject-progress-section">
+                            <h2>Subject-wise Progress</h2>
+                            <div className="subject-progress-grid">
+                                {subjectProgress.map((subject) => (
+                                    <div key={subject.subject} className="subject-progress-card">
+                                        <div className="subject-header">
+                                            <div className="subject-icon-badge" style={{ backgroundColor: `${subject.color}20`, color: subject.color }}>
+                                                {subject.icon}
+                                            </div>
+                                            <div className="subject-title">
+                                                <h3>{subject.subject}</h3>
+                                                <span className="trend-badge">{getTrendIcon(subject.trend)} {subject.trend}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="subject-stats">
+                                            <div className="stat-row">
+                                                <span className="stat-label">Average</span>
+                                                <span className="stat-value">{subject.average}%</span>
+                                            </div>
+                                            <div className="progress-bar">
+                                                <div
+                                                    className="progress-fill"
+                                                    style={{ width: `${subject.average}%`, backgroundColor: subject.color }}
+                                                />
+                                            </div>
+
+                                            <div className="subject-metrics">
+                                                <div className="metric">
+                                                    <span>📝 Assignments</span>
+                                                    <strong>{subject.assignments}</strong>
+                                                </div>
+                                                <div className="metric">
+                                                    <span>📅 Attendance</span>
+                                                    <strong>{subject.attendance}%</strong>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Recent Activity */}
+                        <div className="activity-section">
+                            <h2>Recent Activity</h2>
+                            <div className="activity-list">
+                                {recentActivity.map((activity, index) => (
+                                    <div key={index} className="activity-item">
+                                        <div className="activity-icon">{getActivityIcon(activity.type)}</div>
+                                        <div className="activity-info">
+                                            <div className="activity-header">
+                                                <h4>{activity.title}</h4>
+                                                {activity.score !== undefined && (
+                                                    <span className="activity-score">
+                                                        {activity.score}/{activity.maxScore} ({((activity.score / activity.maxScore!) * 100).toFixed(0)}%)
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="activity-meta">
+                                                <span className="activity-subject">{activity.subject}</span>
+                                                <span className="activity-date">📅 {activity.date}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Achievements Section */}
+                        <div className="achievements-section">
+                            <h2>🎖️ Achievements</h2>
+                            <div className="achievements-stats">
+                                <div className="stat">
+                                    <span className="stat-label">Unlocked</span>
+                                    <span className="stat-value">{achievements.filter(a => !a.locked).length}</span>
+                                </div>
+                                <div className="stat">
+                                    <span className="stat-label">Points Earned</span>
+                                    <span className="stat-value">{achievements.filter(a => !a.locked).reduce((sum, a) => sum + a.points, 0)}</span>
+                                </div>
+                                <div className="stat">
+                                    <span className="stat-label">Total Available</span>
+                                    <span className="stat-value">{achievements.length}</span>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Recent Activity */}
-                <div className="activity-section">
-                    <h2>Recent Activity</h2>
-                    <div className="activity-list">
-                        {recentActivity.map((activity, index) => (
-                            <div key={index} className="activity-item">
-                                <div className="activity-icon">{getActivityIcon(activity.type)}</div>
-                                <div className="activity-info">
-                                    <div className="activity-header">
-                                        <h4>{activity.title}</h4>
-                                        {activity.score !== undefined && (
-                                            <span className="activity-score">
-                                                {activity.score}/{activity.maxScore} ({((activity.score / activity.maxScore!) * 100).toFixed(0)}%)
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="activity-meta">
-                                        <span className="activity-subject">{activity.subject}</span>
-                                        <span className="activity-date">📅 {activity.date}</span>
-                                    </div>
+                            {/* Unlocked Achievements */}
+                            <div className="achievements-category">
+                                <h3>Unlocked</h3>
+                                <div className="achievements-grid">
+                                    {achievements.filter(a => !a.locked).map(achievement => (
+                                        <div key={achievement.id} className="achievement-card unlocked">
+                                            <div className="achievement-header">
+                                                <div className="achievement-icon">{achievement.icon}</div>
+                                                <span className="achievement-points">+{achievement.points}</span>
+                                            </div>
+                                            <h4>{achievement.name}</h4>
+                                            <p>{achievement.description}</p>
+                                            <span className="achievement-category">{achievement.category}</span>
+                                            <small className="achievement-date">
+                                                Unlocked: {achievement.unlockedAt?.toLocaleDateString('en-ZA')}
+                                            </small>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Achievements Section */}
-                <div className="achievements-section">
-                    <h2>🎖️ Achievements</h2>
-                    <div className="achievements-stats">
-                        <div className="stat">
-                            <span className="stat-label">Unlocked</span>
-                            <span className="stat-value">{achievements.filter(a => !a.locked).length}</span>
-                        </div>
-                        <div className="stat">
-                            <span className="stat-label">Points Earned</span>
-                            <span className="stat-value">{achievements.filter(a => !a.locked).reduce((sum, a) => sum + a.points, 0)}</span>
-                        </div>
-                        <div className="stat">
-                            <span className="stat-label">Total Available</span>
-                            <span className="stat-value">{achievements.length}</span>
-                        </div>
-                    </div>
-
-                    {/* Unlocked Achievements */}
-                    <div className="achievements-category">
-                        <h3>Unlocked</h3>
-                        <div className="achievements-grid">
-                            {achievements.filter(a => !a.locked).map(achievement => (
-                                <div key={achievement.id} className="achievement-card unlocked">
-                                    <div className="achievement-header">
-                                        <div className="achievement-icon">{achievement.icon}</div>
-                                        <span className="achievement-points">+{achievement.points}</span>
-                                    </div>
-                                    <h4>{achievement.name}</h4>
-                                    <p>{achievement.description}</p>
-                                    <span className="achievement-category">{achievement.category}</span>
-                                    <small className="achievement-date">
-                                        Unlocked: {achievement.unlockedAt?.toLocaleDateString('en-ZA')}
-                                    </small>
+                            {/* Locked Achievements */}
+                            <div className="achievements-category">
+                                <h3>Locked</h3>
+                                <div className="achievements-grid">
+                                    {achievements.filter(a => a.locked).map(achievement => (
+                                        <div key={achievement.id} className="achievement-card locked">
+                                            <div className="achievement-header">
+                                                <div className="achievement-icon">🔒</div>
+                                                <span className="achievement-points">+{achievement.points}</span>
+                                            </div>
+                                            <h4>{achievement.name}</h4>
+                                            <p>{achievement.description}</p>
+                                            <span className="achievement-category">{achievement.category}</span>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Locked Achievements */}
-                    <div className="achievements-category">
-                        <h3>Locked</h3>
-                        <div className="achievements-grid">
-                            {achievements.filter(a => a.locked).map(achievement => (
-                                <div key={achievement.id} className="achievement-card locked">
-                                    <div className="achievement-header">
-                                        <div className="achievement-icon">🔒</div>
-                                        <span className="achievement-points">+{achievement.points}</span>
-                                    </div>
-                                    <h4>{achievement.name}</h4>
-                                    <p>{achievement.description}</p>
-                                    <span className="achievement-category">{achievement.category}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                    </>
+                )}
             </div>
 
             <Footer />

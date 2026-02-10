@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuth } from '../contexts/AuthContext';
 import type { NavigationLink } from '../types';
 import './Login.css';
 
@@ -9,7 +11,9 @@ type UserRole = 'student' | 'parent' | 'tutor';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
+    const { login, user } = useAuth();
     const [selectedRole, setSelectedRole] = useState<UserRole>('student');
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -29,7 +33,7 @@ const Login: React.FC = () => {
         { id: 'tutor' as UserRole, label: 'Tutor', icon: '👨‍🏫', description: 'Teach and manage classes' },
     ];
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Basic validation
@@ -38,22 +42,32 @@ const Login: React.FC = () => {
             return;
         }
 
-        // In a real app, you would validate credentials here
-        console.log('Login attempt:', { ...formData, role: selectedRole });
+        setLoading(true);
 
-        // Navigate to appropriate dashboard based on role
-        switch (selectedRole) {
-            case 'student':
-                navigate('/dashboard');
-                break;
-            case 'parent':
-                navigate('/parents');
-                break;
-            case 'tutor':
-                navigate('/dashboard');
-                break;
-            default:
-                navigate('/dashboard');
+        try {
+            // Call real authentication API
+            await login(formData.email, formData.password);
+
+            // Navigation is handled by checking user state after login
+            // Wait a moment for user state to update
+            setTimeout(() => {
+                // Navigate based on actual user role from backend
+                if (user?.role === 'student') {
+                    navigate('/student/dashboard');
+                } else if (user?.role === 'tutor') {
+                    navigate('/tutor/dashboard');
+                } else if (user?.role === 'parent') {
+                    navigate('/parent/dashboard');
+                } else {
+                    // Fallback to old dashboard
+                    navigate('/dashboard');
+                }
+            }, 100);
+        } catch (error) {
+            // Error handling is done in AuthContext (shows toast)
+            console.error('Login failed:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -132,8 +146,12 @@ const Login: React.FC = () => {
                             </Link>
                         </div>
 
-                        <button type="submit" className="btn btn-primary btn-lg btn-block">
-                            Sign In as {roles.find(r => r.id === selectedRole)?.label}
+                        <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={loading}>
+                            {loading ? (
+                                <LoadingSpinner />
+                            ) : (
+                                `Sign In as ${roles.find(r => r.id === selectedRole)?.label}`
+                            )}
                         </button>
                     </form>
 

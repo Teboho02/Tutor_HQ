@@ -1,7 +1,7 @@
 /* Footer Styles - Unified Blue Theme */
 .footer {
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
-    color: var(--white);
+    background: linear-gradient(135deg, #0066ff, #4285f4) !important;
+    color: #ffffff !important;
     padding: 60px 0 20px;
     margin-top: auto;
 }
@@ -17,21 +17,21 @@
     margin-bottom: 20px;
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--white);
+    color: #ffffff;
 }
 
 .footer-column h5 {
     margin-bottom: 20px;
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--white);
+    color: #ffffff;
 }
 
 .footer-column p {
     opacity: 0.9;
     line-height: 1.6;
     margin-bottom: 20px;
-    color: var(--white);
+    color: #ffffff;
 }
 
 .footer-links {
@@ -71,8 +71,8 @@
     height: 40px;
     border-radius: 50%;
     background-color: rgba(255, 255, 255, 0.1);
-    color: var(--white);
-    transition: all var(--transition-normal);
+    color: #ffffff;
+    transition: all 0.3s ease;
 }
 
 .social-links a:hover {

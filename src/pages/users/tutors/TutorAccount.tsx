@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './TutorAccount.css';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
+import { tutorService } from '../../../services/tutor.service';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface TutorInfo {
     name: string;
@@ -21,10 +24,30 @@ interface BankingInfo {
 }
 
 const TutorAccount: React.FC = () => {
+    const { logout } = useAuth();
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showEditBanking, setShowEditBanking] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
-    // Mock tutor information
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                await tutorService.getProfile();
+            } catch {
+                showToast('Failed to load profile', 'error');
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    // Mock tutor information (kept as fallback)
     const [tutorInfo] = useState<TutorInfo>({
         name: 'Mr. John Smith',
         email: 'john.smith@tutorhq.com',
@@ -65,9 +88,13 @@ const TutorAccount: React.FC = () => {
         setShowEditBanking(false);
     };
 
-    const handleSignOut = () => {
-        alert('Signing out...');
-        window.location.href = '/login';
+    const handleSignOut = async () => {
+        try {
+            await logout();
+            window.location.href = '/login';
+        } catch {
+            showToast('Failed to sign out', 'error');
+        }
     };
 
     return (
@@ -248,8 +275,7 @@ const TutorAccount: React.FC = () => {
                 </div>
             )}
 
-            <Footer />
-        </div>
+            <Footer />            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}        </div>
     );
 };
 

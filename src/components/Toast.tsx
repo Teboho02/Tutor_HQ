@@ -17,6 +17,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useToast = () => {
     const context = useContext(ToastContext);
     if (!context) {
@@ -32,6 +33,10 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
 
+    const hideToast = useCallback((id: string) => {
+        setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, []);
+
     const showToast = useCallback((message: string, type: ToastType, duration = 5000) => {
         const id = `toast-${Date.now()}-${Math.random()}`;
         const toast: Toast = { id, message, type, duration };
@@ -43,11 +48,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
                 hideToast(id);
             }, duration);
         }
-    }, []);
-
-    const hideToast = useCallback((id: string) => {
-        setToasts((prev) => prev.filter((toast) => toast.id !== id));
-    }, []);
+    }, [hideToast]);
 
     return (
         <ToastContext.Provider value={{ showToast, hideToast }}>
@@ -108,4 +109,43 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onClose }) => {
     );
 };
 
-export default ToastProvider;
+// Standalone Toast component for pages that manage their own toast state
+interface StandaloneToastProps {
+    message: string;
+    type: ToastType;
+    onClose: () => void;
+}
+
+const Toast: React.FC<StandaloneToastProps> = ({ message, type, onClose }) => {
+    const getIcon = () => {
+        switch (type) {
+            case 'success':
+                return '✓';
+            case 'error':
+                return '✕';
+            case 'warning':
+                return '⚠';
+            case 'info':
+            default:
+                return 'ℹ';
+        }
+    };
+
+    return (
+        <div className="toast-container standalone" role="region" aria-live="polite">
+            <div className={`toast toast-${type}`} role="alert">
+                <div className="toast-icon">{getIcon()}</div>
+                <div className="toast-message">{message}</div>
+                <button
+                    className="toast-close"
+                    onClick={onClose}
+                    aria-label="Close notification"
+                >
+                    ×
+                </button>
+            </div>
+        </div>
+    );
+};
+
+export default Toast;

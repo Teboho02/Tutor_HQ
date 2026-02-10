@@ -131,3 +131,4 @@ app.listen(PORT, () => {
     console.log(`📹 Video upload API: http://localhost:${PORT}/api/upload/video`);
     console.log(`📚 Class management API: http://localhost:${PORT}/api/classes`);
     console.log(`💚 Health check: http://localhost:${PORT}/api/health`);
+});

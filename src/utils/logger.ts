@@ -10,7 +10,7 @@ interface LogEntry {
     timestamp: string;
     level: LogLevel;
     message: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
     stack?: string;
 }
 
@@ -30,7 +30,7 @@ class Logger {
     private createLogEntry(
         level: LogLevel,
         message: string,
-        context?: Record<string, any>,
+        context?: Record<string, unknown>,
         error?: Error
     ): LogEntry {
         return {
@@ -68,13 +68,13 @@ class Logger {
         return true;
     }
 
-    log(...args: any[]): void {
+    log(...args: unknown[]): void {
         if (this.isDevelopment) {
             console.log(...args);
         }
     }
 
-    debug(message: string, context?: Record<string, any>): void {
+    debug(message: string, context?: Record<string, unknown>): void {
         if (!this.shouldLog('debug')) return;
 
         const entry = this.createLogEntry('debug', message, context);
@@ -85,7 +85,7 @@ class Logger {
         }
     }
 
-    info(message: string, context?: Record<string, any>): void {
+    info(message: string, context?: Record<string, unknown>): void {
         if (!this.shouldLog('info')) return;
 
         const entry = this.createLogEntry('info', message, context);
@@ -96,7 +96,7 @@ class Logger {
         }
     }
 
-    warn(message: string, context?: Record<string, any>): void {
+    warn(message: string, context?: Record<string, unknown>): void {
         if (!this.shouldLog('warn')) return;
 
         const entry = this.createLogEntry('warn', message, context);
@@ -107,7 +107,7 @@ class Logger {
         // TODO: Send to monitoring service (e.g., Sentry)
     }
 
-    error(message: string, error?: Error, context?: Record<string, any>): void {
+    error(message: string, error?: Error, context?: Record<string, unknown>): void {
         const entry = this.createLogEntry('error', message, context, error);
         this.storeLog(entry);
 
@@ -150,7 +150,7 @@ class Logger {
     }
 
     // Track user action
-    trackAction(action: string, details?: Record<string, any>): void {
+    trackAction(action: string, details?: Record<string, unknown>): void {
         this.info(`User action: ${action}`, details);
 
         // TODO: Send to analytics service (e.g., Google Analytics, Mixpanel)
@@ -158,7 +158,7 @@ class Logger {
     }
 
     // Track page view
-    trackPageView(page: string, details?: Record<string, any>): void {
+    trackPageView(page: string, details?: Record<string, unknown>): void {
         this.info(`Page view: ${page}`, details);
 
         // TODO: Send to analytics service

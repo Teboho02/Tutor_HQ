@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
+import { testService } from '../../../services/test.service';
 import type { NavigationLink } from '../../../types';
 import type { Test, StudentAnswer } from '../../../types/test';
 import './TakeTest.css';
@@ -14,7 +16,14 @@ const TakeTest: React.FC = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [timeRemaining, setTimeRemaining] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [startTime] = useState(new Date().toISOString());
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -25,77 +34,113 @@ const TakeTest: React.FC = () => {
         { label: 'Goals', href: '/student/goals' },
     ];
 
-    // Mock test data - in production, fetch from API
+    // Fetch test data from backend
     useEffect(() => {
-        const mockTest: Test = {
-            id: testId || '1',
-            title: 'Mathematics Midterm Exam',
-            subject: 'Mathematics',
-            description: 'This test covers chapters 1-5. Please read each question carefully.',
-            tutorId: '1',
-            tutorName: 'Mr. Smith',
-            scheduledDate: '2025-11-05',
-            scheduledTime: '14:00',
-            duration: 90,
-            totalPoints: 100,
-            studentIds: ['student1'],
-            status: 'active',
-            createdAt: '2025-10-20',
-            questions: [
-                {
-                    id: 'q1',
-                    type: 'multiple-choice',
-                    content: { text: 'What is the value of π (pi) approximately?' },
-                    options: [
-                        { id: 'opt1', text: '2.14', isCorrect: false },
-                        { id: 'opt2', text: '3.14', isCorrect: true },
-                        { id: 'opt3', text: '4.14', isCorrect: false },
-                        { id: 'opt4', text: '5.14', isCorrect: false },
-                    ],
-                    points: 10,
-                },
-                {
-                    id: 'q2',
-                    type: 'text',
-                    content: { text: 'Solve for x: 2x + 5 = 15' },
-                    correctAnswer: '5',
-                    points: 15,
-                },
-                {
-                    id: 'q3',
-                    type: 'multiple-select',
-                    content: { text: 'Which of the following are prime numbers?' },
-                    options: [
-                        { id: 'opt1', text: '2', isCorrect: true },
-                        { id: 'opt2', text: '4', isCorrect: false },
-                        { id: 'opt3', text: '7', isCorrect: true },
-                        { id: 'opt4', text: '9', isCorrect: false },
-                        { id: 'opt5', text: '11', isCorrect: true },
-                    ],
-                    points: 20,
-                },
-                {
-                    id: 'q4',
-                    type: 'scale',
-                    content: { text: 'On a scale of 1-10, how confident are you in solving quadratic equations?' },
-                    scaleMin: 1,
-                    scaleMax: 10,
-                    correctScale: 7,
-                    points: 5,
-                },
-            ],
+        const fetchTest = async () => {
+            if (!testId) {
+                showToast('Invalid test ID', 'error');
+                navigate('/student/tests');
+                return;
+            }
+
+            try {
+                setLoading(true);
+                const response = await testService.getTest(testId);
+
+                if (response.success && response.data.test) {
+                    const testData = response.data.test;
+                    const transformedTest: Test = {
+                        id: testData.id,
+                        title: testData.title,
+                        subject: testData.classes?.subject || 'General',
+                        description: testData.description,
+                        tutorId: testData.tutor_id,
+                        tutorName: 'Teacher',
+                        scheduledDate: testData.scheduled_at,
+                        scheduledTime: new Date(testData.scheduled_at).toLocaleTimeString(),
+                        duration: Math.floor((new Date(testData.due_date).getTime() - new Date(testData.scheduled_at).getTime()) / 60000) || 90,
+                        totalPoints: testData.total_marks,
+                        studentIds: [],
+                        status: 'active',
+                        createdAt: testData.created_at,
+                        questions: testData.questions || [],
+                    };
+
+                    setTest(transformedTest);
+                    setTimeRemaining(transformedTest.duration * 60);
+
+                    // Initialize answers array
+                    const initialAnswers: StudentAnswer[] = transformedTest.questions.map(q => ({
+                        questionId: q.id,
+                        answer: q.type === 'multiple-select' ? [] : '',
+                    }));
+                    setAnswers(initialAnswers);
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load test', 'error');
+                setTimeout(() => navigate('/student/tests'), 2000);
+            } finally {
+                setLoading(false);
+            }
         };
 
-        setTest(mockTest);
-        setTimeRemaining(mockTest.duration * 60); // Convert to seconds
+        fetchTest();
+    }, [testId, navigate]);
 
-        // Initialize answers array
-        const initialAnswers: StudentAnswer[] = mockTest.questions.map(q => ({
-            questionId: q.id,
-            answer: q.type === 'multiple-select' ? [] : '',
-        }));
-        setAnswers(initialAnswers);
-    }, [testId]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const handleAnswerChange = (questionId: string, answer: string | string[] | number) => {
+        setAnswers(prev =>
+            prev.map(a => (a.questionId === questionId ? { ...a, answer } : a))
+        );
+    };
+
+    const handleSubmit = useCallback(async () => {
+        if (isSubmitting) return;
+
+        const confirmSubmit = window.confirm(
+            'Are you sure you want to submit? You cannot change your answers after submission.'
+        );
+
+        if (!confirmSubmit && timeRemaining > 0) return;
+
+        setIsSubmitting(true);
+
+        try {
+            if (!test || !testId) {
+                showToast('Invalid test data', 'error');
+                return;
+            }
+
+            // Submit test to backend
+            const response = await testService.submitTest(testId, answers);
+
+            if (response.success) {
+                showToast('Test submitted successfully!', 'success');
+
+                // Navigate to results page with backend response
+                setTimeout(() => {
+                    navigate(`/student/test-results/${testId}`, {
+                        state: {
+                            score: response.data.result.score,
+                            answers,
+                            test,
+                        },
+                    });
+                }, 1000);
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to submit test', 'error');
+            setIsSubmitting(false);
+        }
+    }, [isSubmitting, timeRemaining, test, testId, answers, navigate]);
 
     // Timer countdown
     useEffect(() => {
@@ -112,84 +157,27 @@ const TakeTest: React.FC = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [timeRemaining]);
+    }, [timeRemaining, handleSubmit]);
 
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const handleAnswerChange = (questionId: string, answer: string | string[] | number) => {
-        setAnswers(prev =>
-            prev.map(a => (a.questionId === questionId ? { ...a, answer } : a))
-        );
-    };
-
-    const handleSubmit = async () => {
-        if (isSubmitting) return;
-
-        const confirmSubmit = window.confirm(
-            'Are you sure you want to submit? You cannot change your answers after submission.'
-        );
-
-        if (!confirmSubmit && timeRemaining > 0) return;
-
-        setIsSubmitting(true);
-
-        // Calculate score (simplified - in production, do this on backend)
-        let score = 0;
-        test?.questions.forEach(question => {
-            const answer = answers.find(a => a.questionId === question.id);
-            if (!answer) return;
-
-            if (question.type === 'multiple-choice') {
-                const selectedOption = question.options?.find(opt => opt.id === answer.answer);
-                if (selectedOption?.isCorrect) score += question.points;
-            } else if (question.type === 'multiple-select') {
-                const correctIds = question.options?.filter(opt => opt.isCorrect).map(opt => opt.id) || [];
-                const selectedIds = answer.answer as string[];
-                if (JSON.stringify(correctIds.sort()) === JSON.stringify(selectedIds.sort())) {
-                    score += question.points;
-                }
-            } else if (question.type === 'text') {
-                const studentAnswerText = typeof answer.answer === 'string' ? answer.answer : '';
-                const correctAnswerText = typeof question.correctAnswer === 'string' ? question.correctAnswer : '';
-                if (studentAnswerText.toLowerCase().trim() === correctAnswerText.toLowerCase().trim()) {
-                    score += question.points;
-                }
-            } else if (question.type === 'scale') {
-                if (answer.answer === question.correctScale) {
-                    score += question.points;
-                }
-            }
-        });
-
-        // In production, submit to API here
-        console.log('Submitting test:', {
-            testId: test?.id,
-            answers,
-            score,
-            totalPoints: test?.totalPoints,
-            startTime,
-            endTime: new Date().toISOString(),
-        });
-
-        // Navigate to results page
-        setTimeout(() => {
-            navigate(`/student/test-results/${test?.id}`, {
-                state: { score, answers, test },
-            });
-        }, 500);
-    };
-
-    if (!test) {
+    if (loading) {
         return (
             <div className="take-test-page">
                 <Header navigationLinks={navigationLinks} />
                 <div className="loading-container">
                     <div className="loading-spinner">⏳</div>
                     <p>Loading test...</p>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (!test) {
+        return (
+            <div className="take-test-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="loading-container">
+                    <p>Test not found</p>
                 </div>
                 <Footer />
             </div>
@@ -373,6 +361,7 @@ const TakeTest: React.FC = () => {
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

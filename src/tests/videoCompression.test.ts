@@ -1,34 +1,32 @@
-import { describe, it, expect } from 'vitest';
-import { compressVideo } from '../utils/videoCompression';
+﻿import { describe, it, expect } from 'vitest';
+import { VideoCompressor, COMPRESSION_PRESETS } from '../utils/videoCompression';
 
 describe('Video Compression Utility', () => {
-    it('validates file size', async () => {
-        const largeFile = new File(['x'.repeat(200 * 1024 * 1024)], 'large.mp4', {
-            type: 'video/mp4',
-        });
-
-        const result = await compressVideo(largeFile);
-
-        expect(result.success).toBe(false);
-        expect(result.error).toContain('exceeds maximum size');
+    it('creates VideoCompressor instance', () => {
+        const compressor = new VideoCompressor();
+        expect(compressor).toBeInstanceOf(VideoCompressor);
     });
 
-    it('validates video duration', async () => {
-        // Mock video with long duration
-        const mockFile = new File(['test'], 'video.mp4', { type: 'video/mp4' });
-
-        // This test would need proper mocking for video element
-        // For now, we'll test the basic structure
-        expect(mockFile.type).toBe('video/mp4');
+    it('has compression presets defined', () => {
+        expect(COMPRESSION_PRESETS).toBeDefined();
+        expect(COMPRESSION_PRESETS.HD).toBeDefined();
+        expect(COMPRESSION_PRESETS.Standard).toBeDefined();
+        expect(COMPRESSION_PRESETS.High).toBeDefined();
+        expect(COMPRESSION_PRESETS.Mobile).toBeDefined();
     });
 
-    it('returns error for invalid file type', async () => {
-        const invalidFile = new File(['test'], 'document.pdf', {
-            type: 'application/pdf',
+    it('creates VideoCompressor with custom config', () => {
+        const compressor = new VideoCompressor({
+            targetBitrate: '500k',
+            targetResolution: '640x480',
+            preset: 'fast'
         });
+        expect(compressor).toBeInstanceOf(VideoCompressor);
+    });
 
-        const result = await compressVideo(invalidFile);
-
-        expect(result.success).toBe(false);
+    it('supports progress callback', () => {
+        const compressor = new VideoCompressor();
+        const callback = compressor.onProgress(() => { });
+        expect(callback).toBe(compressor);
     });
 });

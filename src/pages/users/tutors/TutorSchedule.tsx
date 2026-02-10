@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
 import TestBuilder from '../../../components/TestBuilder';
+import { classService } from '../../../services/class.service';
+import { testService } from '../../../services/test.service';
 import type { NavigationLink } from '../../../types';
 import type { Question } from '../../../types/test';
 import './TutorSchedule.css';
@@ -12,6 +15,8 @@ const TutorSchedule: React.FC = () => {
     const [scheduleType, setScheduleType] = useState<'liveClass' | 'test' | 'assignment'>('liveClass');
     const [testQuestions, setTestQuestions] = useState<Question[]>([]);
     const [assignmentType, setAssignmentType] = useState<'test' | 'upload' | 'both'>('test');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         subject: '',
@@ -50,50 +55,85 @@ const TutorSchedule: React.FC = () => {
 
     const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science'];
 
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Validation for tests
         if (scheduleType === 'test' && testQuestions.length === 0) {
-            alert('Please add at least one question to the test');
+            showToast('Please add at least one question to the test', 'error');
             return;
         }
 
         // Validation for assignments with test format
         if (scheduleType === 'assignment' && (assignmentType === 'test' || assignmentType === 'both') && testQuestions.length === 0) {
-            alert('Please add at least one question to the assignment');
+            showToast('Please add at least one question to the assignment', 'error');
             return;
         }
 
-        // Calculate total points from questions for tests
-        const totalPoints = scheduleType === 'test'
-            ? testQuestions.reduce((sum, q) => sum + q.points, 0)
-            : parseInt(formData.totalMarks);
+        setIsSubmitting(true);
 
-        // Handle submission based on type
-        const submissionData = {
-            ...formData,
-            scheduleType,
-            questions: (scheduleType === 'test' || (scheduleType === 'assignment' && assignmentType !== 'upload')) ? testQuestions : undefined,
-            totalPoints: (scheduleType === 'test' || (scheduleType === 'assignment' && assignmentType !== 'upload')) ? totalPoints : undefined,
-            assignmentType: scheduleType === 'assignment' ? assignmentType : undefined,
-            allowedFileTypes: scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both')
-                ? formData.allowedFileTypes.split(',')
-                : undefined,
-            maxFileSize: scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both')
-                ? parseInt(formData.maxFileSize)
-                : undefined,
-            requiresDescription: scheduleType === 'assignment' && (assignmentType === 'upload' || assignmentType === 'both')
-                ? formData.requiresDescription
-                : undefined,
-        };
+        try {
+            if (scheduleType === 'liveClass') {
+                // Create a live class
+                const classData = {
+                    title: formData.title,
+                    description: formData.description,
+                    subject: formData.subject,
+                    scheduledAt: `${formData.date}T${formData.time}`,
+                    durationMinutes: parseInt(formData.duration),
+                    meetingLink: formData.classLink,
+                };
 
-        console.log('Scheduling', scheduleType, submissionData);
+                await classService.createClass(classData);
+                showToast('Live class scheduled successfully!', 'success');
+            } else if (scheduleType === 'test') {
+                // Create a test
+                const totalPoints = testQuestions.reduce((sum, q) => sum + q.points, 0);
+                // Transform questions to match CreateTestData type requirements
+                const formattedQuestions = testQuestions.map(q => ({
+                    id: q.id,
+                    type: q.type as string,
+                    content: { text: q.content.text || '', image: q.content.image },
+                    points: q.points,
+                    options: q.options?.map(opt => ({
+                        id: opt.id,
+                        text: opt.text || '',
+                        isCorrect: opt.isCorrect,
+                    })),
+                    correctAnswer: Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer,
+                }));
+                const testData = {
+                    title: formData.title,
+                    description: formData.description,
+                    classId: formData.module, // Using module as classId
+                    totalMarks: totalPoints,
+                    passingMarks: parseInt(formData.passingMarks) || Math.floor(totalPoints * 0.5),
+                    scheduledAt: `${formData.date}T${formData.time}`,
+                    dueDate: formData.dueDate,
+                    questions: formattedQuestions,
+                };
 
-        // Here you would make an API call to save the test/assignment/class
-        // For now, just show success message
-        alert(`${scheduleType === 'liveClass' ? 'Live Class' : scheduleType === 'test' ? 'Test' : 'Assignment'} scheduled successfully!`);
-        navigate('/tutor/classes');
+                await testService.createTest(testData);
+                showToast('Test created successfully!', 'success');
+            } else {
+                // Assignment - not yet implemented in backend
+                showToast('Assignment creation coming soon!', 'info');
+            }
+
+            // Navigate back to classes after a short delay
+            setTimeout(() => navigate('/tutor/classes'), 1500);
+        } catch (error: unknown) {
+            const axiosError = error as { response?: { data?: { message?: string } } };
+            showToast(axiosError.response?.data?.message || 'Failed to schedule. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -433,15 +473,16 @@ const TutorSchedule: React.FC = () => {
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            disabled={!formData.module}
+                            disabled={!formData.module || isSubmitting}
                         >
-                            Schedule {scheduleType === 'liveClass' ? 'Class' : scheduleType === 'test' ? 'Test' : 'Assignment'}
+                            {isSubmitting ? 'Scheduling...' : `Schedule ${scheduleType === 'liveClass' ? 'Class' : scheduleType === 'test' ? 'Test' : 'Assignment'}`}
                         </button>
                     </div>
                 </form>
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

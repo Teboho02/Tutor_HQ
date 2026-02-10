@@ -1,7 +1,22 @@
 import React, { useState } from 'react';
-import type { Goal } from '../types/goals';
-import { GoalCategory, GoalStatus } from '../types/goals';
 import '../styles/AddGoalModal.css';
+
+// Use string literals for compatibility with API
+type GoalStatus = 'not_started' | 'in_progress' | 'completed' | 'overdue';
+type GoalCategory = 'academic' | 'homework' | 'test_prep' | 'skill_development' | 'personal';
+
+interface Goal {
+    id: string;
+    studentId: string;
+    title: string;
+    description: string;
+    category: GoalCategory;
+    status: GoalStatus;
+    targetDate: string | Date;
+    completedAt?: string | Date;
+    weekNumber: number;
+    year: number;
+}
 
 interface AddGoalModalProps {
     isOpen: boolean;
@@ -13,7 +28,7 @@ interface AddGoalModalProps {
 export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onSave, editGoal }) => {
     const [title, setTitle] = useState(editGoal?.title || '');
     const [description, setDescription] = useState(editGoal?.description || '');
-    const [category, setCategory] = useState<GoalCategory>(editGoal?.category || GoalCategory.ACADEMIC);
+    const [category, setCategory] = useState<GoalCategory>(editGoal?.category || 'academic');
     const [targetDate, setTargetDate] = useState(
         editGoal?.targetDate ? new Date(editGoal.targetDate).toISOString().split('T')[0] : ''
     );
@@ -28,7 +43,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
         } else {
             setTitle('');
             setDescription('');
-            setCategory(GoalCategory.ACADEMIC);
+            setCategory('academic');
             setTargetDate('');
         }
         setErrors({});
@@ -77,7 +92,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
             title: title.trim(),
             description: description.trim(),
             category,
-            status: editGoal?.status || GoalStatus.NOT_STARTED,
+            status: editGoal?.status || 'not_started',
             targetDate: new Date(targetDate),
             completedAt: editGoal?.completedAt,
         };
@@ -89,7 +104,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
     const handleClose = () => {
         setTitle('');
         setDescription('');
-        setCategory(GoalCategory.ACADEMIC);
+        setCategory('academic');
         setTargetDate('');
         setErrors({});
         onClose();
@@ -132,11 +147,11 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
                             value={category}
                             onChange={(e) => setCategory(e.target.value as GoalCategory)}
                         >
-                            <option value={GoalCategory.ACADEMIC}>Academic</option>
-                            <option value={GoalCategory.HOMEWORK}>Homework</option>
-                            <option value={GoalCategory.TEST_PREP}>Test Preparation</option>
-                            <option value={GoalCategory.SKILL_DEVELOPMENT}>Skill Development</option>
-                            <option value={GoalCategory.PERSONAL}>Personal</option>
+                            <option value="academic">Academic</option>
+                            <option value="homework">Homework</option>
+                            <option value="test_prep">Test Preparation</option>
+                            <option value="skill_development">Skill Development</option>
+                            <option value="personal">Personal</option>
                         </select>
                     </div>
 

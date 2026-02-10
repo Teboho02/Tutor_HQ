@@ -3,7 +3,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: var(--light-gray);
+    background: #f5f5f5;
 }
 
 .tests-container {
@@ -20,14 +20,14 @@
 .page-header h1 {
     font-size: 2.5rem;
     margin-bottom: 10px;
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    background: linear-gradient(135deg, #0066ff, #4285f4);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .page-header p {
-    color: var(--text-light);
+    color: #666666;
     font-size: 1.1rem;
 }
 
@@ -39,7 +39,7 @@
     background: white;
     padding: 1rem;
     border-radius: 12px;
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     flex-wrap: wrap;
 }
 
@@ -49,7 +49,7 @@
     padding: 0.75rem 1.5rem;
     border: 2px solid #e2e8f0;
     background: white;
-    color: var(--text-dark);
+    color: #1a1a1a;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
@@ -57,12 +57,12 @@
 }
 
 .filter-tab:hover {
-    border-color: var(--primary-blue);
+    border-color: #0066ff;
     background: #f7fafc;
 }
 
 .filter-tab.active {
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    background: linear-gradient(135deg, #0066ff, #4285f4);
     color: white;
     border-color: transparent;
 }
@@ -78,7 +78,7 @@
     background: white;
     border-radius: 12px;
     padding: 1.5rem;
-    box-shadow: var(--shadow-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: all 0.3s;
     cursor: pointer;
     border: 2px solid transparent;
@@ -86,8 +86,8 @@
 
 .test-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-medium);
-    border-color: var(--primary-blue);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-color: #0066ff;
 }
 
 .test-card.available {
@@ -138,7 +138,7 @@
 .test-card-body h3 {
     font-size: 1.2rem;
     margin-bottom: 0.75rem;
-    color: var(--text-dark);
+    color: #1a1a1a;
 }
 
 .test-meta {
@@ -151,7 +151,7 @@
 .test-subject {
     display: inline-block;
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    color: var(--primary-blue);
+    color: #0066ff;
     padding: 0.3rem 0.8rem;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -160,7 +160,7 @@
 }
 
 .test-teacher {
-    color: var(--text-light);
+    color: #666666;
     font-size: 0.95rem;
 }
 
@@ -181,12 +181,12 @@
 }
 
 .detail-label {
-    color: var(--text-light);
+    color: #666666;
     font-size: 0.9rem;
 }
 
 .detail-value {
-    color: var(--text-dark);
+    color: #1a1a1a;
     font-weight: 600;
     font-size: 0.9rem;
 }
@@ -229,7 +229,7 @@
     border-radius: 8px;
     font-weight: 700;
     font-size: 1.1rem;
-    color: var(--text-dark);
+    color: #1a1a1a;
 }
 
 .test-card-footer {
@@ -240,7 +240,7 @@
 }
 
 .action-text {
-    color: var(--primary-blue);
+    color: #0066ff;
     font-weight: 600;
     font-size: 0.95rem;
 }
@@ -260,12 +260,12 @@
 
 .empty-state h3 {
     font-size: 1.5rem;
-    color: var(--text-dark);
+    color: #1a1a1a;
     margin-bottom: 0.5rem;
 }
 
 .empty-state p {
-    color: var(--text-light);
+    color: #666666;
     font-size: 1.1rem;
 }
 

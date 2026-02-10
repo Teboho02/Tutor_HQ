@@ -29,9 +29,6 @@ const Signup: React.FC = () => {
         subjects: '',
         experience: '',
         bio: '',
-
-        // Admin code (hidden field for tutors)
-        adminCode: '',
     });
 
     const navigationLinks: NavigationLink[] = [
@@ -299,22 +296,6 @@ const Signup: React.FC = () => {
                                         rows={4}
                                         placeholder="Tell us about your teaching experience and approach..."
                                         required
-                                    />
-                                </div>
-
-                                {/* Hidden Admin Code Field */}
-                                <div className="form-group admin-field">
-                                    <label htmlFor="adminCode">
-                                        Admin Code (Optional)
-                                        <span className="admin-hint">Leave blank unless you're an administrator</span>
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="adminCode"
-                                        name="adminCode"
-                                        value={formData.adminCode}
-                                        onChange={handleChange}
-                                        placeholder="Admin access code"
                                     />
                                 </div>
                             </>

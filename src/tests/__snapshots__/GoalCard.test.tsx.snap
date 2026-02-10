@@ -1,0 +1,98 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`GoalCard Component > matches snapshot 1`] = `
+<div>
+  <div
+    class="goal-card"
+    style="border-left-color: rgb(33, 150, 243);"
+  >
+    <div
+      class="goal-card-header"
+    >
+      <div
+        class="goal-title-section"
+      >
+        <h3
+          class="goal-title"
+        >
+          Complete Math Assignment
+        </h3>
+        <span
+          class="goal-category"
+        >
+          Academic
+        </span>
+      </div>
+      <div
+        class="goal-actions"
+      >
+        <button
+          class="goal-action-btn edit-btn"
+        >
+          ✏️
+        </button>
+        <button
+          class="goal-action-btn delete-btn"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+    <p
+      class="goal-description"
+    >
+      Finish chapters 5-7
+    </p>
+    <div
+      class="goal-metadata"
+    >
+      <div
+        class="goal-date"
+      >
+        <span
+          class="date-label"
+        >
+          Target Date:
+        </span>
+        <span
+          class="date-value "
+        >
+          15 Feb 2026
+          <span
+            class="days-remaining"
+          >
+             (18d)
+          </span>
+        </span>
+      </div>
+    </div>
+    <div
+      class="goal-status-selector"
+    >
+      <label>
+        Status:
+      </label>
+      <select
+        class="status-select"
+        style="color: rgb(33, 150, 243);"
+      >
+        <option
+          value="not_started"
+        >
+          Not Started
+        </option>
+        <option
+          value="in_progress"
+        >
+          In Progress
+        </option>
+        <option
+          value="completed"
+        >
+          Completed
+        </option>
+      </select>
+    </div>
+  </div>
+</div>
+`;

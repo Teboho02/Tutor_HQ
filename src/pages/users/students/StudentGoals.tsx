@@ -1,58 +1,21 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
-import type { Goal, WeeklyGoalSummary } from '../../../types/goals';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import { useToast } from '../../../components/Toast';
+import { useAuth } from '../../../contexts/AuthContext';
+import { goalService, type Goal, type GoalStatus, type GoalCategory, type WeeklyGoalStats, getWeekNumber, GoalStatusValues } from '../../../services/goal.service';
 import type { NavigationLink } from '../../../types';
-import { GoalStatus, GoalCategory } from '../../../types/goals';
 import { GoalCard } from '../../../components/GoalCard';
 import { AddGoalModal } from '../../../components/AddGoalModal';
 import '../../../styles/StudentGoals.css';
 
-// Mock data - replace with API calls
-const mockGoals: Goal[] = [
-    {
-        id: '1',
-        studentId: 'student-1',
-        title: 'Complete Calculus Assignment',
-        description: 'Finish all exercises from Chapter 5 on derivatives',
-        category: GoalCategory.HOMEWORK,
-        status: GoalStatus.IN_PROGRESS,
-        targetDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        weekNumber: 20,
-        year: 2025
-    },
-    {
-        id: '2',
-        studentId: 'student-1',
-        title: 'Master Photosynthesis Topic',
-        description: 'Review notes and watch video tutorials on photosynthesis process',
-        category: GoalCategory.ACADEMIC,
-        status: GoalStatus.NOT_STARTED,
-        targetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        weekNumber: 20,
-        year: 2025
-    },
-    {
-        id: '3',
-        studentId: 'student-1',
-        title: 'Prepare for History Test',
-        description: 'Study World War II events and create summary notes',
-        category: GoalCategory.TEST_PREP,
-        status: GoalStatus.COMPLETED,
-        targetDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        completedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        weekNumber: 19,
-        year: 2025
-    }
-];
-
 const StudentGoals: React.FC = () => {
-    const navigate = useNavigate();
-    const [goals, setGoals] = useState<Goal[]>(mockGoals);
+    const { user } = useAuth();
+    const { showToast } = useToast();
+    const [loading, setLoading] = useState(true);
+    const [goals, setGoals] = useState<Goal[]>([]);
+    const [weeklyStats, setWeeklyStats] = useState<WeeklyGoalStats | null>(null);
     const [filter, setFilter] = useState<'all' | GoalStatus>('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
@@ -66,94 +29,168 @@ const StudentGoals: React.FC = () => {
         { label: 'Goals', href: '/student/goals' },
     ];
 
-    const getWeekNumber = (date: Date): number => {
-        const d = new Date(date);
-        d.setHours(0, 0, 0, 0);
-        d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-        const yearStart = new Date(d.getFullYear(), 0, 1);
-        return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-    };
+    const fetchGoals = useCallback(async () => {
+        if (!user?.id) return;
+
+        try {
+            setLoading(true);
+            const response = await goalService.getStudentGoals(user.id);
+            if (response.success && response.data) {
+                setGoals(response.data.goals);
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to load goals', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }, [user?.id, showToast]);
+
+    const fetchWeeklyStats = useCallback(async () => {
+        if (!user?.id) return;
+
+        try {
+            const response = await goalService.getWeeklyStats(user.id);
+            if (response.success && response.data) {
+                setWeeklyStats(response.data.stats);
+            }
+        } catch (error: unknown) {
+            console.error('Failed to fetch weekly stats:', error);
+        }
+    }, [user?.id]);
+
+    // Fetch goals and stats on mount
+    useEffect(() => {
+        if (user?.id) {
+            fetchGoals();
+            fetchWeeklyStats();
+        }
+    }, [user?.id, fetchGoals, fetchWeeklyStats]);
 
     const filteredGoals = useMemo(() => {
         if (filter === 'all') return goals;
         return goals.filter(goal => goal.status === filter);
     }, [goals, filter]);
 
-    const weeklyStats = useMemo((): WeeklyGoalSummary => {
+    // Calculate local stats if API stats not available yet
+    const displayStats = useMemo(() => {
+        if (weeklyStats) return weeklyStats;
+
         const currentWeek = getWeekNumber(new Date());
         const currentYear = new Date().getFullYear();
         const weekGoals = goals.filter(g => g.weekNumber === currentWeek && g.year === currentYear);
-
-        const completed = weekGoals.filter(g => g.status === GoalStatus.COMPLETED).length;
-        const inProgress = weekGoals.filter(g => g.status === GoalStatus.IN_PROGRESS).length;
-        const overdue = weekGoals.filter(g => {
-            const isOverdue = new Date(g.targetDate) < new Date() && g.status !== GoalStatus.COMPLETED;
-            return isOverdue;
-        }).length;
+        const completed = weekGoals.filter(g => g.status === 'completed').length;
 
         return {
             weekNumber: currentWeek,
             year: currentYear,
             totalGoals: weekGoals.length,
             completedGoals: completed,
-            inProgressGoals: inProgress,
-            overdueGoals: overdue,
-            completionRate: weekGoals.length > 0 ? (completed / weekGoals.length) * 100 : 0
+            inProgressGoals: weekGoals.filter(g => g.status === 'in_progress').length,
+            overdueGoals: weekGoals.filter(g => g.status === 'overdue' || (new Date(g.targetDate) < new Date() && g.status !== 'completed')).length,
+            notStartedGoals: weekGoals.filter(g => g.status === 'not_started').length,
+            completionRate: weekGoals.length > 0 ? Math.round((completed / weekGoals.length) * 100) : 0
         };
-    }, [goals]);
+    }, [goals, weeklyStats]);
 
-    const handleStatusChange = (goalId: string, newStatus: GoalStatus) => {
-        setGoals(prevGoals =>
-            prevGoals.map(goal =>
-                goal.id === goalId
-                    ? {
-                        ...goal,
-                        status: newStatus,
-                        completedAt: newStatus === GoalStatus.COMPLETED ? new Date() : undefined
-                    }
-                    : goal
-            )
-        );
+    const handleStatusChange = async (goalId: string, newStatus: GoalStatus) => {
+        try {
+            const response = await goalService.updateGoalStatus(goalId, newStatus);
+            if (response.success && response.data) {
+                setGoals(prevGoals =>
+                    prevGoals.map(goal =>
+                        goal.id === goalId ? response.data!.goal : goal
+                    )
+                );
+                showToast('Goal status updated', 'success');
+                fetchWeeklyStats(); // Refresh stats
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to update goal status', 'error');
+        }
     };
 
     const handleEdit = (goal: Goal) => {
+        // Transform to match the AddGoalModal expected format
         setEditingGoal(goal);
         setIsModalOpen(true);
     };
 
-    const handleDelete = (goalId: string) => {
+    const handleDelete = async (goalId: string) => {
         if (window.confirm('Are you sure you want to delete this goal?')) {
-            setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId));
+            try {
+                const response = await goalService.deleteGoal(goalId);
+                if (response.success) {
+                    setGoals(prevGoals => prevGoals.filter(goal => goal.id !== goalId));
+                    showToast('Goal deleted successfully', 'success');
+                    fetchWeeklyStats(); // Refresh stats
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to delete goal', 'error');
+            }
         }
     };
 
-    const handleSaveGoal = (goalData: Omit<Goal, 'id' | 'createdAt' | 'weekNumber' | 'year'>) => {
-        const weekNumber = getWeekNumber(new Date());
-        const year = new Date().getFullYear();
+    const handleSaveGoal = async (goalData: { title: string; description?: string; category: string; targetDate: Date | string }) => {
+        try {
+            const category = goalData.category as GoalCategory;
+            if (editingGoal) {
+                // Update existing goal
+                const response = await goalService.updateGoal(editingGoal.id, {
+                    title: goalData.title,
+                    description: goalData.description,
+                    category: category,
+                    targetDate: goalData.targetDate instanceof Date
+                        ? goalData.targetDate.toISOString()
+                        : goalData.targetDate
+                });
 
-        if (editingGoal) {
-            // Update existing goal
-            setGoals(prevGoals =>
-                prevGoals.map(goal =>
-                    goal.id === editingGoal.id
-                        ? { ...goalData, id: goal.id, createdAt: goal.createdAt, weekNumber, year }
-                        : goal
-                )
-            );
-        } else {
-            // Create new goal
-            const newGoal: Goal = {
-                ...goalData,
-                id: Date.now().toString(),
-                createdAt: new Date(),
-                weekNumber,
-                year
-            };
-            setGoals(prevGoals => [newGoal, ...prevGoals]);
+                if (response.success && response.data) {
+                    setGoals(prevGoals =>
+                        prevGoals.map(goal =>
+                            goal.id === editingGoal.id ? response.data!.goal : goal
+                        )
+                    );
+                    showToast('Goal updated successfully', 'success');
+                }
+            } else {
+                // Create new goal
+                const response = await goalService.createGoal({
+                    title: goalData.title,
+                    description: goalData.description,
+                    category: category,
+                    targetDate: goalData.targetDate instanceof Date
+                        ? goalData.targetDate.toISOString()
+                        : goalData.targetDate
+                });
+
+                if (response.success && response.data) {
+                    setGoals(prevGoals => [response.data!.goal, ...prevGoals]);
+                    showToast('Goal created successfully', 'success');
+                }
+            }
+
+            fetchWeeklyStats(); // Refresh stats
+            setEditingGoal(null);
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to save goal', 'error');
         }
-
-        setEditingGoal(null);
     };
+
+    if (loading) {
+        return (
+            <div className="student-goals-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="goals-container">
+                    <LoadingSpinner message="Loading your goals..." />
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="student-goals-page">
@@ -182,28 +219,28 @@ const StudentGoals: React.FC = () => {
                         <div className="stat-icon">📊</div>
                         <div className="stat-info">
                             <h3>This Week</h3>
-                            <p className="stat-value">{weeklyStats.totalGoals} Goals</p>
+                            <p className="stat-value">{displayStats.totalGoals} Goals</p>
                         </div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-icon">✅</div>
                         <div className="stat-info">
                             <h3>Completed</h3>
-                            <p className="stat-value">{weeklyStats.completedGoals} Goals</p>
+                            <p className="stat-value">{displayStats.completedGoals} Goals</p>
                         </div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-icon">🔄</div>
                         <div className="stat-info">
                             <h3>In Progress</h3>
-                            <p className="stat-value">{weeklyStats.inProgressGoals} Goals</p>
+                            <p className="stat-value">{displayStats.inProgressGoals} Goals</p>
                         </div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-icon">📈</div>
                         <div className="stat-info">
                             <h3>Completion Rate</h3>
-                            <p className="stat-value">{weeklyStats.completionRate.toFixed(0)}%</p>
+                            <p className="stat-value">{displayStats.completionRate}%</p>
                         </div>
                     </div>
                 </div>
@@ -217,22 +254,22 @@ const StudentGoals: React.FC = () => {
                         All ({goals.length})
                     </button>
                     <button
-                        className={`filter-btn ${filter === GoalStatus.NOT_STARTED ? 'active' : ''}`}
-                        onClick={() => setFilter(GoalStatus.NOT_STARTED)}
+                        className={`filter-btn ${filter === GoalStatusValues.NOT_STARTED ? 'active' : ''}`}
+                        onClick={() => setFilter(GoalStatusValues.NOT_STARTED)}
                     >
-                        Not Started ({goals.filter(g => g.status === GoalStatus.NOT_STARTED).length})
+                        Not Started ({goals.filter(g => g.status === GoalStatusValues.NOT_STARTED).length})
                     </button>
                     <button
-                        className={`filter-btn ${filter === GoalStatus.IN_PROGRESS ? 'active' : ''}`}
-                        onClick={() => setFilter(GoalStatus.IN_PROGRESS)}
+                        className={`filter-btn ${filter === GoalStatusValues.IN_PROGRESS ? 'active' : ''}`}
+                        onClick={() => setFilter(GoalStatusValues.IN_PROGRESS)}
                     >
-                        In Progress ({goals.filter(g => g.status === GoalStatus.IN_PROGRESS).length})
+                        In Progress ({goals.filter(g => g.status === GoalStatusValues.IN_PROGRESS).length})
                     </button>
                     <button
-                        className={`filter-btn ${filter === GoalStatus.COMPLETED ? 'active' : ''}`}
-                        onClick={() => setFilter(GoalStatus.COMPLETED)}
+                        className={`filter-btn ${filter === GoalStatusValues.COMPLETED ? 'active' : ''}`}
+                        onClick={() => setFilter(GoalStatusValues.COMPLETED)}
                     >
-                        Completed ({goals.filter(g => g.status === GoalStatus.COMPLETED).length})
+                        Completed ({goals.filter(g => g.status === GoalStatusValues.COMPLETED).length})
                     </button>
                 </div>
 

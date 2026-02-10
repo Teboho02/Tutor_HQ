@@ -4,14 +4,14 @@ import { BrowserRouter } from 'react-router-dom';
 import Header from '../components/Header';
 
 describe('Header Component', () => {
-    it('renders the TutorHQ logo', () => {
+    it('renders the logo image', () => {
         render(
             <BrowserRouter>
                 <Header />
             </BrowserRouter>
         );
 
-        const logo = screen.getByText('TutorHQ');
+        const logo = screen.getByAltText('Tutor HQ');
         expect(logo).toBeInTheDocument();
     });
 

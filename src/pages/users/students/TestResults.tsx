@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
+import { testService } from '../../../services/test.service';
+import { useAuth } from '../../../contexts/AuthContext';
 import type { NavigationLink } from '../../../types';
 import type { Test, Question, StudentAnswer } from '../../../types/test';
 import './TestResults.css';
@@ -16,7 +19,16 @@ const TestResults: React.FC = () => {
     const { testId } = useParams<{ testId: string }>();
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [resultData, setResultData] = useState<ResultState | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -28,59 +40,56 @@ const TestResults: React.FC = () => {
     ];
 
     useEffect(() => {
-        // In production, fetch from API: GET /api/tests/${testId}/results
-        // For now, use location state from TakeTest navigation
-        if (location.state) {
-            setResultData(location.state as ResultState);
-        } else {
-            // Mock data if direct navigation
-            const mockTest: Test = {
-                id: testId || '1',
-                title: 'Mathematics Midterm Exam',
-                subject: 'Mathematics',
-                description: '',
-                tutorId: '1',
-                tutorName: 'Mr. Smith',
-                scheduledDate: '2025-11-05',
-                scheduledTime: '14:00',
-                duration: 90,
-                totalPoints: 100,
-                studentIds: ['student1'],
-                status: 'active',
-                createdAt: '2025-10-20',
-                questions: [
-                    {
-                        id: 'q1',
-                        type: 'multiple-choice',
-                        content: { text: 'What is the value of π (pi) approximately?' },
-                        options: [
-                            { id: 'opt1', text: '2.14', isCorrect: false },
-                            { id: 'opt2', text: '3.14', isCorrect: true },
-                            { id: 'opt3', text: '4.14', isCorrect: false },
-                            { id: 'opt4', text: '5.14', isCorrect: false },
-                        ],
-                        points: 10,
-                    },
-                    {
-                        id: 'q2',
-                        type: 'text',
-                        content: { text: 'Solve for x: 2x + 5 = 15' },
-                        correctAnswer: '5',
-                        points: 15,
-                    },
-                ],
-            };
+        const fetchResults = async () => {
+            try {
+                setLoading(true);
 
-            setResultData({
-                score: 27,
-                test: mockTest,
-                answers: [
-                    { questionId: 'q1', answer: 'opt2' },
-                    { questionId: 'q2', answer: '5' },
-                ],
-            });
-        }
-    }, [testId, location]);
+                // If coming from TakeTest, use location state
+                if (location.state) {
+                    setResultData(location.state as ResultState);
+                    setLoading(false);
+                    return;
+                }
+
+                // Otherwise fetch from backend
+                if (!user?.id || !testId) {
+                    showToast('Invalid request', 'error');
+                    navigate('/student/tests');
+                    return;
+                }
+
+                const response = await testService.getStudentResults(user.id);
+
+                if (response.success && response.data.results) {
+                    // Find the specific test result
+                    interface TestResultItem {
+                        test: Test;
+                        score: number;
+                        answers?: StudentAnswer[];
+                    }
+                    const testResult = response.data.results.find((r: TestResultItem) => r.test.id === testId);
+
+                    if (testResult) {
+                        setResultData({
+                            score: testResult.score,
+                            test: testResult.test,
+                            answers: testResult.answers || [],
+                        });
+                    } else {
+                        showToast('Test result not found', 'error');
+                        navigate('/student/tests');
+                    }
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load results', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchResults();
+    }, [testId, location, user?.id, navigate]);
 
     const getLetterGrade = (percentage: number): string => {
         if (percentage >= 90) return 'A+';
@@ -167,7 +176,7 @@ const TestResults: React.FC = () => {
         return '';
     };
 
-    if (!resultData) {
+    if (loading || !resultData) {
         return (
             <div className="test-results-page">
                 <Header navigationLinks={navigationLinks} />
@@ -176,6 +185,7 @@ const TestResults: React.FC = () => {
                     <p>Loading results...</p>
                 </div>
                 <Footer />
+                {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
             </div>
         );
     }
@@ -285,6 +295,7 @@ const TestResults: React.FC = () => {
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
+import { classService } from '../../../services/class.service';
 import type { NavigationLink } from '../../../types';
 import './TutorClasses.css';
 
@@ -19,6 +21,37 @@ interface Class {
 const TutorClasses: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'upcoming' | 'completed'>('upcoming');
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
+
+    const handleCancelClass = async (classId: number, className: string) => {
+        if (!window.confirm(`Are you sure you want to cancel "${className}"?`)) {
+            return;
+        }
+
+        const reason = window.prompt('Please provide a cancellation reason:');
+        if (!reason) {
+            showToast('Cancellation reason is required', 'error');
+            return;
+        }
+
+        try {
+            const response = await classService.cancelClass(classId, reason);
+            if (response.success) {
+                showToast('Class cancelled successfully', 'success');
+                // In production, this would refresh the class list
+                // For now, the UI will update on next page load
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to cancel class', 'error');
+        }
+    };
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/tutor/dashboard' },
@@ -124,13 +157,33 @@ const TutorClasses: React.FC = () => {
                         >
                             Start Class
                         </button>
-                        <button className="btn btn-outline">Edit</button>
-                        <button className="btn btn-outline">Cancel</button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() => navigate(`/tutor/schedule?edit=${classItem.id}`)}
+                        >
+                            Edit
+                        </button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() => handleCancelClass(classItem.id, classItem.title)}
+                        >
+                            Cancel
+                        </button>
                     </>
                 ) : (
                     <>
-                        <button className="btn btn-outline">View Recording</button>
-                        <button className="btn btn-outline">View Report</button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() => navigate(`/tutor/recordings/${classItem.id}`)}
+                        >
+                            View Recording
+                        </button>
+                        <button
+                            className="btn btn-outline"
+                            onClick={() => navigate(`/tutor/analytics/class/${classItem.id}`)}
+                        >
+                            View Report
+                        </button>
                     </>
                 )}
             </div>
@@ -180,6 +233,7 @@ const TutorClasses: React.FC = () => {
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

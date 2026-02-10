@@ -1,0 +1,128 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Header Component > matches snapshot 1`] = `
+<div>
+  <header
+    class="header default "
+  >
+    <nav
+      class="nav container"
+    >
+      <div
+        class="logo"
+      >
+        <a
+          data-discover="true"
+          href="/"
+        >
+          <img
+            alt="Tutor HQ"
+            class="logo-image"
+            src="/src/assets/logo-hq2.png"
+          />
+        </a>
+      </div>
+      <ul
+        class="nav-links "
+      >
+        <li
+          class="nav-links__item"
+        >
+          <a
+            class="nav-links__link active"
+            data-discover="true"
+            href="/"
+          >
+            Home
+          </a>
+        </li>
+        <li
+          class="nav-links__item"
+        >
+          <a
+            class="nav-links__link "
+            data-discover="true"
+            href="/main"
+          >
+            Dashboard
+          </a>
+        </li>
+        <li
+          class="nav-links__item"
+        >
+          <a
+            class="nav-links__link "
+            data-discover="true"
+            href="/tutoring"
+          >
+            Tutoring
+          </a>
+        </li>
+        <li
+          class="nav-links__item"
+        >
+          <a
+            class="nav-links__link "
+            data-discover="true"
+            href="/dashboard"
+          >
+            User Dashboard
+          </a>
+        </li>
+        <li
+          class="nav-links__item"
+        >
+          <a
+            class="nav-links__link "
+            data-discover="true"
+            href="/schedule"
+          >
+            Schedule
+          </a>
+        </li>
+        <li
+          class="nav-links__item"
+        >
+          <a
+            class="nav-links__link "
+            data-discover="true"
+            href="/live-classes"
+          >
+            Live Classes
+          </a>
+        </li>
+      </ul>
+      <div
+        class="auth-buttons"
+      >
+        <a
+          class="btn btn-outline"
+          data-discover="true"
+          href="/login"
+        >
+          Login
+        </a>
+        <a
+          class="btn btn-primary"
+          data-discover="true"
+          href="/signup"
+        >
+          Get Started
+        </a>
+      </div>
+      <button
+        aria-label="Toggle mobile menu"
+        class="mobile-menu-btn"
+      >
+        <span
+          class="hamburger "
+        >
+          <span />
+          <span />
+          <span />
+        </span>
+      </button>
+    </nav>
+  </header>
+</div>
+`;

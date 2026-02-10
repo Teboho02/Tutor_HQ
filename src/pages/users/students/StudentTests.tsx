@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
+import { testService } from '../../../services/test.service';
+import { useAuth } from '../../../contexts/AuthContext';
 import type { NavigationLink } from '../../../types';
 import './StudentTests.css';
 
@@ -30,10 +33,159 @@ interface TestRetake {
     time?: string;
 }
 
+// Mock data for development/fallback - defined outside component to avoid recreating on each render
+const mockTests: TestItem[] = [
+    {
+        id: '1',
+        title: 'Mathematics Midterm Exam',
+        subject: 'Mathematics',
+        teacher: 'Mr. Smith',
+        scheduledDate: '2025-11-05',
+        scheduledTime: '14:00',
+        duration: 90,
+        totalPoints: 100,
+        status: 'available',
+        type: 'test',
+        allowRetakes: true,
+        maxRetakes: 3,
+    },
+    {
+        id: '2',
+        title: 'Physics Chapter 3 Quiz',
+        subject: 'Physics',
+        teacher: 'Dr. Wilson',
+        scheduledDate: '2025-11-10',
+        scheduledTime: '10:00',
+        duration: 45,
+        totalPoints: 50,
+        status: 'upcoming',
+        type: 'test',
+        allowRetakes: true,
+        maxRetakes: 2,
+    },
+    {
+        id: '3',
+        title: 'Chemistry Lab Report',
+        subject: 'Chemistry',
+        teacher: 'Ms. Johnson',
+        scheduledDate: '2025-10-28',
+        scheduledTime: '23:59',
+        duration: 0,
+        totalPoints: 30,
+        status: 'completed',
+        score: 27,
+        submittedAt: '2025-10-27T15:30:00',
+        type: 'assignment',
+        allowRetakes: false,
+        retakeHistory: [],
+    },
+    {
+        id: '4',
+        title: 'Biology Final Exam',
+        subject: 'Biology',
+        teacher: 'Prof. Brown',
+        scheduledDate: '2025-11-15',
+        scheduledTime: '09:00',
+        duration: 120,
+        totalPoints: 150,
+        status: 'completed',
+        score: 92,
+        submittedAt: '2025-11-05T11:45:00',
+        type: 'test',
+        allowRetakes: true,
+        maxRetakes: 2,
+        retakeHistory: [
+            { attempt: 1, score: 85, date: '2025-11-05', time: '11:45' },
+            { attempt: 2, score: 92, date: '2025-11-12', time: '14:20' }
+        ],
+    },
+    {
+        id: '5',
+        title: 'English Essay Assignment',
+        subject: 'English',
+        teacher: 'Ms. Davis',
+        scheduledDate: '2025-10-25',
+        scheduledTime: '23:59',
+        duration: 0,
+        totalPoints: 50,
+        status: 'completed',
+        score: 45,
+        submittedAt: '2025-10-24T20:15:00',
+        type: 'assignment',
+        allowRetakes: false,
+    },
+];
+
 const StudentTests: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'available' | 'completed'>('all');
     const [expandedTestId, setExpandedTestId] = useState<string | null>(null);
+    const [tests, setTests] = useState<TestItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+
+    const hideToast = () => setToast(null);
+
+    useEffect(() => {
+        const fetchTests = async () => {
+            if (!user?.id) return;
+
+            try {
+                setLoading(true);
+                const response = await testService.getStudentResults(user.id);
+
+                if (response.success && response.data.results) {
+                    // Transform backend data to match TestItem interface
+                    interface TestResult {
+                        test: {
+                            id: string;
+                            title: string;
+                            subject?: string;
+                            tutorName?: string;
+                            scheduledAt?: string;
+                            dueDate?: string;
+                            duration?: number;
+                            totalMarks?: number;
+                        };
+                        status: string;
+                        score?: number;
+                        submittedAt?: string;
+                    }
+                    const transformedTests: TestItem[] = response.data.results.map((result: TestResult) => ({
+                        id: result.test.id,
+                        title: result.test.title,
+                        subject: result.test.subject || 'General',
+                        teacher: result.test.tutorName || 'Teacher',
+                        scheduledDate: result.test.scheduledAt || result.test.dueDate || '',
+                        scheduledTime: new Date(result.test.scheduledAt || result.test.dueDate || '').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                        duration: result.test.duration || 60,
+                        totalPoints: result.test.totalMarks || 100,
+                        status: result.status === 'graded' ? 'completed' : result.status === 'submitted' ? 'completed' : 'available',
+                        score: result.score,
+                        submittedAt: result.submittedAt,
+                        type: 'test',
+                        allowRetakes: false,
+                        maxRetakes: 0,
+                    }));
+                    setTests(transformedTests);
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load tests', 'error');
+                // Keep mock data on error for development
+                setTests(mockTests);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTests();
+    }, [user?.id]);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -42,89 +194,6 @@ const StudentTests: React.FC = () => {
         { label: 'Progress', href: '/student/progress' },
         { label: 'Tests', href: '/student/tests' },
         { label: 'Goals', href: '/student/goals' },
-    ];
-
-    // Mock data - this would come from an API
-    const tests: TestItem[] = [
-        {
-            id: '1',
-            title: 'Mathematics Midterm Exam',
-            subject: 'Mathematics',
-            teacher: 'Mr. Smith',
-            scheduledDate: '2025-11-05',
-            scheduledTime: '14:00',
-            duration: 90,
-            totalPoints: 100,
-            status: 'available',
-            type: 'test',
-            allowRetakes: true,
-            maxRetakes: 3,
-        },
-        {
-            id: '2',
-            title: 'Physics Chapter 3 Quiz',
-            subject: 'Physics',
-            teacher: 'Dr. Wilson',
-            scheduledDate: '2025-11-10',
-            scheduledTime: '10:00',
-            duration: 45,
-            totalPoints: 50,
-            status: 'upcoming',
-            type: 'test',
-            allowRetakes: true,
-            maxRetakes: 2,
-        },
-        {
-            id: '3',
-            title: 'Chemistry Lab Report',
-            subject: 'Chemistry',
-            teacher: 'Ms. Johnson',
-            scheduledDate: '2025-10-28',
-            scheduledTime: '23:59',
-            duration: 0,
-            totalPoints: 30,
-            status: 'completed',
-            score: 27,
-            submittedAt: '2025-10-27T15:30:00',
-            type: 'assignment',
-            allowRetakes: false,
-            retakeHistory: [],
-        },
-        {
-            id: '4',
-            title: 'Biology Final Exam',
-            subject: 'Biology',
-            teacher: 'Prof. Brown',
-            scheduledDate: '2025-11-15',
-            scheduledTime: '09:00',
-            duration: 120,
-            totalPoints: 150,
-            status: 'completed',
-            score: 92,
-            submittedAt: '2025-11-05T11:45:00',
-            type: 'test',
-            allowRetakes: true,
-            maxRetakes: 2,
-            retakeHistory: [
-                { attempt: 1, score: 85, date: '2025-11-05', time: '11:45' },
-                { attempt: 2, score: 92, date: '2025-11-12', time: '14:20' }
-            ],
-        },
-        {
-            id: '5',
-            title: 'English Essay Assignment',
-            subject: 'English',
-            teacher: 'Ms. Davis',
-            scheduledDate: '2025-10-25',
-            scheduledTime: '23:59',
-            duration: 0,
-            totalPoints: 50,
-            status: 'completed',
-            score: 45,
-            submittedAt: '2025-10-24T20:15:00',
-            type: 'assignment',
-            allowRetakes: false,
-        },
     ];
 
     const filteredTests = filter === 'all'
@@ -227,147 +296,159 @@ const StudentTests: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Tests Grid */}
-                <div className="tests-grid">
-                    {filteredTests.length > 0 ? (
-                        filteredTests.map(test => (
-                            <div key={test.id}>
-                                <div
-                                    className={`test-card ${test.status}`}
-                                    onClick={() => handleTestClick(test)}
-                                >
-                                    <div className="test-card-header">
-                                        <div className="test-icon">{getTypeIcon(test.type)}</div>
-                                        {getStatusBadge(test.status)}
-                                    </div>
+                {loading && (
+                    <div className="loading-state">
+                        <div className="spinner">⏳</div>
+                        <p>Loading tests...</p>
+                    </div>
+                )}
 
-                                    <div className="test-card-body">
-                                        <h3>{test.title}</h3>
-                                        <div className="test-meta">
-                                            <span className="test-subject">{test.subject}</span>
-                                            <span className="test-teacher">👨‍🏫 {test.teacher}</span>
-                                        </div>
-
-                                        <div className="test-details">
-                                            <div className="detail-item">
-                                                <span className="detail-label">📅 Date:</span>
-                                                <span className="detail-value">{formatDate(test.scheduledDate)}</span>
-                                            </div>
-                                            {test.duration > 0 && (
-                                                <div className="detail-item">
-                                                    <span className="detail-label">⏱️ Duration:</span>
-                                                    <span className="detail-value">{test.duration} min</span>
-                                                </div>
-                                            )}
-                                            <div className="detail-item">
-                                                <span className="detail-label">📊 Points:</span>
-                                                <span className="detail-value">{test.totalPoints}</span>
-                                            </div>
-                                        </div>
-
-                                        {test.status === 'completed' && test.score !== undefined && (
-                                            <div className="test-score">
-                                                <div className="score-display" style={{ color: getScoreColor(test.score, test.totalPoints) }}>
-                                                    <span className="score">{test.score}</span>
-                                                    <span className="separator">/</span>
-                                                    <span className="total">{test.totalPoints}</span>
-                                                </div>
-                                                <div className="score-percentage">
-                                                    {Math.round((test.score / test.totalPoints) * 100)}%
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="test-card-footer">
-                                        {test.status === 'available' && (
-                                            <span className="action-text">🎯 Click to start {test.type}</span>
-                                        )}
-                                        {test.status === 'upcoming' && (
-                                            <span className="action-text">⏳ Available on {formatDate(test.scheduledDate)}</span>
-                                        )}
-                                        {test.status === 'completed' && test.allowRetakes && (
-                                            <span className="action-text">👁️ View results • 🔄 Retake available</span>
-                                        )}
-                                        {test.status === 'completed' && !test.allowRetakes && (
-                                            <span className="action-text">👁️ View results</span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Retake History and Options */}
-                                {test.status === 'completed' && test.allowRetakes && (
-                                    <div className="retake-section">
-                                        <button
-                                            className="retake-toggle"
-                                            onClick={() => setExpandedTestId(expandedTestId === test.id ? null : test.id)}
+                {!loading && (
+                    <>
+                        {/* Tests Grid */}
+                        <div className="tests-grid">
+                            {filteredTests.length > 0 ? (
+                                filteredTests.map(test => (
+                                    <div key={test.id}>
+                                        <div
+                                            className={`test-card ${test.status}`}
+                                            onClick={() => handleTestClick(test)}
                                         >
-                                            {expandedTestId === test.id ? '▼' : '▶'} Retake History & Options
-                                        </button>
+                                            <div className="test-card-header">
+                                                <div className="test-icon">{getTypeIcon(test.type)}</div>
+                                                {getStatusBadge(test.status)}
+                                            </div>
 
-                                        {expandedTestId === test.id && (
-                                            <div className="retake-content">
-                                                {test.retakeHistory && test.retakeHistory.length > 0 && (
-                                                    <div className="retake-history">
-                                                        <h4>Attempt History</h4>
-                                                        <div className="attempts-list">
-                                                            {test.retakeHistory.map((attempt) => (
-                                                                <div key={attempt.attempt} className="attempt-item">
-                                                                    <div className="attempt-badge">Attempt {attempt.attempt}</div>
-                                                                    <div className="attempt-info">
-                                                                        <div className="attempt-score">
-                                                                            <strong>{attempt.score}/{test.totalPoints}</strong>
-                                                                            ({Math.round((attempt.score / test.totalPoints) * 100)}%)
-                                                                        </div>
-                                                                        <div className="attempt-date">📅 {attempt.date} {attempt.time && `at ${attempt.time}`}</div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                            <div className="test-card-body">
+                                                <h3>{test.title}</h3>
+                                                <div className="test-meta">
+                                                    <span className="test-subject">{test.subject}</span>
+                                                    <span className="test-teacher">👨‍🏫 {test.teacher}</span>
+                                                </div>
+
+                                                <div className="test-details">
+                                                    <div className="detail-item">
+                                                        <span className="detail-label">📅 Date:</span>
+                                                        <span className="detail-value">{formatDate(test.scheduledDate)}</span>
+                                                    </div>
+                                                    {test.duration > 0 && (
+                                                        <div className="detail-item">
+                                                            <span className="detail-label">⏱️ Duration:</span>
+                                                            <span className="detail-value">{test.duration} min</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="detail-item">
+                                                        <span className="detail-label">📊 Points:</span>
+                                                        <span className="detail-value">{test.totalPoints}</span>
+                                                    </div>
+                                                </div>
+
+                                                {test.status === 'completed' && test.score !== undefined && (
+                                                    <div className="test-score">
+                                                        <div className="score-display" style={{ color: getScoreColor(test.score, test.totalPoints) }}>
+                                                            <span className="score">{test.score}</span>
+                                                            <span className="separator">/</span>
+                                                            <span className="total">{test.totalPoints}</span>
+                                                        </div>
+                                                        <div className="score-percentage">
+                                                            {Math.round((test.score / test.totalPoints) * 100)}%
                                                         </div>
                                                     </div>
                                                 )}
+                                            </div>
 
-                                                <div className="retake-info">
-                                                    <p>
-                                                        <strong>Retakes allowed:</strong> {test.maxRetakes ? `${test.retakeHistory?.length || 0}/${test.maxRetakes}` : 'Unlimited'}
-                                                    </p>
-                                                    {test.maxRetakes && test.retakeHistory && test.retakeHistory.length < test.maxRetakes && (
-                                                        <button
-                                                            className="btn btn-primary"
-                                                            onClick={() => {
-                                                                if (test.type === 'assignment') {
-                                                                    navigate(`/student/submit-assignment/${test.id}?retake=true`);
-                                                                } else {
-                                                                    navigate(`/student/take-test/${test.id}?retake=true`);
-                                                                }
-                                                            }}
-                                                        >
-                                                            🔄 Retake This {test.type === 'test' ? 'Test' : 'Assignment'}
-                                                        </button>
-                                                    )}
-                                                    {test.maxRetakes && test.retakeHistory && test.retakeHistory.length >= test.maxRetakes && (
-                                                        <div className="no-retakes-message">
-                                                            ⚠️ Maximum retakes ({test.maxRetakes}) reached
+                                            <div className="test-card-footer">
+                                                {test.status === 'available' && (
+                                                    <span className="action-text">🎯 Click to start {test.type}</span>
+                                                )}
+                                                {test.status === 'upcoming' && (
+                                                    <span className="action-text">⏳ Available on {formatDate(test.scheduledDate)}</span>
+                                                )}
+                                                {test.status === 'completed' && test.allowRetakes && (
+                                                    <span className="action-text">👁️ View results • 🔄 Retake available</span>
+                                                )}
+                                                {test.status === 'completed' && !test.allowRetakes && (
+                                                    <span className="action-text">👁️ View results</span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Retake History and Options */}
+                                        {test.status === 'completed' && test.allowRetakes && (
+                                            <div className="retake-section">
+                                                <button
+                                                    className="retake-toggle"
+                                                    onClick={() => setExpandedTestId(expandedTestId === test.id ? null : test.id)}
+                                                >
+                                                    {expandedTestId === test.id ? '▼' : '▶'} Retake History & Options
+                                                </button>
+
+                                                {expandedTestId === test.id && (
+                                                    <div className="retake-content">
+                                                        {test.retakeHistory && test.retakeHistory.length > 0 && (
+                                                            <div className="retake-history">
+                                                                <h4>Attempt History</h4>
+                                                                <div className="attempts-list">
+                                                                    {test.retakeHistory.map((attempt) => (
+                                                                        <div key={attempt.attempt} className="attempt-item">
+                                                                            <div className="attempt-badge">Attempt {attempt.attempt}</div>
+                                                                            <div className="attempt-info">
+                                                                                <div className="attempt-score">
+                                                                                    <strong>{attempt.score}/{test.totalPoints}</strong>
+                                                                                    ({Math.round((attempt.score / test.totalPoints) * 100)}%)
+                                                                                </div>
+                                                                                <div className="attempt-date">📅 {attempt.date} {attempt.time && `at ${attempt.time}`}</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="retake-info">
+                                                            <p>
+                                                                <strong>Retakes allowed:</strong> {test.maxRetakes ? `${test.retakeHistory?.length || 0}/${test.maxRetakes}` : 'Unlimited'}
+                                                            </p>
+                                                            {test.maxRetakes && test.retakeHistory && test.retakeHistory.length < test.maxRetakes && (
+                                                                <button
+                                                                    className="btn btn-primary"
+                                                                    onClick={() => {
+                                                                        if (test.type === 'assignment') {
+                                                                            navigate(`/student/submit-assignment/${test.id}?retake=true`);
+                                                                        } else {
+                                                                            navigate(`/student/take-test/${test.id}?retake=true`);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    🔄 Retake This {test.type === 'test' ? 'Test' : 'Assignment'}
+                                                                </button>
+                                                            )}
+                                                            {test.maxRetakes && test.retakeHistory && test.retakeHistory.length >= test.maxRetakes && (
+                                                                <div className="no-retakes-message">
+                                                                    ⚠️ Maximum retakes ({test.maxRetakes}) reached
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <div className="empty-state">
-                            <div className="empty-icon">📝</div>
-                            <h3>No {filter !== 'all' ? filter : ''} tests or assignments</h3>
-                            <p>You're all caught up!</p>
+                                ))
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-icon">📝</div>
+                                    <h3>No {filter !== 'all' ? filter : ''} tests or assignments</h3>
+                                    <p>You're all caught up!</p>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
+                    </>
+                )}
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

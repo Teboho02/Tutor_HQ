@@ -9,7 +9,7 @@ export interface AnalyticsEvent {
     action: string;
     label?: string;
     value?: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
 }
 
 export interface PageView {
@@ -22,7 +22,7 @@ export interface UserProperties {
     userId?: string;
     role?: string;
     email?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined;
 }
 
 class Analytics {
@@ -195,7 +195,7 @@ class Analytics {
     }
 
     // Update user properties
-    setUserProperty(key: string, value: any): void {
+    setUserProperty(key: string, value: string | number | boolean | undefined): void {
         this.userProperties[key] = value;
 
         if (this.enabled) {

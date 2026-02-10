@@ -5,6 +5,9 @@ import './App.css';
 
 // Import components (not lazy - needed immediately)
 import ScrollToTop from './components/ScrollToTop.tsx';
+import ErrorBoundary from './components/ErrorBoundary.tsx';
+import { ToastProvider } from './components/Toast.tsx';
+import { AuthProvider } from './contexts/AuthContext.tsx';
 
 // Lazy load page components for code splitting
 const LandingPage = lazy(() => import('./pages/LandingPage.tsx'));
@@ -20,6 +23,7 @@ const About = lazy(() => import('./pages/About.tsx'));
 const Contact = lazy(() => import('./pages/Contact.tsx'));
 const Login = lazy(() => import('./pages/Login.tsx'));
 const Signup = lazy(() => import('./pages/Signup.tsx'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword.tsx'));
 
 // Lazy load student portal pages
 const StudentDashboard = lazy(() => import('./pages/users/students/StudentDashboard.tsx'));
@@ -47,6 +51,9 @@ const ChildProgress = lazy(() => import('./pages/users/parents/ChildProgress.tsx
 const ParentSchedule = lazy(() => import('./pages/users/parents/ParentSchedule.tsx'));
 const ParentAccount = lazy(() => import('./pages/users/parents/ParentAccount.tsx'));
 
+// Notifications page
+const Notifications = lazy(() => import('./pages/Notifications.tsx'));
+
 // Loading component for Suspense fallback
 const LoadingFallback = () => (
   <div style={{
@@ -64,69 +71,79 @@ const LoadingFallback = () => (
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <div className="app">
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            {/* Main landing page */}
-            <Route path="/" element={<LandingPage />} />
+    <ErrorBoundary>
+      <ToastProvider>
+        <AuthProvider>
+          <Router>
+            <ScrollToTop />
+            <div className="app">
+              <Suspense fallback={<LoadingFallback />}>
+                <Routes>
+                  {/* Main landing page */}
+                  <Route path="/" element={<LandingPage />} />
 
-            {/* Main application pages */}
-            <Route path="/main" element={<MainPage />} />
+                  {/* Main application pages */}
+                  <Route path="/main" element={<MainPage />} />
 
-            {/* Dashboard and user pages */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/analytics" element={<Analytics />} />
+                  {/* Dashboard and user pages */}
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/analytics" element={<Analytics />} />
 
-            {/* Learning and classes */}
-            <Route path="/live-classes" element={<LiveClasses />} />
-            <Route path="/schedule" element={<Schedule />} />
+                  {/* Learning and classes */}
+                  <Route path="/live-classes" element={<LiveClasses />} />
+                  <Route path="/schedule" element={<Schedule />} />
 
-            {/* Tests and assignments */}
-            <Route path="/tests" element={<TestAssignment />} />
-            <Route path="/student-test" element={<StudentTestPage />} />
+                  {/* Tests and assignments */}
+                  <Route path="/tests" element={<TestAssignment />} />
+                  <Route path="/student-test" element={<StudentTestPage />} />
 
-            {/* User-specific dashboards */}
-            <Route path="/parents" element={<ParentsDash />} />
+                  {/* User-specific dashboards */}
+                  <Route path="/parents" element={<ParentsDash />} />
 
-            {/* Student Portal */}
-            <Route path="/student/dashboard" element={<StudentDashboard />} />
-            <Route path="/student/calendar" element={<StudentCalendar />} />
-            <Route path="/student/materials" element={<StudentMaterials />} />
-            <Route path="/student/progress" element={<StudentProgress />} />
-            <Route path="/student/tests" element={<StudentTests />} />
-            <Route path="/student/take-test/:testId" element={<TakeTest />} />
-            <Route path="/student/test-results/:testId" element={<TestResults />} />
-            <Route path="/student/submit-assignment/:assignmentId" element={<SubmitAssignment />} />
-            <Route path="/student/goals" element={<StudentGoals />} />
-            <Route path="/student/schedule-class" element={<ScheduleClass />} />
+                  {/* Student Portal */}
+                  <Route path="/student/dashboard" element={<StudentDashboard />} />
+                  <Route path="/student/calendar" element={<StudentCalendar />} />
+                  <Route path="/student/materials" element={<StudentMaterials />} />
+                  <Route path="/student/progress" element={<StudentProgress />} />
+                  <Route path="/student/tests" element={<StudentTests />} />
+                  <Route path="/student/take-test/:testId" element={<TakeTest />} />
+                  <Route path="/student/test-results/:testId" element={<TestResults />} />
+                  <Route path="/student/submit-assignment/:assignmentId" element={<SubmitAssignment />} />
+                  <Route path="/student/goals" element={<StudentGoals />} />
+                  <Route path="/student/schedule-class" element={<ScheduleClass />} />
 
-            {/* Tutor Portal */}
-            <Route path="/tutor/dashboard" element={<TutorDashboard />} />
-            <Route path="/tutor/classes" element={<TutorClasses />} />
-            <Route path="/tutor/schedule" element={<TutorSchedule />} />
-            <Route path="/tutor/students" element={<TutorStudents />} />
-            <Route path="/tutor/materials" element={<TutorMaterials />} />
-            <Route path="/tutor/account" element={<TutorAccount />} />
+                  {/* Tutor Portal */}
+                  <Route path="/tutor/dashboard" element={<TutorDashboard />} />
+                  <Route path="/tutor/classes" element={<TutorClasses />} />
+                  <Route path="/tutor/schedule" element={<TutorSchedule />} />
+                  <Route path="/tutor/students" element={<TutorStudents />} />
+                  <Route path="/tutor/materials" element={<TutorMaterials />} />
+                  <Route path="/tutor/account" element={<TutorAccount />} />
 
-            {/* Parent Portal */}
-            <Route path="/parent/dashboard" element={<ParentDashboard />} />
-            <Route path="/parent/child/:childId" element={<ChildProgress />} />
-            <Route path="/parent/schedule" element={<ParentSchedule />} />
-            <Route path="/parent/account" element={<ParentAccount />} />
+                  {/* Parent Portal */}
+                  <Route path="/parent/dashboard" element={<ParentDashboard />} />
+                  <Route path="/parent/child/:childId" element={<ChildProgress />} />
+                  <Route path="/parent/schedule" element={<ParentSchedule />} />
+                  <Route path="/parent/account" element={<ParentAccount />} />
 
-            {/* Information pages */}
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
+                  {/* Information pages */}
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
 
-            {/* Authentication pages */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-          </Routes>
-        </Suspense>
-      </div>
-    </Router>
+                  {/* Authentication pages */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                  {/* Notifications */}
+                  <Route path="/notifications" element={<Notifications />} />
+                </Routes>
+              </Suspense>
+            </div>
+          </Router>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 
