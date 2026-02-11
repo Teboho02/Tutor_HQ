@@ -43,6 +43,7 @@ interface DashboardStats {
         message: string;
         timestamp: string;
     }>;
+    tutorName?: string;
     stats?: {
         totalStudents: number;
         activeClasses: number;
@@ -150,7 +151,7 @@ const TutorDashboard: React.FC = () => {
             <div className="dashboard-container">
                 <div className="dashboard-header">
                     <div>
-                        <h1>Welcome Back, Dr. Smith! 👨‍🏫</h1>
+                        <h1>Welcome Back, {dashboardData?.tutorName || 'Tutor'}! 👨‍🏫</h1>
                         <p>Here's what's happening with your classes today</p>
                     </div>
                 </div>
@@ -164,7 +165,6 @@ const TutorDashboard: React.FC = () => {
                         <div className="stat-content">
                             <h3>Total Students</h3>
                             <p className="stat-value">{stats.totalStudents}</p>
-                            <span className="stat-change positive">+12 this month</span>
                         </div>
                     </div>
 
@@ -175,7 +175,6 @@ const TutorDashboard: React.FC = () => {
                         <div className="stat-content">
                             <h3>Active Classes</h3>
                             <p className="stat-value">{stats.activeClasses}</p>
-                            <span className="stat-change positive">2 today</span>
                         </div>
                     </div>
 
@@ -186,7 +185,6 @@ const TutorDashboard: React.FC = () => {
                         <div className="stat-content">
                             <h3>Teaching Hours</h3>
                             <p className="stat-value">{stats.teachingHours}</p>
-                            <span className="stat-change positive">+8 this week</span>
                         </div>
                     </div>
 
@@ -197,7 +195,6 @@ const TutorDashboard: React.FC = () => {
                         <div className="stat-content">
                             <h3>Average Rating</h3>
                             <p className="stat-value">{stats.averageRating}</p>
-                            <span className="stat-change positive">Excellent</span>
                         </div>
                     </div>
                 </div>

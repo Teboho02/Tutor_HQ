@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { parentService } from '../../../services/parent.service';
 import type { NavigationLink } from '../../../types';
 import './ParentSchedule.css';
 
@@ -20,6 +21,9 @@ const ParentSchedule: React.FC = () => {
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'list'>('month');
     const [selectedChild, setSelectedChild] = useState<string>('all');
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [children, setChildren] = useState<string[]>(['All Children']);
+    const [events, setEvents] = useState<ScheduleEvent[]>([]);
+    const [loading, setLoading] = useState(true);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
@@ -27,76 +31,53 @@ const ParentSchedule: React.FC = () => {
         { label: 'Account', href: '/parent/account' },
     ];
 
-    const children = ['All Children', 'Emma Johnson', 'James Johnson', 'Sophie Johnson'];
+    useEffect(() => {
+        const fetchScheduleData = async () => {
+            try {
+                setLoading(true);
+                // First get children list
+                const childrenRes = await parentService.getChildren();
+                if (childrenRes.success && childrenRes.data.children) {
+                    const childList = childrenRes.data.children;
+                    const childNames = ['All Children', ...childList.map((c: { fullName: string }) => c.fullName)];
+                    setChildren(childNames);
 
-    const events: ScheduleEvent[] = [
-        {
-            id: 1,
-            title: 'Mathematics Class',
-            subject: 'Mathematics',
-            teacher: 'Mr. Smith',
-            child: 'Emma Johnson',
-            date: '2025-10-30',
-            time: '14:00',
-            duration: '60 min',
-            type: 'class',
-        },
-        {
-            id: 2,
-            title: 'Physics Lab',
-            subject: 'Physics',
-            teacher: 'Dr. Wilson',
-            child: 'Emma Johnson',
-            date: '2025-10-30',
-            time: '16:00',
-            duration: '90 min',
-            type: 'class',
-        },
-        {
-            id: 3,
-            title: 'English Essay Due',
-            subject: 'English',
-            teacher: 'Ms. Davis',
-            child: 'James Johnson',
-            date: '2025-10-31',
-            time: '23:59',
-            duration: '',
-            type: 'assignment',
-        },
-        {
-            id: 4,
-            title: 'Math Quiz',
-            subject: 'Mathematics',
-            teacher: 'Mr. Smith',
-            child: 'Emma Johnson',
-            date: '2025-11-01',
-            time: '10:00',
-            duration: '45 min',
-            type: 'test',
-        },
-        {
-            id: 5,
-            title: 'Science Project',
-            subject: 'Science',
-            teacher: 'Mr. Brown',
-            child: 'Sophie Johnson',
-            date: '2025-11-02',
-            time: '14:00',
-            duration: '60 min',
-            type: 'class',
-        },
-        {
-            id: 6,
-            title: 'Chemistry Test',
-            subject: 'Chemistry',
-            teacher: 'Dr. Lee',
-            child: 'Emma Johnson',
-            date: '2025-11-03',
-            time: '11:00',
-            duration: '90 min',
-            type: 'test',
-        },
-    ];
+                    // Fetch schedule for each child
+                    const allEvents: ScheduleEvent[] = [];
+                    let eventId = 1;
+                    for (const child of childList) {
+                        try {
+                            const scheduleRes = await parentService.getChildSchedule(child.id);
+                            if (scheduleRes.success && scheduleRes.data.schedule) {
+                                for (const cls of scheduleRes.data.schedule) {
+                                    const scheduledAt = new Date(cls.scheduledAt);
+                                    allEvents.push({
+                                        id: eventId++,
+                                        title: cls.title,
+                                        subject: cls.subject || 'General',
+                                        teacher: cls.tutor?.name || 'TBD',
+                                        child: child.fullName,
+                                        date: scheduledAt.toISOString().split('T')[0],
+                                        time: scheduledAt.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
+                                        duration: cls.duration ? `${cls.duration} min` : '',
+                                        type: 'class',
+                                    });
+                                }
+                            }
+                        } catch {
+                            // Skip failed child schedule
+                        }
+                    }
+                    setEvents(allEvents);
+                }
+            } catch {
+                // Events remain empty
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchScheduleData();
+    }, []);
 
     const filteredEvents = selectedChild === 'all'
         ? events

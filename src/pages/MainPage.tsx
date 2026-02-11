@@ -32,15 +32,15 @@ const MainPage: React.FC = () => {
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div className="stat-value">4</div>
-                            <div className="stat-label">Upcoming Sessions</div>
+                            <div class="stat-value">—</div>
+                            <div class="stat-label">Upcoming Sessions</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">3</div>
-                            <div className="stat-label">Tests This Week</div>
+                        <div class="stat-card">
+                            <div class="stat-value">—</div>
+                            <div class="stat-label">Tests This Week</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">85%</div>
+                        <div class="stat-card">
+                            <div class="stat-value">—</div>
                             <div className="stat-label">Overall Progress</div>
                         </div>
                     </div>
@@ -97,36 +97,36 @@ const MainPage: React.FC = () => {
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div className="stat-value">2</div>
+                            <div className="stat-value">—</div>
                             <div className="stat-label">Active Children</div>
                         </div>
                         <div className="stat-card">
-                            <div className="stat-value">R3,200</div>
+                            <div className="stat-value">—</div>
                             <div className="stat-label">Monthly Fees</div>
                         </div>
                         <div className="stat-card">
-                            <div className="stat-value">8</div>
+                            <div className="stat-value">—</div>
                             <div className="stat-label">Upcoming Sessions</div>
                         </div>
                     </div>
-                    <h4>Children Overview</h4>
+                    <h4>Quick Actions</h4>
                     <ul className="activity-list">
                         <li className="activity-item">
                             <div className="activity-icon">
                                 👦
                             </div>
                             <div>
-                                <p><strong>Thabo Mabaso</strong> - Grade 11</p>
-                                <small>Overall Grade: 76% • Attendance: 95%</small>
+                                <p><strong>Children Overview</strong></p>
+                                <small>View grades, attendance and progress</small>
                             </div>
                         </li>
                         <li className="activity-item">
                             <div className="activity-icon">
-                                👧
+                                📅
                             </div>
                             <div>
-                                <p><strong>Sarah Mabaso</strong> - Grade 9</p>
-                                <small>Overall Grade: 82% • Attendance: 92%</small>
+                                <p><strong>Schedule</strong></p>
+                                <small>View upcoming classes and sessions</small>
                             </div>
                         </li>
                         <li className="activity-item">
@@ -134,8 +134,8 @@ const MainPage: React.FC = () => {
                                 💳
                             </div>
                             <div>
-                                <p><strong>Payment Due</strong></p>
-                                <small>Next payment: R1,600 on Feb 15</small>
+                                <p><strong>Payments</strong></p>
+                                <small>Manage fees and payment history</small>
                             </div>
                         </li>
                     </ul>
@@ -153,15 +153,15 @@ const MainPage: React.FC = () => {
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div className="stat-value">15</div>
-                            <div className="stat-label">Total Students</div>
+                            <div class="stat-value">—</div>
+                            <div class="stat-label">Total Students</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">R19,950</div>
-                            <div className="stat-label">Pending Payout</div>
+                        <div class="stat-card">
+                            <div class="stat-value">—</div>
+                            <div class="stat-label">Pending Payout</div>
                         </div>
-                        <div className="stat-card">
-                            <div className="stat-value">5</div>
+                        <div class="stat-card">
+                            <div class="stat-value">—</div>
                             <div className="stat-label">Classes This Week</div>
                         </div>
                     </div>

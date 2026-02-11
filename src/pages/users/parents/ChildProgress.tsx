@@ -1,22 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import { parentService } from '../../../services/parent.service';
 import type { NavigationLink } from '../../../types';
 import './ChildProgress.css';
 
-interface Subject {
-    name: string;
-    grade: number;
-    tests: number;
-    assignments: number;
-    attendance: number;
+interface ClassInfo {
+    classId: string;
+    title: string;
+    subject: string;
+    scheduledAt: string;
+    duration: number;
+    status: string;
+    attendanceStatus: string;
+    enrolledAt: string;
+}
+
+interface ChildInfo {
+    fullName: string;
+    gradeLevel: string;
+    avatar: string;
 }
 
 const ChildProgress: React.FC = () => {
     const { childId } = useParams<{ childId: string }>();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'attendance' | 'assignments'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'subjects' | 'attendance'>('overview');
+    const [loading, setLoading] = useState(true);
+    const [childInfo, setChildInfo] = useState<ChildInfo>({ fullName: '', gradeLevel: '', avatar: '' });
+    const [classes, setClasses] = useState<ClassInfo[]>([]);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
@@ -24,50 +37,85 @@ const ChildProgress: React.FC = () => {
         { label: 'Account', href: '/parent/account' },
     ];
 
-    const childData = {
-        '1': { name: 'Emma Johnson', grade: 'Grade 10', avatar: 'https://i.pravatar.cc/150?img=1' },
-        '2': { name: 'James Johnson', grade: 'Grade 8', avatar: 'https://i.pravatar.cc/150?img=12' },
-        '3': { name: 'Sophie Johnson', grade: 'Grade 6', avatar: 'https://i.pravatar.cc/150?img=9' },
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!childId) return;
+            try {
+                setLoading(true);
+                // Fetch children list to get this child's name
+                const childrenRes = await parentService.getChildren();
+                if (childrenRes.success) {
+                    const thisChild = childrenRes.data.children.find((c: { id: string }) => c.id === childId);
+                    if (thisChild) {
+                        setChildInfo({
+                            fullName: thisChild.fullName,
+                            gradeLevel: thisChild.gradeLevel || 'N/A',
+                            avatar: thisChild.avatar || '',
+                        });
+                    }
+                }
 
-    const child = childData[childId as keyof typeof childData] || childData['1'];
+                // Fetch child performance (has enrolled classes + attendance)
+                const perfRes = await parentService.getChildPerformance(childId);
+                if (perfRes.success) {
+                    setClasses(perfRes.data.classes || []);
+                }
+            } catch {
+                // Data remains empty
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, [childId]);
 
-    const subjects: Subject[] = [
-        { name: 'Mathematics', grade: 92, tests: 8, assignments: 12, attendance: 95 },
-        { name: 'Physics', grade: 88, tests: 6, assignments: 10, attendance: 93 },
-        { name: 'Chemistry', grade: 85, tests: 7, assignments: 11, attendance: 96 },
-        { name: 'English', grade: 90, tests: 5, assignments: 14, attendance: 94 },
-        { name: 'Computer Science', grade: 94, tests: 6, assignments: 13, attendance: 97 },
-    ];
+    // Compute stats from real data
+    const completedClasses = classes.filter(c => c.status === 'completed');
+    const presentCount = completedClasses.filter(c => c.attendanceStatus === 'present').length;
+    const attendanceRate = completedClasses.length > 0
+        ? Math.round((presentCount / completedClasses.length) * 100)
+        : 0;
 
-    const recentTests = [
-        { subject: 'Mathematics', title: 'Calculus Quiz', score: 95, date: '2024-01-15' },
-        { subject: 'Physics', title: 'Quantum Mechanics Test', score: 88, date: '2024-01-14' },
-        { subject: 'Chemistry', title: 'Organic Chemistry Exam', score: 82, date: '2024-01-12' },
-    ];
+    // Group by subject
+    const subjectMap = new Map<string, { total: number; present: number }>();
+    classes.forEach(c => {
+        const subj = c.subject || 'General';
+        if (!subjectMap.has(subj)) subjectMap.set(subj, { total: 0, present: 0 });
+        const entry = subjectMap.get(subj)!;
+        if (c.status === 'completed') {
+            entry.total++;
+            if (c.attendanceStatus === 'present') entry.present++;
+        }
+    });
 
-    const upcomingAssignments = [
-        { subject: 'English', title: 'Shakespeare Essay', dueDate: '2024-01-20', status: 'pending' },
-        { subject: 'Computer Science', title: 'Algorithm Project', dueDate: '2024-01-22', status: 'in-progress' },
-        { subject: 'Mathematics', title: 'Problem Set 8', dueDate: '2024-01-18', status: 'pending' },
-    ];
+    const subjects = Array.from(subjectMap.entries()).map(([name, data]) => ({
+        name,
+        attendance: data.total > 0 ? Math.round((data.present / data.total) * 100) : 0,
+        totalClasses: data.total,
+        present: data.present,
+    }));
 
-    const attendanceData = [
-        { week: 'Week 1', present: 5, total: 5 },
-        { week: 'Week 2', present: 5, total: 5 },
-        { week: 'Week 3', present: 4, total: 5 },
-        { week: 'Week 4', present: 5, total: 5 },
-    ];
+    // Weekly attendance (group by week)
+    const attendanceByWeek = new Map<string, { present: number; total: number }>();
+    completedClasses.forEach(c => {
+        const d = new Date(c.scheduledAt);
+        const weekStart = new Date(d);
+        weekStart.setDate(d.getDate() - d.getDay());
+        const weekKey = weekStart.toISOString().split('T')[0];
+        if (!attendanceByWeek.has(weekKey)) attendanceByWeek.set(weekKey, { present: 0, total: 0 });
+        const w = attendanceByWeek.get(weekKey)!;
+        w.total++;
+        if (c.attendanceStatus === 'present') w.present++;
+    });
+    const attendanceData = Array.from(attendanceByWeek.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-4)
+        .map(([, data], i) => ({ week: `Week ${i + 1}`, present: data.present, total: data.total }));
 
     const getGradeColor = (grade: number) => {
         if (grade >= 90) return '#10b981';
         if (grade >= 75) return '#3b82f6';
         return '#ef4444';
-    };
-
-    const getStatusColor = (status: string) => {
-        if (status === 'in-progress') return '#f59e0b';
-        return '#718096';
     };
 
     return (
@@ -79,21 +127,25 @@ const ChildProgress: React.FC = () => {
                     ← Back to Dashboard
                 </button>
 
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}><p>Loading progress...</p></div>
+                ) : (
+                <>
                 {/* Child Header */}
                 <div className="child-header">
-                    <img src={child.avatar} alt={child.name} className="child-avatar-large" />
+                    {childInfo.avatar && <img src={childInfo.avatar} alt={childInfo.fullName} className="child-avatar-large" />}
                     <div className="child-header-info">
-                        <h1>{child.name}</h1>
-                        <p>{child.grade}</p>
+                        <h1>{childInfo.fullName || 'Student'}</h1>
+                        <p>{childInfo.gradeLevel}</p>
                     </div>
                     <div className="overall-stats">
                         <div className="overall-stat">
-                            <span className="label">Overall Grade</span>
-                            <span className="value" style={{ color: getGradeColor(89.8) }}>89.8%</span>
+                            <span className="label">Attendance</span>
+                            <span className="value" style={{ color: getGradeColor(attendanceRate) }}>{attendanceRate}%</span>
                         </div>
                         <div className="overall-stat">
-                            <span className="label">Attendance</span>
-                            <span className="value" style={{ color: '#10b981' }}>95%</span>
+                            <span className="label">Classes</span>
+                            <span className="value">{classes.length}</span>
                         </div>
                     </div>
                 </div>
@@ -118,65 +170,66 @@ const ChildProgress: React.FC = () => {
                     >
                         Attendance
                     </button>
-                    <button
-                        className={`tab ${activeTab === 'assignments' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('assignments')}
-                    >
-                        Assignments
-                    </button>
                 </div>
 
                 {/* Tab Content */}
                 {activeTab === 'overview' && (
                     <div className="tab-content">
+                        {classes.length === 0 ? (
+                            <p style={{ textAlign: 'center', color: '#718096', padding: '2rem' }}>No class data available yet.</p>
+                        ) : (
                         <div className="two-column-layout">
-                            {/* Recent Tests */}
+                            {/* Recent Classes */}
                             <div className="section">
-                                <h2>Recent Tests</h2>
+                                <h2>Recent Classes</h2>
                                 <div className="tests-list">
-                                    {recentTests.map((test, index) => (
+                                    {completedClasses.slice(0, 5).map((cls, index) => (
                                         <div key={index} className="test-item">
                                             <div>
-                                                <h3>{test.title}</h3>
-                                                <p>{test.subject} • {test.date}</p>
+                                                <h3>{cls.title}</h3>
+                                                <p>{cls.subject} &bull; {new Date(cls.scheduledAt).toLocaleDateString('en-ZA')}</p>
                                             </div>
                                             <span
                                                 className="score-badge"
-                                                style={{ background: getGradeColor(test.score) }}
+                                                style={{ background: cls.attendanceStatus === 'present' ? '#10b981' : '#ef4444' }}
                                             >
-                                                {test.score}%
+                                                {cls.attendanceStatus === 'present' ? '✓ Present' : '✗ Absent'}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Upcoming Assignments */}
+                            {/* Upcoming Classes */}
                             <div className="section">
-                                <h2>Upcoming Assignments</h2>
+                                <h2>Upcoming Classes</h2>
                                 <div className="assignments-list">
-                                    {upcomingAssignments.map((assignment, index) => (
+                                    {classes.filter(c => c.status !== 'completed').slice(0, 5).map((cls, index) => (
                                         <div key={index} className="assignment-item">
                                             <div>
-                                                <h3>{assignment.title}</h3>
-                                                <p>{assignment.subject} • Due: {assignment.dueDate}</p>
+                                                <h3>{cls.title}</h3>
+                                                <p>{cls.subject} &bull; {new Date(cls.scheduledAt).toLocaleDateString('en-ZA')}</p>
                                             </div>
-                                            <span
-                                                className="status-badge"
-                                                style={{ background: getStatusColor(assignment.status) }}
-                                            >
-                                                {assignment.status}
+                                            <span className="status-badge" style={{ background: '#667eea' }}>
+                                                Scheduled
                                             </span>
                                         </div>
                                     ))}
+                                    {classes.filter(c => c.status !== 'completed').length === 0 && (
+                                        <p style={{ color: '#718096' }}>No upcoming classes</p>
+                                    )}
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
                 )}
 
                 {activeTab === 'subjects' && (
                     <div className="tab-content">
+                        {subjects.length === 0 ? (
+                            <p style={{ textAlign: 'center', color: '#718096', padding: '2rem' }}>No subject data available yet.</p>
+                        ) : (
                         <div className="subjects-grid">
                             {subjects.map((subject, index) => (
                                 <div key={index} className="subject-card">
@@ -184,19 +237,15 @@ const ChildProgress: React.FC = () => {
                                         <h3>{subject.name}</h3>
                                         <span
                                             className="grade-badge"
-                                            style={{ background: getGradeColor(subject.grade) }}
+                                            style={{ background: getGradeColor(subject.attendance) }}
                                         >
-                                            {subject.grade}%
+                                            {subject.attendance}%
                                         </span>
                                     </div>
                                     <div className="subject-stats">
                                         <div className="stat-row">
-                                            <span>Tests Completed:</span>
-                                            <span>{subject.tests}</span>
-                                        </div>
-                                        <div className="stat-row">
-                                            <span>Assignments:</span>
-                                            <span>{subject.assignments}</span>
+                                            <span>Classes Attended:</span>
+                                            <span>{subject.present}/{subject.totalClasses}</span>
                                         </div>
                                         <div className="stat-row">
                                             <span>Attendance:</span>
@@ -206,11 +255,15 @@ const ChildProgress: React.FC = () => {
                                 </div>
                             ))}
                         </div>
+                        )}
                     </div>
                 )}
 
                 {activeTab === 'attendance' && (
                     <div className="tab-content">
+                        {attendanceData.length === 0 ? (
+                            <p style={{ textAlign: 'center', color: '#718096', padding: '2rem' }}>No attendance data available yet.</p>
+                        ) : (
                         <div className="attendance-chart">
                             {attendanceData.map((week, index) => (
                                 <div key={index} className="week-row">
@@ -225,31 +278,10 @@ const ChildProgress: React.FC = () => {
                                 </div>
                             ))}
                         </div>
+                        )}
                     </div>
                 )}
-
-                {activeTab === 'assignments' && (
-                    <div className="tab-content">
-                        <div className="assignments-detailed">
-                            {upcomingAssignments.map((assignment, index) => (
-                                <div key={index} className="assignment-card">
-                                    <div className="assignment-header">
-                                        <h3>{assignment.title}</h3>
-                                        <span
-                                            className="status-badge"
-                                            style={{ background: getStatusColor(assignment.status) }}
-                                        >
-                                            {assignment.status}
-                                        </span>
-                                    </div>
-                                    <div className="assignment-meta">
-                                        <span>📚 {assignment.subject}</span>
-                                        <span>📅 Due: {assignment.dueDate}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                </>
                 )}
             </div>
 

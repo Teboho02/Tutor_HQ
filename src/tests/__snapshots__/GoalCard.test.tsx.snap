@@ -61,7 +61,7 @@ exports[`GoalCard Component > matches snapshot 1`] = `
           <span
             class="days-remaining"
           >
-             (18d)
+             (5d)
           </span>
         </span>
       </div>

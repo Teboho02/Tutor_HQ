@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import type { NavigationLink } from '../../../types';
+import { tutorService } from '../../../services/tutor.service';
+import { classService } from '../../../services/class.service';
 import './ScheduleClass.css';
 
 interface Student {
@@ -31,6 +33,9 @@ const ScheduleClass: React.FC = () => {
     });
 
     const [isScheduling, setIsScheduling] = useState(false);
+    const [availableStudents, setAvailableStudents] = useState<Student[]>([]);
+    const [availableTutors] = useState<Tutor[]>([]); // No tutor list endpoint yet
+    const [loading, setLoading] = useState(true);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -40,20 +45,25 @@ const ScheduleClass: React.FC = () => {
         { label: 'Progress', href: '/student/progress' },
     ];
 
-    // Mock data - would come from API
-    const availableStudents: Student[] = [
-        { id: '1', name: 'John Doe', email: 'john@example.com' },
-        { id: '2', name: 'Jane Smith', email: 'jane@example.com' },
-        { id: '3', name: 'Mike Johnson', email: 'mike@example.com' },
-        { id: '4', name: 'Sarah Williams', email: 'sarah@example.com' },
-        { id: '5', name: 'Tom Brown', email: 'tom@example.com' },
-    ];
-
-    const availableTutors: Tutor[] = [
-        { id: '1', name: 'Dr. Smith', subject: 'Mathematics' },
-        { id: '2', name: 'Prof. Johnson', subject: 'Physics' },
-        { id: '3', name: 'Dr. Williams', subject: 'Chemistry' },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const res = await tutorService.getStudents();
+                if (res.success && res.data) {
+                    setAvailableStudents(res.data.map((s: Record<string, string>) => ({
+                        id: s.id,
+                        name: s.full_name || s.name || s.email,
+                        email: s.email || '',
+                    })));
+                }
+            } catch (err) {
+                console.error('Failed to load students:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const subjects = [
         'Mathematics',
@@ -88,26 +98,16 @@ const ScheduleClass: React.FC = () => {
         setIsScheduling(true);
 
         try {
-            const response = await fetch('http://localhost:3001/api/classes/schedule', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    title: formData.title,
-                    subject: formData.subject,
-                    instructor: formData.instructor,
-                    students: formData.selectedStudents,
-                    tutors: formData.selectedTutors,
-                    startTime: formData.startTime,
-                    duration: parseInt(formData.duration),
-                    description: formData.description,
-                }),
+            const result = await classService.createClass({
+                title: formData.title,
+                subject: formData.subject,
+                description: formData.description,
+                scheduledAt: formData.startTime,
+                duration: parseInt(formData.duration),
+                studentIds: formData.selectedStudents,
             });
 
-            const data = await response.json();
-
-            if (data.success) {
+            if (result.success) {
                 alert('Class scheduled successfully! Students and tutors will be notified.');
                 navigate('/student/live-classes');
             } else {
@@ -120,6 +120,18 @@ const ScheduleClass: React.FC = () => {
             setIsScheduling(false);
         }
     };
+
+    if (loading) {
+        return (
+            <div className="schedule-class-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="schedule-container">
+                    <p>Loading...</p>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="schedule-class-page">

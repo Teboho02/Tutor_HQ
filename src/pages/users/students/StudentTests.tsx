@@ -33,89 +33,6 @@ interface TestRetake {
     time?: string;
 }
 
-// Mock data for development/fallback - defined outside component to avoid recreating on each render
-const mockTests: TestItem[] = [
-    {
-        id: '1',
-        title: 'Mathematics Midterm Exam',
-        subject: 'Mathematics',
-        teacher: 'Mr. Smith',
-        scheduledDate: '2025-11-05',
-        scheduledTime: '14:00',
-        duration: 90,
-        totalPoints: 100,
-        status: 'available',
-        type: 'test',
-        allowRetakes: true,
-        maxRetakes: 3,
-    },
-    {
-        id: '2',
-        title: 'Physics Chapter 3 Quiz',
-        subject: 'Physics',
-        teacher: 'Dr. Wilson',
-        scheduledDate: '2025-11-10',
-        scheduledTime: '10:00',
-        duration: 45,
-        totalPoints: 50,
-        status: 'upcoming',
-        type: 'test',
-        allowRetakes: true,
-        maxRetakes: 2,
-    },
-    {
-        id: '3',
-        title: 'Chemistry Lab Report',
-        subject: 'Chemistry',
-        teacher: 'Ms. Johnson',
-        scheduledDate: '2025-10-28',
-        scheduledTime: '23:59',
-        duration: 0,
-        totalPoints: 30,
-        status: 'completed',
-        score: 27,
-        submittedAt: '2025-10-27T15:30:00',
-        type: 'assignment',
-        allowRetakes: false,
-        retakeHistory: [],
-    },
-    {
-        id: '4',
-        title: 'Biology Final Exam',
-        subject: 'Biology',
-        teacher: 'Prof. Brown',
-        scheduledDate: '2025-11-15',
-        scheduledTime: '09:00',
-        duration: 120,
-        totalPoints: 150,
-        status: 'completed',
-        score: 92,
-        submittedAt: '2025-11-05T11:45:00',
-        type: 'test',
-        allowRetakes: true,
-        maxRetakes: 2,
-        retakeHistory: [
-            { attempt: 1, score: 85, date: '2025-11-05', time: '11:45' },
-            { attempt: 2, score: 92, date: '2025-11-12', time: '14:20' }
-        ],
-    },
-    {
-        id: '5',
-        title: 'English Essay Assignment',
-        subject: 'English',
-        teacher: 'Ms. Davis',
-        scheduledDate: '2025-10-25',
-        scheduledTime: '23:59',
-        duration: 0,
-        totalPoints: 50,
-        status: 'completed',
-        score: 45,
-        submittedAt: '2025-10-24T20:15:00',
-        type: 'assignment',
-        allowRetakes: false,
-    },
-];
-
 const StudentTests: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -177,8 +94,7 @@ const StudentTests: React.FC = () => {
             } catch (error: unknown) {
                 const err = error as { response?: { data?: { message?: string } } };
                 showToast(err.response?.data?.message || 'Failed to load tests', 'error');
-                // Keep mock data on error for development
-                setTests(mockTests);
+                setTests([]);
             } finally {
                 setLoading(false);
             }

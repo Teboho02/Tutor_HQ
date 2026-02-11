@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
@@ -9,6 +9,13 @@ import { testService } from '../../../services/test.service';
 import type { NavigationLink } from '../../../types';
 import type { Question } from '../../../types/test';
 import './TutorSchedule.css';
+
+interface Module {
+    id: string;
+    name: string;
+    students: number;
+    color: string;
+}
 
 const TutorSchedule: React.FC = () => {
     const navigate = useNavigate();
@@ -45,13 +52,30 @@ const TutorSchedule: React.FC = () => {
         { label: 'Account', href: '/tutor/account' },
     ];
 
-    const modules = [
-        { id: '1', name: 'Mathematics A', students: 15, color: '#667eea' },
-        { id: '2', name: 'Physics B', students: 12, color: '#764ba2' },
-        { id: '3', name: 'Chemistry C', students: 18, color: '#f59e0b' },
-        { id: '4', name: 'Biology D', students: 14, color: '#10b981' },
-        { id: '5', name: 'English E', students: 20, color: '#3b82f6' },
-    ];
+    const [modules, setModules] = useState<Module[]>([]);
+
+    const moduleColors = ['#667eea', '#764ba2', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6'];
+
+    useEffect(() => {
+        const fetchModules = async () => {
+            try {
+                const response = await classService.listClasses();
+                if (response.success && response.data.classes) {
+                    const fetched: Module[] = response.data.classes.map((c: { id: string; title: string; enrollmentCount?: number }, i: number) => ({
+                        id: c.id,
+                        name: c.title,
+                        students: c.enrollmentCount || 0,
+                        color: moduleColors[i % moduleColors.length],
+                    }));
+                    setModules(fetched);
+                }
+            } catch {
+                // Modules will remain empty
+            }
+        };
+        fetchModules();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science'];
 

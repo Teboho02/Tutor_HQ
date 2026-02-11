@@ -9,6 +9,7 @@ import type { NavigationLink } from '../../../types';
 import './StudentDashboard.css';
 
 interface DashboardData {
+    studentName?: string;
     upcomingClasses?: Array<{
         id: string;
         subject: string;
@@ -104,7 +105,7 @@ const StudentDashboard: React.FC = () => {
             <div className="student-dashboard-container">
                 <div className="dashboard-header">
                     <div className="welcome-section">
-                        <h1>Welcome Back, Student!</h1>
+                        <h1>Welcome Back, {dashboardData?.studentName || 'Student'}! 🎓</h1>
                         <p>Here's what's happening with your classes today</p>
                     </div>
                     <div className="quick-actions">

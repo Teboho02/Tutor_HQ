@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
@@ -21,6 +21,8 @@ interface Class {
 const TutorClasses: React.FC = () => {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'upcoming' | 'completed'>('upcoming');
+    const [allClasses, setAllClasses] = useState<Class[]>([]);
+    const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -28,6 +30,49 @@ const TutorClasses: React.FC = () => {
     };
 
     const hideToast = () => setToast(null);
+
+    useEffect(() => {
+        const fetchClasses = async () => {
+            try {
+                setLoading(true);
+                const response = await classService.listClasses();
+                if (response.success && response.data.classes) {
+                    const now = new Date();
+                    const transformed: Class[] = response.data.classes.map((c: { id: number; title: string; subject: string; scheduled_at?: string; scheduledAt?: string; duration_minutes?: number; durationMinutes?: number; status?: string; enrollmentCount?: number }) => {
+                        const scheduledAt = c.scheduled_at || c.scheduledAt || '';
+                        const classDate = new Date(scheduledAt);
+                        const isCompleted = c.status === 'completed' || classDate < now;
+                        const today = new Date();
+                        const tomorrow = new Date(today);
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        
+                        let dateLabel = classDate.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
+                        if (classDate.toDateString() === today.toDateString()) dateLabel = 'Today';
+                        else if (classDate.toDateString() === tomorrow.toDateString()) dateLabel = 'Tomorrow';
+
+                        return {
+                            id: c.id,
+                            title: c.title || '',
+                            subject: c.subject || '',
+                            date: dateLabel,
+                            time: classDate.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
+                            duration: `${c.duration_minutes || c.durationMinutes || 60} min`,
+                            students: c.enrollmentCount || 0,
+                            status: isCompleted ? 'completed' as const : 'upcoming' as const,
+                        };
+                    });
+                    setAllClasses(transformed);
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load classes', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchClasses();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleCancelClass = async (classId: number, className: string) => {
         if (!window.confirm(`Are you sure you want to cancel "${className}"?`)) {
@@ -62,61 +107,8 @@ const TutorClasses: React.FC = () => {
         { label: 'Account', href: '/tutor/account' },
     ];
 
-    const upcomingClasses: Class[] = [
-        {
-            id: 1,
-            title: 'Advanced Calculus - Integration Techniques',
-            subject: 'Mathematics',
-            date: 'Today',
-            time: '2:00 PM',
-            duration: '60 min',
-            students: 18,
-            status: 'upcoming',
-        },
-        {
-            id: 2,
-            title: 'Quantum Mechanics Fundamentals',
-            subject: 'Physics',
-            date: 'Today',
-            time: '4:00 PM',
-            duration: '90 min',
-            students: 15,
-            status: 'upcoming',
-        },
-        {
-            id: 3,
-            title: 'Organic Chemistry - Reaction Mechanisms',
-            subject: 'Chemistry',
-            date: 'Tomorrow',
-            time: '10:00 AM',
-            duration: '60 min',
-            students: 20,
-            status: 'upcoming',
-        },
-    ];
-
-    const completedClasses: Class[] = [
-        {
-            id: 4,
-            title: 'Linear Algebra - Matrix Operations',
-            subject: 'Mathematics',
-            date: 'Yesterday',
-            time: '3:00 PM',
-            duration: '60 min',
-            students: 22,
-            status: 'completed',
-        },
-        {
-            id: 5,
-            title: 'Thermodynamics Principles',
-            subject: 'Physics',
-            date: '2 days ago',
-            time: '1:00 PM',
-            duration: '90 min',
-            students: 19,
-            status: 'completed',
-        },
-    ];
+    const upcomingClasses = allClasses.filter(c => c.status === 'upcoming');
+    const completedClasses = allClasses.filter(c => c.status === 'completed');
 
     const renderClassCard = (classItem: Class) => (
         <div key={classItem.id} className="tutor-class-card">
@@ -225,11 +217,17 @@ const TutorClasses: React.FC = () => {
                 </div>
 
                 {/* Classes Grid */}
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p>Loading classes...</p>
+                    </div>
+                ) : (
                 <div className="classes-grid">
                     {activeTab === 'upcoming'
-                        ? upcomingClasses.map(renderClassCard)
-                        : completedClasses.map(renderClassCard)}
+                        ? (upcomingClasses.length > 0 ? upcomingClasses.map(renderClassCard) : <div className="empty-state"><p>No upcoming classes</p></div>)
+                        : (completedClasses.length > 0 ? completedClasses.map(renderClassCard) : <div className="empty-state"><p>No completed classes yet</p></div>)}
                 </div>
+                )}
             </div>
 
             <Footer />

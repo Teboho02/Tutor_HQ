@@ -158,29 +158,12 @@
     }
 }
 
+/* Dark mode disabled - app uses light theme only
 @media (prefers-color-scheme: dark) {
-    .error-content {
-        background: #1e1e1e;
-    }
-
-    .error-title {
-        color: #e5e5e5;
-    }
-
-    .error-description {
-        color: #a3a3a3;
-    }
-
-    .error-description-secondary {
-        color: #737373;
-    }
-
-    .btn-secondary {
-        background: #2a2a2a;
-        color: #e5e5e5;
-    }
-
-    .btn-secondary:hover {
-        background: #404040;
-    }
-}
+    .error-content { background: #1e1e1e; }
+    .error-title { color: #e5e5e5; }
+    .error-description { color: #a3a3a3; }
+    .error-description-secondary { color: #737373; }
+    .btn-secondary { background: #2a2a2a; color: #e5e5e5; }
+    .btn-secondary:hover { background: #404040; }
+} */

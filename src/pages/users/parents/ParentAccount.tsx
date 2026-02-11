@@ -1,15 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+import Toast from '../../../components/Toast';
+import { parentService } from '../../../services/parent.service';
+import { useAuth } from '../../../contexts/AuthContext';
 import type { NavigationLink } from '../../../types';
 import './ParentAccount.css';
 
+interface ChildData {
+    id: string;
+    fullName: string;
+    gradeLevel: string;
+    email: string;
+}
+
 const ParentAccount: React.FC = () => {
     const navigate = useNavigate();
+    const { user, logout } = useAuth();
     const [showAddChildModal, setShowAddChildModal] = useState(false);
-    const [showEnrollModal, setShowEnrollModal] = useState(false);
-    const [, setSelectedChild] = useState<string>('');
+    const [linkEmail, setLinkEmail] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [children, setChildren] = useState<ChildData[]>([]);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
+        setToast({ message, type });
+    };
+    const hideToast = () => setToast(null);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/parent/dashboard' },
@@ -17,48 +35,71 @@ const ParentAccount: React.FC = () => {
         { label: 'Account', href: '/parent/account' },
     ];
 
-    const parentInfo = {
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@email.com',
-        phone: '+27 82 123 4567',
-        address: '123 Main Street, Johannesburg, 2000',
-        memberSince: 'January 2023',
-    };
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const response = await parentService.getChildren();
+                if (response.success && response.data.children) {
+                    setChildren(response.data.children.map((c: { id: string; fullName: string; gradeLevel: string; email: string }) => ({
+                        id: c.id,
+                        fullName: c.fullName,
+                        gradeLevel: c.gradeLevel || 'N/A',
+                        email: c.email,
+                    })));
+                }
+            } catch (error: unknown) {
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load account data', 'error');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const children = [
-        {
-            id: '1',
-            name: 'Emma Johnson',
-            grade: 'Grade 10',
-            enrolledModules: ['Mathematics A', 'Physics B', 'Chemistry C'],
-        },
-        {
-            id: '2',
-            name: 'James Johnson',
-            grade: 'Grade 8',
-            enrolledModules: ['English E', 'Mathematics A'],
-        },
-        {
-            id: '3',
-            name: 'Sophie Johnson',
-            grade: 'Grade 6',
-            enrolledModules: ['Science D', 'English E'],
-        },
-    ];
-
-    const availableModules = [
-        'Mathematics A', 'Physics B', 'Chemistry C', 'Biology D',
-        'English E', 'Computer Science F', 'History G', 'Geography H'
-    ];
-
-    const handleUnenroll = (childName: string, module: string) => {
-        if (confirm(`Are you sure you want to unenroll ${childName} from ${module}?`)) {
-            alert(`${childName} has been unenrolled from ${module}`);
+    const handleLinkChild = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const response = await parentService.linkChild(linkEmail);
+            if (response.success) {
+                showToast('Child linked successfully!', 'success');
+                setShowAddChildModal(false);
+                setLinkEmail('');
+                // Refresh children list
+                const childrenRes = await parentService.getChildren();
+                if (childrenRes.success) {
+                    setChildren(childrenRes.data.children.map((c: { id: string; fullName: string; gradeLevel: string; email: string }) => ({
+                        id: c.id, fullName: c.fullName, gradeLevel: c.gradeLevel || 'N/A', email: c.email,
+                    })));
+                }
+            }
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to link child', 'error');
         }
     };
 
-    const handleSignOut = () => {
-        navigate('/login');
+    const handleUnlinkChild = async (childId: string, childName: string) => {
+        if (!confirm(`Are you sure you want to unlink ${childName}?`)) return;
+        try {
+            await parentService.unlinkChild(childId);
+            showToast(`${childName} unlinked successfully`, 'success');
+            setChildren(prev => prev.filter(c => c.id !== childId));
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to unlink child', 'error');
+        }
+    };
+
+    const handleSignOut = async () => {
+        try {
+            await logout();
+            navigate('/login');
+        } catch {
+            navigate('/login');
+        }
     };
 
     return (
@@ -77,29 +118,16 @@ const ParentAccount: React.FC = () => {
                 <div className="section">
                     <div className="section-header">
                         <h2>Personal Information</h2>
-                        <button className="btn btn-outline">Edit</button>
                     </div>
 
                     <div className="info-grid">
                         <div className="info-item">
                             <span className="info-label">Full Name</span>
-                            <span className="info-value">{parentInfo.name}</span>
+                            <span className="info-value">{user?.name || 'N/A'}</span>
                         </div>
                         <div className="info-item">
                             <span className="info-label">Email Address</span>
-                            <span className="info-value">{parentInfo.email}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Phone Number</span>
-                            <span className="info-value">{parentInfo.phone}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Home Address</span>
-                            <span className="info-value">{parentInfo.address}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Member Since</span>
-                            <span className="info-value">{parentInfo.memberSince}</span>
+                            <span className="info-value">{user?.email || 'N/A'}</span>
                         </div>
                     </div>
                 </div>
@@ -109,88 +137,65 @@ const ParentAccount: React.FC = () => {
                     <div className="section-header">
                         <h2>My Children</h2>
                         <button className="btn btn-primary" onClick={() => setShowAddChildModal(true)}>
-                            + Add Child
+                            + Link Child
                         </button>
                     </div>
 
+                    {loading ? (
+                        <p style={{ textAlign: 'center', padding: '1rem' }}>Loading...</p>
+                    ) : children.length === 0 ? (
+                        <p style={{ textAlign: 'center', padding: '1rem', color: '#718096' }}>No children linked yet. Click "Link Child" to add a child.</p>
+                    ) : (
                     <div className="children-list">
                         {children.map(child => (
                             <div key={child.id} className="child-management-card">
                                 <div className="child-management-header">
                                     <div>
-                                        <h3>{child.name}</h3>
-                                        <p>{child.grade}</p>
+                                        <h3>{child.fullName}</h3>
+                                        <p>{child.gradeLevel} &bull; {child.email}</p>
                                     </div>
                                     <div className="child-actions">
                                         <button
-                                            className="btn btn-sm btn-primary"
-                                            onClick={() => { setSelectedChild(child.id); setShowEnrollModal(true); }}
+                                            className="btn btn-sm btn-outline"
+                                            onClick={() => navigate(`/parent/child/${child.id}/progress`)}
                                         >
-                                            Enroll in Module
+                                            View Progress
                                         </button>
-                                        <button className="btn btn-sm btn-outline">Edit</button>
+                                        <button
+                                            className="btn btn-sm btn-outline"
+                                            style={{ color: '#ef4444' }}
+                                            onClick={() => handleUnlinkChild(child.id, child.fullName)}
+                                        >
+                                            Unlink
+                                        </button>
                                     </div>
-                                </div>
-
-                                <div className="enrolled-modules">
-                                    <h4>Enrolled Modules:</h4>
-                                    {child.enrolledModules.length > 0 ? (
-                                        <div className="modules-grid">
-                                            {child.enrolledModules.map((module, index) => (
-                                                <div key={index} className="module-badge">
-                                                    <span>{module}</span>
-                                                    <button
-                                                        className="unenroll-btn"
-                                                        onClick={() => handleUnenroll(child.name, module)}
-                                                        title="Unenroll"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="no-modules">No modules enrolled</p>
-                                    )}
                                 </div>
                             </div>
                         ))}
                     </div>
+                    )}
                 </div>
 
-                {/* Add Child Modal */}
+                {/* Link Child Modal */}
                 {showAddChildModal && (
                     <div className="modal-overlay" onClick={() => setShowAddChildModal(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                             <div className="modal-header">
-                                <h2>Add Child</h2>
+                                <h2>Link Child</h2>
                                 <button className="close-btn" onClick={() => setShowAddChildModal(false)}>✕</button>
                             </div>
 
-                            <form className="form" onSubmit={(e) => { e.preventDefault(); alert('Child added successfully!'); setShowAddChildModal(false); }}>
+                            <form className="form" onSubmit={handleLinkChild}>
                                 <div className="form-group">
-                                    <label>Full Name</label>
-                                    <input type="text" placeholder="Enter child's full name" required />
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Grade</label>
-                                    <select required>
-                                        <option value="">Select grade</option>
-                                        {[...Array(12)].map((_, i) => (
-                                            <option key={i} value={`Grade ${i + 1}`}>Grade {i + 1}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>ID Number</label>
-                                    <input type="text" placeholder="Enter ID number" required />
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Date of Birth</label>
-                                    <input type="date" required />
+                                    <label>Child's Email Address</label>
+                                    <input
+                                        type="email"
+                                        placeholder="Enter child's registered email"
+                                        value={linkEmail}
+                                        onChange={(e) => setLinkEmail(e.target.value)}
+                                        required
+                                    />
+                                    <small style={{ color: '#718096' }}>The child must already have a student account.</small>
                                 </div>
 
                                 <div className="modal-actions">
@@ -198,45 +203,7 @@ const ParentAccount: React.FC = () => {
                                         Cancel
                                     </button>
                                     <button type="submit" className="btn btn-primary">
-                                        Add Child
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-
-                {/* Enroll Modal */}
-                {showEnrollModal && (
-                    <div className="modal-overlay" onClick={() => setShowEnrollModal(false)}>
-                        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h2>Enroll in Module</h2>
-                                <button className="close-btn" onClick={() => setShowEnrollModal(false)}>✕</button>
-                            </div>
-
-                            <form className="form" onSubmit={(e) => { e.preventDefault(); alert('Child enrolled successfully!'); setShowEnrollModal(false); }}>
-                                <div className="form-group">
-                                    <label>Select Module</label>
-                                    <select required>
-                                        <option value="">Choose module</option>
-                                        {availableModules.map((module, index) => (
-                                            <option key={index} value={module}>{module}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Start Date</label>
-                                    <input type="date" required />
-                                </div>
-
-                                <div className="modal-actions">
-                                    <button type="button" className="btn btn-outline" onClick={() => setShowEnrollModal(false)}>
-                                        Cancel
-                                    </button>
-                                    <button type="submit" className="btn btn-primary">
-                                        Enroll
+                                        Link Child
                                     </button>
                                 </div>
                             </form>
@@ -246,6 +213,7 @@ const ParentAccount: React.FC = () => {
             </div>
 
             <Footer />
+            {toast && <Toast message={toast.message} type={toast.type} onClose={hideToast} />}
         </div>
     );
 };

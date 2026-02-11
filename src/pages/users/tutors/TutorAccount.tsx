@@ -24,9 +24,10 @@ interface BankingInfo {
 }
 
 const TutorAccount: React.FC = () => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const [showEditProfile, setShowEditProfile] = useState(false);
     const [showEditBanking, setShowEditBanking] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -35,36 +36,49 @@ const TutorAccount: React.FC = () => {
 
     const hideToast = () => setToast(null);
 
+    const [tutorInfo, setTutorInfo] = useState<TutorInfo>({
+        name: '',
+        email: '',
+        phone: '',
+        subjectsTaught: [],
+        joinDate: '',
+        qualification: '',
+    });
+
+    const [bankingInfo] = useState<BankingInfo>({
+        accountNumber: '',
+        bankName: '',
+        branchCode: '',
+        accountHolderName: '',
+        accountType: '',
+    });
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                await tutorService.getProfile();
+                setLoading(true);
+                const response = await tutorService.getProfile();
+                if (response.success && response.data.profile) {
+                    const p = response.data.profile;
+                    setTutorInfo({
+                        name: p.full_name || user?.name || '',
+                        email: p.email || user?.email || '',
+                        phone: p.phone_number || '',
+                        subjectsTaught: p.subjects || [],
+                        joinDate: p.created_at ? new Date(p.created_at).toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' }) : '',
+                        qualification: p.qualifications || '',
+                    });
+                }
             } catch {
                 showToast('Failed to load profile', 'error');
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchProfile();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Mock tutor information (kept as fallback)
-    const [tutorInfo] = useState<TutorInfo>({
-        name: 'Mr. John Smith',
-        email: 'john.smith@tutorhq.com',
-        phone: '+27 11 234 5678',
-        subjectsTaught: ['Mathematics A', 'Physics B', 'Chemistry C'],
-        joinDate: 'January 2023',
-        qualification: 'MSc in Mathematics, PhD in Physics'
-    });
-
-    // Mock banking information
-    const [bankingInfo] = useState<BankingInfo>({
-        accountNumber: '1234567890',
-        bankName: 'Standard Bank',
-        branchCode: '051001',
-        accountHolderName: 'John Smith',
-        accountType: 'Cheque Account'
-    });
 
     const tutorNavigation = [
         { label: 'Dashboard', href: '/tutor/dashboard' },
@@ -109,6 +123,14 @@ const TutorAccount: React.FC = () => {
                     </button>
                 </div>
 
+                {loading && (
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <p>Loading profile...</p>
+                    </div>
+                )}
+
+                {!loading && (
+                <>
                 {/* Personal Information Section */}
                 <div className="account-section">
                     <div className="section-header">
@@ -182,6 +204,8 @@ const TutorAccount: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                </>
+                )}
             </div>
 
             {/* Edit Profile Modal */}

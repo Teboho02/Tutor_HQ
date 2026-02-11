@@ -25,16 +25,21 @@ apiClient.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        // Don't try to refresh for auth endpoints (prevents infinite loop)
+        const isAuthEndpoint = originalRequest?.url?.includes('/auth/');
+
         // Handle 401 Unauthorized - try to refresh token
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
             originalRequest._retry = true;
 
             try {
                 await apiClient.post('/auth/refresh');
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                // Redirect to login if refresh fails
-                window.location.href = '/login';
+                // Only redirect if not already on login page
+                if (!window.location.pathname.includes('/login')) {
+                    window.location.href = '/login';
+                }
                 return Promise.reject(refreshError);
             }
         }

@@ -128,16 +128,9 @@
     }
 }
 
+/* Dark mode disabled - app uses light theme only
 @media (prefers-color-scheme: dark) {
-    .toast {
-        background: #1e1e1e;
-    }
-
-    .toast-message {
-        color: #e5e5e5;
-    }
-
-    .toast-close:hover {
-        color: #e5e5e5;
-    }
-}
+    .toast { background: #1e1e1e; }
+    .toast-message { color: #e5e5e5; }
+    .toast-close:hover { color: #e5e5e5; }
+} */

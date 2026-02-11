@@ -104,25 +104,9 @@ const TutorMaterials: React.FC = () => {
 
     const classOptions = ['All Classes', ...classes.map(c => c.title)];
 
-    const scheduledTests: ScheduledTest[] = [
-        {
-            id: '1',
-            title: 'Chapter 5 Integration Test',
-            class: 'Mathematics A',
-            date: '2024-01-20',
-            totalQuestions: 15,
-            totalSubmissions: 12,
-            averageScore: 82,
-            passRate: 91,
-            type: 'test',
-        },
-    ];
+    const scheduledTests: ScheduledTest[] = [];
 
-    const testPerformanceData: { [testId: string]: StudentPerformance[] } = {
-        '1': [
-            { studentId: '1', studentName: 'John Doe', score: 88, submitted: true, submittedDate: '2024-01-20' },
-        ],
-    };
+    const testPerformanceData: { [testId: string]: StudentPerformance[] } = {};
 
     const filteredMaterials = selectedClass === 'all'
         ? materials

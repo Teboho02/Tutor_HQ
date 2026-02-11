@@ -125,12 +125,8 @@
     }
 }
 
+/* Dark mode disabled - app uses light theme only
 @media (prefers-color-scheme: dark) {
-    .empty-state-title {
-        color: #e5e5e5;
-    }
-
-    .empty-state-description {
-        color: #a3a3a3;
-    }
-}
+    .empty-state-title { color: #e5e5e5; }
+    .empty-state-description { color: #a3a3a3; }
+} */

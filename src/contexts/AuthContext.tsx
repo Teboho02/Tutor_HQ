@@ -7,7 +7,7 @@ import { useToast } from '../components/Toast';
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<User>;
     register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -50,13 +50,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         fetchCurrentUser();
     }, []);
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string): Promise<User> => {
         try {
             const response = await authService.login({ email, password });
             if (response.success) {
                 setUser(response.data.user);
                 showToast('Login successful!', 'success');
+                return response.data.user;
             }
+            throw new Error('Login failed');
         } catch (error: unknown) {
             const axiosError = error as { response?: { data?: { message?: string } } };
             const message = axiosError.response?.data?.message || 'Login failed';

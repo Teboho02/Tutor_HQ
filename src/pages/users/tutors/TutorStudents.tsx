@@ -38,107 +38,6 @@ interface ClassSchedule {
     type: 'live' | 'test' | 'assignment';
 }
 
-// Mock data for development/fallback - defined outside component to avoid recreating on each render
-const mockStudents: Student[] = [
-    {
-        id: '1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        class: 'Mathematics A',
-        attendance: 95,
-        avgGrade: 88,
-        lastActive: '2 hours ago',
-        enrollmentDate: '2023-09-15',
-        phone: '+1 234-567-8901',
-        testCount: 8,
-        uploadCount: 5,
-        achievements: [
-            { id: '1', name: 'Fast Learner', icon: '⚡', unlockedDate: '2024-01-10', description: 'Completed 5 tests' },
-            { id: '2', name: 'Perfect Score', icon: '💯', description: 'Score 100% on a test' },
-        ],
-        classSchedules: [
-            { id: '1', date: '2024-01-20', time: '10:00 AM', title: 'Algebra II', type: 'live' },
-            { id: '2', date: '2024-01-22', time: '2:00 PM', title: 'Chapter 5 Test', type: 'test' },
-        ],
-    },
-    {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        class: 'Mathematics A',
-        attendance: 92,
-        avgGrade: 92,
-        lastActive: '1 day ago',
-        enrollmentDate: '2023-09-15',
-        phone: '+1 234-567-8902',
-        testCount: 10,
-        uploadCount: 8,
-        achievements: [
-            { id: '1', name: 'Fast Learner', icon: '⚡', unlockedDate: '2024-01-08', description: 'Completed 5 tests' },
-            { id: '2', name: 'Perfect Score', icon: '💯', unlockedDate: '2024-01-15', description: 'Score 100% on a test' },
-            { id: '3', name: 'Consistent', icon: '📈', unlockedDate: '2024-01-18', description: 'Over 90% in 3 consecutive tests' },
-        ],
-        classSchedules: [
-            { id: '1', date: '2024-01-20', time: '10:00 AM', title: 'Algebra II', type: 'live' },
-        ],
-    },
-    {
-        id: '3',
-        name: 'Mike Johnson',
-        email: 'mike@example.com',
-        class: 'Physics B',
-        attendance: 88,
-        avgGrade: 85,
-        lastActive: '3 hours ago',
-        enrollmentDate: '2023-10-01',
-        phone: '+1 234-567-8903',
-        testCount: 6,
-        uploadCount: 4,
-        achievements: [
-            { id: '1', name: 'Dedication', icon: '🎯', unlockedDate: '2024-01-12', description: '90%+ attendance' },
-        ],
-        classSchedules: [],
-    },
-    {
-        id: '4',
-        name: 'Sarah Williams',
-        email: 'sarah@example.com',
-        class: 'Chemistry C',
-        attendance: 97,
-        avgGrade: 94,
-        lastActive: '30 mins ago',
-        enrollmentDate: '2023-09-01',
-        phone: '+1 234-567-8904',
-        testCount: 12,
-        uploadCount: 10,
-        achievements: [
-            { id: '1', name: 'Fast Learner', icon: '⚡', unlockedDate: '2024-01-05', description: 'Completed 5 tests' },
-            { id: '2', name: 'Perfect Score', icon: '💯', unlockedDate: '2024-01-10', description: 'Score 100% on a test' },
-            { id: '3', name: 'Consistent', icon: '📈', unlockedDate: '2024-01-15', description: 'Over 90% in 3 consecutive tests' },
-            { id: '4', name: 'Dedication', icon: '🎯', unlockedDate: '2024-01-18', description: '90%+ attendance' },
-        ],
-        classSchedules: [
-            { id: '1', date: '2024-01-20', time: '11:00 AM', title: 'Chemical Reactions', type: 'live' },
-            { id: '2', date: '2024-01-23', time: '3:00 PM', title: 'Lab Report Assignment', type: 'assignment' },
-        ],
-    },
-    {
-        id: '5',
-        name: 'Tom Brown',
-        email: 'tom@example.com',
-        class: 'Mathematics A',
-        attendance: 85,
-        avgGrade: 78,
-        lastActive: '5 hours ago',
-        enrollmentDate: '2023-10-15',
-        phone: '+1 234-567-8905',
-        testCount: 5,
-        uploadCount: 3,
-        achievements: [],
-        classSchedules: [],
-    },
-];
-
 const TutorStudents: React.FC = () => {
     const [selectedClass, setSelectedClass] = useState<string>('all');
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -161,15 +60,15 @@ const TutorStudents: React.FC = () => {
 
                 if (response.success && response.data.students) {
                     // Transform backend data to match Student interface
-                    const transformedStudents: Student[] = response.data.students.map((s: { id: string; name: string; email: string }) => ({
+                    const transformedStudents: Student[] = response.data.students.map((s: { id: string; name: string; email: string; gradeLevel?: string }) => ({
                         id: s.id,
                         name: s.name,
                         email: s.email,
-                        class: 'General', // Backend doesn't return class, use default
-                        attendance: 95, // Placeholder
-                        avgGrade: 85, // Placeholder
-                        lastActive: 'Recently',
-                        enrollmentDate: new Date().toISOString().split('T')[0],
+                        class: s.gradeLevel || 'General',
+                        attendance: 0,
+                        avgGrade: 0,
+                        lastActive: '',
+                        enrollmentDate: '',
                         phone: '',
                         testCount: 0,
                         uploadCount: 0,
@@ -177,15 +76,11 @@ const TutorStudents: React.FC = () => {
                         classSchedules: [],
                     }));
                     setStudents(transformedStudents);
-                } else {
-                    // Use mock data as fallback
-                    setStudents(mockStudents);
                 }
             } catch (error: unknown) {
                 const axiosError = error as { response?: { data?: { message?: string } } };
                 showToast(axiosError.response?.data?.message || 'Failed to load students', 'error');
-                // Use mock data on error
-                setStudents(mockStudents);
+                setStudents([]);
             }
         };
 

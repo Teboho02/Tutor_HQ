@@ -399,8 +399,9 @@ body {
     }
 }
 
-/* Dark Mode Support (Optional) */
-@media (prefers-color-scheme: dark) {
+/* Dark Mode Support - disabled (app uses light theme only)
+   Re-enable when full dark mode is implemented with proper backgrounds */
+/* @media (prefers-color-scheme: dark) {
     :root {
         --text-dark: #ffffff;
         --text-medium: #e0e0e0;
@@ -409,7 +410,7 @@ body {
         --light-bg: #1e1e1e;
         --light-gray: #2a2a2a;
     }
-}
+} */
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {

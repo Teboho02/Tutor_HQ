@@ -83,20 +83,11 @@
     }
 }
 
-/* Dark mode support */
+/* Dark mode disabled - app uses light theme only
 @media (prefers-color-scheme: dark) {
-    .skeleton {
-        background: linear-gradient(90deg,
-                #2a2a2a 25%,
-                #1e1e1e 50%,
-                #2a2a2a 75%);
-        background-size: 200% 100%;
-    }
-
-    .skeleton-card-wrapper {
-        border-color: #3a3a3a;
-    }
-}
+    .skeleton { background: linear-gradient(90deg, #2a2a2a 25%, #1e1e1e 50%, #2a2a2a 75%); background-size: 200% 100%; }
+    .skeleton-card-wrapper { border-color: #3a3a3a; }
+} */
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

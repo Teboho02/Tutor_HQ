@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import FileUpload from '../../../components/FileUpload';
+import { assignmentService } from '../../../services/assignment.service';
+import { useAuth } from '../../../contexts/AuthContext';
 import type { NavigationLink } from '../../../types';
 import type { Test } from '../../../types/test';
 import './SubmitAssignment.css';
@@ -10,10 +12,12 @@ import './SubmitAssignment.css';
 const SubmitAssignment: React.FC = () => {
     const { assignmentId } = useParams<{ assignmentId: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [assignment, setAssignment] = useState<Test | null>(null);
     const [files, setFiles] = useState<File[]>([]);
     const [description, setDescription] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -25,29 +29,42 @@ const SubmitAssignment: React.FC = () => {
     ];
 
     useEffect(() => {
-        // In production, fetch assignment from API: GET /api/assignments/${assignmentId}
-        const mockAssignment: Test = {
-            id: assignmentId || '1',
-            title: 'Research Paper on Climate Change',
-            subject: 'Environmental Science',
-            description: 'Write a comprehensive research paper (5-10 pages) on the impact of climate change on ocean ecosystems. Include at least 5 peer-reviewed sources.',
-            tutorId: '1',
-            tutorName: 'Dr. Johnson',
-            scheduledDate: '2025-11-15',
-            scheduledTime: '23:59',
-            duration: 0,
-            totalPoints: 100,
-            questions: [],
-            studentIds: ['student1'],
-            status: 'active',
-            createdAt: '2025-10-25',
-            assignmentType: 'upload',
-            allowedFileTypes: ['.pdf', '.docx', '.doc'],
-            maxFileSize: 10,
-            requiresDescription: true,
+        const fetchAssignment = async () => {
+            if (!assignmentId) return;
+            try {
+                setLoading(true);
+                const response = await assignmentService.getAssignment(assignmentId);
+                if (response.success && response.data) {
+                    const a = response.data.assignment || response.data;
+                    setAssignment({
+                        id: a.id || assignmentId,
+                        title: a.title || 'Assignment',
+                        subject: a.classes?.subject || a.subject || '',
+                        description: a.description || a.instructions || '',
+                        tutorId: a.tutor_id || '',
+                        tutorName: a.tutor_name || '',
+                        scheduledDate: a.due_date || a.dueDate || '',
+                        scheduledTime: '23:59',
+                        duration: 0,
+                        totalPoints: a.total_marks || a.totalMarks || 100,
+                        questions: [],
+                        studentIds: [],
+                        status: a.status || 'active',
+                        createdAt: a.created_at || '',
+                        assignmentType: 'upload',
+                        allowedFileTypes: ['.pdf', '.docx', '.doc', '.jpg', '.jpeg', '.png'],
+                        maxFileSize: 10,
+                        requiresDescription: true,
+                    });
+                }
+            } catch {
+                // If assignment fetch fails, show error
+                setAssignment(null);
+            } finally {
+                setLoading(false);
+            }
         };
-
-        setAssignment(mockAssignment);
+        fetchAssignment();
     }, [assignmentId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -71,29 +88,34 @@ const SubmitAssignment: React.FC = () => {
 
         setIsSubmitting(true);
 
-        // In production, upload files and submit
-        const formData = new FormData();
-        files.forEach((file, index) => {
-            formData.append(`file${index}`, file);
-        });
-        formData.append('description', description);
-        formData.append('assignmentId', assignment?.id || '');
-        formData.append('studentId', 'student1'); // Get from auth context
+        try {
+            // Upload file first if present
+            let fileUrl = '';
+            if (files.length > 0) {
+                const uploadRes = await assignmentService.uploadFile(files[0]);
+                if (uploadRes.success) {
+                    fileUrl = uploadRes.data.url || uploadRes.data.fileUrl || '';
+                }
+            }
 
-        console.log('Submitting assignment:', {
-            assignmentId: assignment?.id,
-            filesCount: files.length,
-            description,
-        });
+            // Submit assignment
+            const submitRes = await assignmentService.submitAssignment(assignment?.id || '', {
+                fileUrl,
+                description,
+            });
 
-        // Simulate API call
-        setTimeout(() => {
-            alert('Assignment submitted successfully!');
-            navigate('/student/tests');
-        }, 1000);
+            if (submitRes.success) {
+                alert('Assignment submitted successfully!');
+                navigate('/student/tests');
+            }
+        } catch {
+            alert('Failed to submit assignment. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    if (!assignment) {
+    if (loading) {
         return (
             <div className="submit-assignment-page">
                 <Header navigationLinks={navigationLinks} />

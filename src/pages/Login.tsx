@@ -45,24 +45,19 @@ const Login: React.FC = () => {
         setLoading(true);
 
         try {
-            // Call real authentication API
-            await login(formData.email, formData.password);
+            // Call real authentication API - returns the logged-in user
+            const loggedInUser = await login(formData.email, formData.password);
 
-            // Navigation is handled by checking user state after login
-            // Wait a moment for user state to update
-            setTimeout(() => {
-                // Navigate based on actual user role from backend
-                if (user?.role === 'student') {
-                    navigate('/student/dashboard');
-                } else if (user?.role === 'tutor') {
-                    navigate('/tutor/dashboard');
-                } else if (user?.role === 'parent') {
-                    navigate('/parent/dashboard');
-                } else {
-                    // Fallback to old dashboard
-                    navigate('/dashboard');
-                }
-            }, 100);
+            // Navigate based on the returned user role (not React state which is stale)
+            if (loggedInUser.role === 'student') {
+                navigate('/student/dashboard');
+            } else if (loggedInUser.role === 'tutor') {
+                navigate('/tutor/dashboard');
+            } else if (loggedInUser.role === 'parent') {
+                navigate('/parent/dashboard');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (error) {
             // Error handling is done in AuthContext (shows toast)
             console.error('Login failed:', error);

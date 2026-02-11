@@ -72,27 +72,11 @@
     font-size: 14px;
 }
 
+/* Dark mode disabled - app uses light theme only
 @media (prefers-color-scheme: dark) {
-    .form-label {
-        color: #e5e5e5;
-    }
-
-    .form-input {
-        background-color: #2a2a2a;
-        border-color: #404040;
-        color: #e5e5e5;
-    }
-
-    .form-input:focus {
-        border-color: #60a5fa;
-        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
-    }
-
-    .form-input:disabled {
-        background-color: #1e1e1e;
-    }
-
-    .form-help-text {
-        color: #9ca3af;
-    }
-}
+    .form-label { color: #e5e5e5; }
+    .form-input { background-color: #2a2a2a; border-color: #404040; color: #e5e5e5; }
+    .form-input:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1); }
+    .form-input:disabled { background-color: #1e1e1e; }
+    .form-help-text { color: #9ca3af; }
+} */
