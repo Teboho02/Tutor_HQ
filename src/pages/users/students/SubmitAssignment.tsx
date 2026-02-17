@@ -12,7 +12,7 @@ import './SubmitAssignment.css';
 const SubmitAssignment: React.FC = () => {
     const { assignmentId } = useParams<{ assignmentId: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user: _user } = useAuth();
     const [assignment, setAssignment] = useState<Test | null>(null);
     const [files, setFiles] = useState<File[]>([]);
     const [description, setDescription] = useState('');
@@ -122,6 +122,18 @@ const SubmitAssignment: React.FC = () => {
                 <div className="loading-container">
                     <div className="loading-spinner">⏳</div>
                     <p>Loading assignment...</p>
+                </div>
+                <Footer />
+            </div>
+        );
+    }
+
+    if (!assignment) {
+        return (
+            <div className="submit-assignment-page">
+                <Header navigationLinks={navigationLinks} />
+                <div className="loading-container">
+                    <p>Assignment not found.</p>
                 </div>
                 <Footer />
             </div>

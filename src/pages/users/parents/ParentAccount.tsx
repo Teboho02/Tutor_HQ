@@ -123,7 +123,7 @@ const ParentAccount: React.FC = () => {
                     <div className="info-grid">
                         <div className="info-item">
                             <span className="info-label">Full Name</span>
-                            <span className="info-value">{user?.name || 'N/A'}</span>
+                            <span className="info-value">{user?.fullName || 'N/A'}</span>
                         </div>
                         <div className="info-item">
                             <span className="info-label">Email Address</span>
@@ -146,33 +146,33 @@ const ParentAccount: React.FC = () => {
                     ) : children.length === 0 ? (
                         <p style={{ textAlign: 'center', padding: '1rem', color: '#718096' }}>No children linked yet. Click "Link Child" to add a child.</p>
                     ) : (
-                    <div className="children-list">
-                        {children.map(child => (
-                            <div key={child.id} className="child-management-card">
-                                <div className="child-management-header">
-                                    <div>
-                                        <h3>{child.fullName}</h3>
-                                        <p>{child.gradeLevel} &bull; {child.email}</p>
-                                    </div>
-                                    <div className="child-actions">
-                                        <button
-                                            className="btn btn-sm btn-outline"
-                                            onClick={() => navigate(`/parent/child/${child.id}/progress`)}
-                                        >
-                                            View Progress
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-outline"
-                                            style={{ color: '#ef4444' }}
-                                            onClick={() => handleUnlinkChild(child.id, child.fullName)}
-                                        >
-                                            Unlink
-                                        </button>
+                        <div className="children-list">
+                            {children.map(child => (
+                                <div key={child.id} className="child-management-card">
+                                    <div className="child-management-header">
+                                        <div>
+                                            <h3>{child.fullName}</h3>
+                                            <p>{child.gradeLevel} &bull; {child.email}</p>
+                                        </div>
+                                        <div className="child-actions">
+                                            <button
+                                                className="btn btn-sm btn-outline"
+                                                onClick={() => navigate(`/parent/child/${child.id}`)}
+                                            >
+                                                View Progress
+                                            </button>
+                                            <button
+                                                className="btn btn-sm btn-outline"
+                                                style={{ color: '#ef4444' }}
+                                                onClick={() => handleUnlinkChild(child.id, child.fullName)}
+                                            >
+                                                Unlink
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
                     )}
                 </div>
 

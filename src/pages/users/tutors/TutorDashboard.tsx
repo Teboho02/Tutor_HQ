@@ -207,6 +207,12 @@ const TutorDashboard: React.FC = () => {
                             <a href="/tutor/classes" className="view-all-link">View All →</a>
                         </div>
                         <div className="classes-list">
+                            {upcomingClasses.length === 0 && (
+                                <div className="empty-state" style={{ textAlign: 'center', padding: '2rem', color: '#718096' }}>
+                                    <p>No upcoming classes scheduled</p>
+                                    <a href="/tutor/schedule" className="btn btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>Schedule a Class</a>
+                                </div>
+                            )}
                             {upcomingClasses.map((classItem) => (
                                 <div key={classItem.id} className="class-item">
                                     <div className="class-info">
@@ -228,7 +234,7 @@ const TutorDashboard: React.FC = () => {
                                                 if (classItem.classLink) {
                                                     window.open(classItem.classLink, '_blank');
                                                 } else {
-                                                    alert('No class link set for this class. Please configure it in the schedule.');
+                                                    showToast('No class link set for this class. Please configure it in the schedule.', 'info');
                                                 }
                                             }}
                                         >
@@ -255,6 +261,11 @@ const TutorDashboard: React.FC = () => {
                             <h2>Recent Activity</h2>
                         </div>
                         <div className="activity-list">
+                            {recentActivity.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: '2rem', color: '#718096' }}>
+                                    <p>No recent activity</p>
+                                </div>
+                            )}
                             {recentActivity.map((activity, index) => (
                                 <div key={index} className="activity-item">
                                     <div className={`activity-icon ${activity.type}`}>
@@ -291,7 +302,7 @@ const TutorDashboard: React.FC = () => {
                             <h3>View Students</h3>
                             <p>Manage your student roster</p>
                         </a>
-                        <a href="/tutor/analytics" className="action-card">
+                        <a href="/analytics" className="action-card">
                             <span className="action-icon">📊</span>
                             <h3>View Analytics</h3>
                             <p>Track class performance</p>
@@ -348,7 +359,7 @@ const TutorDashboard: React.FC = () => {
                                                 className="btn btn-small"
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(selectedClass.classLink!);
-                                                    alert('Link copied to clipboard!');
+                                                    showToast('Link copied to clipboard!', 'success');
                                                 }}
                                             >
                                                 📋 Copy

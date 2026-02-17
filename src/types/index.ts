@@ -4,6 +4,7 @@ export interface NavigationLink {
     label: string;
     href: string;
     external?: boolean;
+    onClick?: () => void;
 }
 
 export interface User {

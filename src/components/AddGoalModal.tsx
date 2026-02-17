@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import CalendarPicker from './CalendarPicker';
 import '../styles/AddGoalModal.css';
 
 // Use string literals for compatibility with API
@@ -30,7 +31,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
     const [description, setDescription] = useState(editGoal?.description || '');
     const [category, setCategory] = useState<GoalCategory>(editGoal?.category || 'academic');
     const [targetDate, setTargetDate] = useState(
-        editGoal?.targetDate ? new Date(editGoal.targetDate).toISOString().split('T')[0] : ''
+        editGoal?.targetDate ? new Date(editGoal.targetDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     );
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -44,7 +45,7 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
             setTitle('');
             setDescription('');
             setCategory('academic');
-            setTargetDate('');
+            setTargetDate(new Date().toISOString().split('T')[0]);
         }
         setErrors({});
     }, [editGoal, isOpen]);
@@ -174,13 +175,13 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, onS
                         <label htmlFor="targetDate">
                             Target Date <span className="required">*</span>
                         </label>
-                        <input
+                        <CalendarPicker
                             id="targetDate"
-                            type="date"
                             value={targetDate}
-                            onChange={(e) => setTargetDate(e.target.value)}
+                            onChange={(val) => setTargetDate(val)}
                             min={new Date().toISOString().split('T')[0]}
-                            className={errors.targetDate ? 'error' : ''}
+                            error={!!errors.targetDate}
+                            placeholder="Select target date"
                         />
                         {errors.targetDate && <span className="error-message">{errors.targetDate}</span>}
                     </div>

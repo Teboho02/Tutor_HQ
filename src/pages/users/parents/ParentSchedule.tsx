@@ -110,6 +110,34 @@ const ParentSchedule: React.FC = () => {
         });
     };
 
+    const getWeekDays = (date: Date) => {
+        const startOfWeek = new Date(date);
+        const day = startOfWeek.getDay();
+        const diff = startOfWeek.getDate() - day;
+        startOfWeek.setDate(diff);
+
+        const weekDays: Date[] = [];
+        for (let i = 0; i < 7; i++) {
+            const weekDay = new Date(startOfWeek);
+            weekDay.setDate(startOfWeek.getDate() + i);
+            weekDays.push(weekDay);
+        }
+        return weekDays;
+    };
+
+    const changeWeek = (direction: 'prev' | 'next') => {
+        setCurrentDate(prev => {
+            const newDate = new Date(prev);
+            newDate.setDate(prev.getDate() + (direction === 'next' ? 7 : -7));
+            return newDate;
+        });
+    };
+
+    const isToday = (date: Date) => {
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
     const getTypeIcon = (type: string) => {
         switch (type) {
             case 'class': return '📚';
@@ -214,8 +242,15 @@ const ParentSchedule: React.FC = () => {
                     ))}
                 </div>
 
+                {/* Loading State */}
+                {loading && (
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <p style={{ color: '#718096', fontSize: '1.1rem' }}>Loading schedule...</p>
+                    </div>
+                )}
+
                 {/* Calendar Navigation */}
-                {(viewMode === 'month' || viewMode === 'week') && (
+                {!loading && viewMode === 'month' && (
                     <div className="calendar-nav">
                         <button className="nav-btn" onClick={() => navigateMonth('prev')}>←</button>
                         <h2>{formatDate(currentDate)}</h2>
@@ -223,8 +258,19 @@ const ParentSchedule: React.FC = () => {
                     </div>
                 )}
 
+                {!loading && viewMode === 'week' && (
+                    <div className="calendar-nav">
+                        <button className="nav-btn" onClick={() => changeWeek('prev')}>←</button>
+                        <h2>
+                            {getWeekDays(currentDate)[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {' '}
+                            {getWeekDays(currentDate)[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </h2>
+                        <button className="nav-btn" onClick={() => changeWeek('next')}>→</button>
+                    </div>
+                )}
+
                 {/* Month View */}
-                {viewMode === 'month' && (
+                {!loading && viewMode === 'month' && (
                     <div className="calendar-view">
                         <div className="calendar-header">
                             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -238,14 +284,50 @@ const ParentSchedule: React.FC = () => {
                 )}
 
                 {/* Week View */}
-                {viewMode === 'week' && (
+                {!loading && viewMode === 'week' && (
                     <div className="week-view">
-                        <p className="view-placeholder">Week view coming soon...</p>
+                        <div className="week-grid">
+                            {getWeekDays(currentDate).map((date, index) => {
+                                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                                const dayEvents = getEventsForDate(dateStr);
+                                return (
+                                    <div
+                                        key={index}
+                                        className={`week-day ${isToday(date) ? 'today' : ''}`}
+                                    >
+                                        <div className="week-day-header">
+                                            <div className="week-day-name">{date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                                            <div className={`week-day-number ${isToday(date) ? 'today-number' : ''}`}>
+                                                {date.getDate()}
+                                            </div>
+                                        </div>
+                                        <div className="week-day-events">
+                                            {dayEvents.length > 0 ? (
+                                                dayEvents.map(event => (
+                                                    <div
+                                                        key={event.id}
+                                                        className="week-event"
+                                                        style={{ borderLeftColor: getTypeColor(event.type), backgroundColor: `${getTypeColor(event.type)}15` }}
+                                                    >
+                                                        <div className="week-event-time">{event.time}</div>
+                                                        <div className="week-event-title">{event.title}</div>
+                                                        <div className="week-event-subject">{event.subject}</div>
+                                                        <div className="week-event-child">👤 {event.child}</div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="no-events-day">No events</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
 
                 {/* List View */}
-                {viewMode === 'list' && (
+                {!loading && viewMode === 'list' && (
                     <div className="list-view">
                         {filteredEvents.map(event => (
                             <div key={event.id} className="event-card">

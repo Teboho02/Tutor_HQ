@@ -32,15 +32,15 @@ const MainPage: React.FC = () => {
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div class="stat-value">—</div>
-                            <div class="stat-label">Upcoming Sessions</div>
+                            <div className="stat-value">—</div>
+                            <div className="stat-label">Upcoming Sessions</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">—</div>
-                            <div class="stat-label">Tests This Week</div>
+                        <div className="stat-card">
+                            <div className="stat-value">—</div>
+                            <div className="stat-label">Tests This Week</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">—</div>
+                        <div className="stat-card">
+                            <div className="stat-value">—</div>
                             <div className="stat-label">Overall Progress</div>
                         </div>
                     </div>
@@ -153,15 +153,15 @@ const MainPage: React.FC = () => {
                     </div>
                     <div className="stats-grid">
                         <div className="stat-card">
-                            <div class="stat-value">—</div>
-                            <div class="stat-label">Total Students</div>
+                            <div className="stat-value">—</div>
+                            <div className="stat-label">Total Students</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">—</div>
-                            <div class="stat-label">Pending Payout</div>
+                        <div className="stat-card">
+                            <div className="stat-value">—</div>
+                            <div className="stat-label">Pending Payout</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">—</div>
+                        <div className="stat-card">
+                            <div className="stat-value">—</div>
                             <div className="stat-label">Classes This Week</div>
                         </div>
                     </div>

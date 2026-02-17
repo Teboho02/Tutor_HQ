@@ -16,6 +16,7 @@ interface Class {
     duration: string;
     students: number;
     status: 'upcoming' | 'completed';
+    meetingLink?: string;
 }
 
 const TutorClasses: React.FC = () => {
@@ -38,14 +39,14 @@ const TutorClasses: React.FC = () => {
                 const response = await classService.listClasses();
                 if (response.success && response.data.classes) {
                     const now = new Date();
-                    const transformed: Class[] = response.data.classes.map((c: { id: number; title: string; subject: string; scheduled_at?: string; scheduledAt?: string; duration_minutes?: number; durationMinutes?: number; status?: string; enrollmentCount?: number }) => {
+                    const transformed: Class[] = response.data.classes.map((c: { id: number; title: string; subject: string; scheduled_at?: string; scheduledAt?: string; duration?: number; duration_minutes?: number; durationMinutes?: number; status?: string; enrollmentCount?: number; meetingLink?: string; meeting_link?: string }) => {
                         const scheduledAt = c.scheduled_at || c.scheduledAt || '';
                         const classDate = new Date(scheduledAt);
                         const isCompleted = c.status === 'completed' || classDate < now;
                         const today = new Date();
                         const tomorrow = new Date(today);
                         tomorrow.setDate(tomorrow.getDate() + 1);
-                        
+
                         let dateLabel = classDate.toLocaleDateString('en-ZA', { month: 'short', day: 'numeric' });
                         if (classDate.toDateString() === today.toDateString()) dateLabel = 'Today';
                         else if (classDate.toDateString() === tomorrow.toDateString()) dateLabel = 'Tomorrow';
@@ -56,9 +57,10 @@ const TutorClasses: React.FC = () => {
                             subject: c.subject || '',
                             date: dateLabel,
                             time: classDate.toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' }),
-                            duration: `${c.duration_minutes || c.durationMinutes || 60} min`,
+                            duration: `${c.duration || c.duration_minutes || c.durationMinutes || 60} min`,
                             students: c.enrollmentCount || 0,
                             status: isCompleted ? 'completed' as const : 'upcoming' as const,
+                            meetingLink: c.meetingLink || c.meeting_link || '',
                         };
                     });
                     setAllClasses(transformed);
@@ -145,7 +147,19 @@ const TutorClasses: React.FC = () => {
                     <>
                         <button
                             className="btn btn-primary"
-                            onClick={() => navigate(`/student/video-call/${classItem.id}`)}
+                            onClick={async () => {
+                                try {
+                                    const details = await classService.getClass(String(classItem.id));
+                                    const link = details?.data?.meetingLink || classItem.meetingLink;
+                                    if (link) {
+                                        window.open(link, '_blank');
+                                    } else {
+                                        showToast('No meeting link set. Edit the class to add one.', 'info');
+                                    }
+                                } catch {
+                                    showToast('Failed to get class details', 'error');
+                                }
+                            }}
                         >
                             Start Class
                         </button>
@@ -166,13 +180,13 @@ const TutorClasses: React.FC = () => {
                     <>
                         <button
                             className="btn btn-outline"
-                            onClick={() => navigate(`/tutor/recordings/${classItem.id}`)}
+                            onClick={() => showToast('Recordings feature coming soon!', 'info')}
                         >
                             View Recording
                         </button>
                         <button
                             className="btn btn-outline"
-                            onClick={() => navigate(`/tutor/analytics/class/${classItem.id}`)}
+                            onClick={() => navigate('/analytics')}
                         >
                             View Report
                         </button>
@@ -222,11 +236,11 @@ const TutorClasses: React.FC = () => {
                         <p>Loading classes...</p>
                     </div>
                 ) : (
-                <div className="classes-grid">
-                    {activeTab === 'upcoming'
-                        ? (upcomingClasses.length > 0 ? upcomingClasses.map(renderClassCard) : <div className="empty-state"><p>No upcoming classes</p></div>)
-                        : (completedClasses.length > 0 ? completedClasses.map(renderClassCard) : <div className="empty-state"><p>No completed classes yet</p></div>)}
-                </div>
+                    <div className="classes-grid">
+                        {activeTab === 'upcoming'
+                            ? (upcomingClasses.length > 0 ? upcomingClasses.map(renderClassCard) : <div className="empty-state"><p>No upcoming classes</p></div>)
+                            : (completedClasses.length > 0 ? completedClasses.map(renderClassCard) : <div className="empty-state"><p>No completed classes yet</p></div>)}
+                    </div>
                 )}
             </div>
 

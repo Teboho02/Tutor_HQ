@@ -1,0 +1,227 @@
+/* ========================================
+   Calendar Picker Component
+   ======================================== */
+
+.calendar-picker {
+    position: relative;
+    width: 100%;
+}
+
+/* Input trigger */
+.calendar-picker-input {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.calendar-picker-input:hover {
+    border-color: #cbd5e0;
+}
+
+.calendar-picker-input.focused {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.calendar-picker-input.error {
+    border-color: #e53e3e;
+}
+
+.calendar-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.calendar-value {
+    flex: 1;
+    color: #1a202c;
+    font-weight: 500;
+}
+
+.calendar-value.placeholder {
+    color: #a0aec0;
+    font-weight: 400;
+}
+
+.calendar-chevron {
+    font-size: 0.65rem;
+    color: #a0aec0;
+    flex-shrink: 0;
+}
+
+/* Dropdown calendar */
+.calendar-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 1050;
+    width: 260px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 0.5rem;
+    animation: calendarSlideIn 0.15s ease-out;
+}
+
+@keyframes calendarSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header — month/year and nav arrows */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0 0.25rem;
+}
+
+.cal-month-year {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1a202c;
+}
+
+.cal-nav-btn {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: #f7fafc;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #4a5568;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cal-nav-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Day name headers */
+.calendar-day-names {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    margin-bottom: 0.25rem;
+}
+
+.cal-day-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #a0aec0;
+    text-transform: uppercase;
+    padding: 0.2rem 0;
+}
+
+/* Day grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+}
+
+.cal-day {
+    width: 100%;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #2d3748;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+    padding: 0;
+}
+
+.cal-day:hover:not(.disabled):not(.selected) {
+    background: #edf2f7;
+}
+
+.cal-day.other-month {
+    color: #cbd5e0;
+}
+
+.cal-day.today {
+    background: #ebf4ff;
+    color: #667eea;
+    font-weight: 700;
+}
+
+.cal-day.selected {
+    background: #667eea;
+    color: white;
+    font-weight: 700;
+}
+
+.cal-day.selected.today {
+    background: #667eea;
+    color: white;
+}
+
+.cal-day.disabled {
+    color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+/* Footer — Today button */
+.calendar-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.cal-today-btn {
+    padding: 0.35rem 1rem;
+    border: 1px solid #667eea;
+    background: transparent;
+    color: #667eea;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cal-today-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    .calendar-dropdown {
+        width: 100%;
+        min-width: 260px;
+    }
+}

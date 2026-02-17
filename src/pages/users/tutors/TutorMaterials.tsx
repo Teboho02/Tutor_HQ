@@ -6,6 +6,7 @@ import { useToast } from '../../../components/Toast';
 import { materialService } from '../../../services/material.service';
 import type { Material as MaterialType } from '../../../services/material.service';
 import { classService } from '../../../services/class.service';
+import { testService } from '../../../services/test.service';
 import type { NavigationLink } from '../../../types';
 import './TutorMaterials.css';
 
@@ -44,8 +45,12 @@ const TutorMaterials: React.FC = () => {
     const [showTestModal, setShowTestModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStatus, setUploadStatus] = useState('');
     const [materials, setMaterials] = useState<MaterialType[]>([]);
     const [classes, setClasses] = useState<ClassOption[]>([]);
+    const [scheduledTests, setScheduledTests] = useState<ScheduledTest[]>([]);
+    const [testPerformanceData, setTestPerformanceData] = useState<{ [testId: string]: StudentPerformance[] }>({});
     const [uploadForm, setUploadForm] = useState({
         title: '',
         classId: '',
@@ -91,9 +96,68 @@ const TutorMaterials: React.FC = () => {
                         subject: c.subject
                     })));
                 }
+
+                // Fetch tests
+                const testsResponse = await testService.getTutorTests();
+                if (testsResponse.success && testsResponse.data.tests) {
+                    interface TestResult {
+                        id: string;
+                        score: number | null;
+                        percentage: number | null;
+                        status: string;
+                    }
+                    interface RawTest {
+                        id: string;
+                        title: string;
+                        description: string;
+                        status: string;
+                        total_marks: number;
+                        passing_marks: number;
+                        scheduled_at: string;
+                        due_date: string;
+                        questions: Array<Record<string, unknown>> | null;
+                        classes: { id: string; title: string; subject: string } | null;
+                        test_results: TestResult[];
+                    }
+                    const mapped: ScheduledTest[] = testsResponse.data.tests.map((t: RawTest) => {
+                        const results = t.test_results || [];
+                        const graded = results.filter((r: TestResult) => r.status === 'graded');
+                        const avgScore = graded.length > 0
+                            ? Math.round(graded.reduce((sum: number, r: TestResult) => sum + (r.percentage || 0), 0) / graded.length)
+                            : 0;
+                        const passRate = graded.length > 0
+                            ? Math.round(graded.filter((r: TestResult) => (r.score || 0) >= (t.passing_marks || 0)).length / graded.length * 100)
+                            : 0;
+                        return {
+                            id: t.id,
+                            title: t.title,
+                            class: t.classes?.title || 'Unknown',
+                            date: new Date(t.scheduled_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                            totalQuestions: t.questions?.length || 0,
+                            totalSubmissions: results.length,
+                            averageScore: avgScore,
+                            passRate: passRate,
+                            type: 'test' as const,
+                        };
+                    });
+                    setScheduledTests(mapped);
+
+                    // Build performance data per test
+                    const perfData: { [testId: string]: StudentPerformance[] } = {};
+                    testsResponse.data.tests.forEach((t: RawTest) => {
+                        perfData[t.id] = (t.test_results || []).map((r: TestResult) => ({
+                            studentId: (r as TestResult & { student_id?: string }).student_id || r.id,
+                            studentName: 'Student',
+                            score: r.percentage || 0,
+                            submitted: true,
+                            submittedDate: undefined,
+                        }));
+                    });
+                    setTestPerformanceData(perfData);
+                }
             } catch (error: unknown) {
-                const err = error as { response?: { data?: { error?: string } } };
-                showToast(err.response?.data?.error || 'Failed to load materials', 'error');
+                const err = error as { response?: { data?: { message?: string } } };
+                showToast(err.response?.data?.message || 'Failed to load materials', 'error');
             } finally {
                 setLoading(false);
             }
@@ -103,10 +167,6 @@ const TutorMaterials: React.FC = () => {
     }, [showToast]);
 
     const classOptions = ['All Classes', ...classes.map(c => c.title)];
-
-    const scheduledTests: ScheduledTest[] = [];
-
-    const testPerformanceData: { [testId: string]: StudentPerformance[] } = {};
 
     const filteredMaterials = selectedClass === 'all'
         ? materials
@@ -154,16 +214,36 @@ const TutorMaterials: React.FC = () => {
 
         try {
             setUploading(true);
+            setUploadProgress(0);
+            setUploadStatus('');
 
             let fileUrl = '';
             let fileSize = 0;
 
             // Upload file if not a link
             if (uploadForm.type !== 'link' && uploadForm.file) {
-                const uploadResponse = await materialService.uploadFile(uploadForm.file);
+                const isVideo = uploadForm.file.type.startsWith('video/');
+                if (isVideo) {
+                    setUploadStatus('Uploading video — the server will compress it automatically. This may take a few minutes for long videos...');
+                }
+
+                const uploadResponse = await materialService.uploadFile(
+                    uploadForm.file,
+                    (percent) => setUploadProgress(percent)
+                );
                 if (uploadResponse.success) {
                     fileUrl = uploadResponse.data.fileUrl;
-                    fileSize = uploadForm.file.size;
+                    fileSize = uploadResponse.data.compression
+                        ? uploadResponse.data.compression.compressedSize
+                        : uploadForm.file.size;
+
+                    // Show compression results
+                    if (uploadResponse.data.compression && !uploadResponse.data.compression.skipped) {
+                        const c = uploadResponse.data.compression;
+                        const origMB = (c.originalSize / 1024 / 1024).toFixed(1);
+                        const compMB = (c.compressedSize / 1024 / 1024).toFixed(1);
+                        showToast(`Video compressed: ${origMB} MB → ${compMB} MB (${c.ratio} smaller)`, 'success');
+                    }
                 }
             }
 
@@ -200,15 +280,17 @@ const TutorMaterials: React.FC = () => {
                 setShowUploadModal(false);
             }
         } catch (error: unknown) {
-            const err = error as { response?: { data?: { error?: string } } };
-            showToast(err.response?.data?.error || 'Failed to upload material', 'error');
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to upload material', 'error');
         } finally {
             setUploading(false);
+            setUploadProgress(0);
+            setUploadStatus('');
         }
     };
 
     const handleDeleteMaterial = async (materialId: string) => {
-        if (!confirm('Are you sure you want to delete this material?')) return;
+        if (!window.confirm('Are you sure you want to delete this material?')) return;
 
         try {
             const response = await materialService.deleteMaterial(materialId);
@@ -217,8 +299,8 @@ const TutorMaterials: React.FC = () => {
                 showToast('Material deleted successfully', 'success');
             }
         } catch (error: unknown) {
-            const err = error as { response?: { data?: { error?: string } } };
-            showToast(err.response?.data?.error || 'Failed to delete material', 'error');
+            const err = error as { response?: { data?: { message?: string } } };
+            showToast(err.response?.data?.message || 'Failed to delete material', 'error');
         }
     };
 
@@ -504,8 +586,18 @@ const TutorMaterials: React.FC = () => {
                                         Cancel
                                     </button>
                                     <button type="submit" className="btn btn-primary" disabled={uploading}>
-                                        {uploading ? 'Uploading...' : 'Upload'}
+                                        {uploading
+                                            ? uploadProgress < 100
+                                                ? `Uploading ${uploadProgress}%`
+                                                : 'Compressing & saving...'
+                                            : 'Upload'
+                                        }
                                     </button>
+                                    {uploading && uploadStatus && (
+                                        <p style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: '0.5rem' }}>
+                                            {uploadStatus}
+                                        </p>
+                                    )}
                                 </div>
                             </form>
                         </div>

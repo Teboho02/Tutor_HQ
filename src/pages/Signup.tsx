@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import type { NavigationLink } from '../types';
@@ -9,7 +10,10 @@ type SignupType = 'student-parent' | 'tutor';
 
 const Signup: React.FC = () => {
     const navigate = useNavigate();
+    const { register } = useAuth();
     const [signupType, setSignupType] = useState<SignupType>('student-parent');
+    const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         // Common fields
         firstName: '',
@@ -39,30 +43,72 @@ const Signup: React.FC = () => {
         { label: 'Contact', href: '/contact' },
     ];
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMsg(null);
 
         // Validation
         if (formData.password !== formData.confirmPassword) {
-            alert('Passwords do not match!');
+            setErrorMsg('Passwords do not match!');
             return;
         }
 
         if (formData.password.length < 8) {
-            alert('Password must be at least 8 characters long!');
+            setErrorMsg('Password must be at least 8 characters long!');
             return;
         }
 
-        // In a real app, you would send this to your backend
-        console.log('Signup data:', { ...formData, signupType });
+        // Determine the role
+        const role = signupType === 'tutor' ? 'tutor' : (formData.userType as 'student' | 'parent');
 
-        // Navigate based on signup type
-        if (signupType === 'tutor') {
-            alert('Welcome to Tutor HQ! Your application is being reviewed.');
-            navigate('/login');
-        } else {
-            alert('Account created successfully! Please log in.');
-            navigate('/login');
+        // Build registration data
+        const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+        const registerData: {
+            email: string;
+            password: string;
+            fullName: string;
+            role: 'student' | 'tutor' | 'parent';
+            parentEmails?: string[];
+            childEmails?: string[];
+        } = {
+            email: formData.email,
+            password: formData.password,
+            fullName,
+            role,
+        };
+
+        // Add parent email for student signups
+        if (role === 'student' && formData.parentEmail) {
+            registerData.parentEmails = [formData.parentEmail];
+        }
+
+        // Add child email for parent signups
+        if (role === 'parent' && formData.parentEmail) {
+            registerData.childEmails = [formData.parentEmail];
+        }
+
+        setSubmitting(true);
+        try {
+            await register(registerData);
+            // Registration successful — navigate to appropriate portal
+            switch (role) {
+                case 'student':
+                    navigate('/student/dashboard');
+                    break;
+                case 'tutor':
+                    navigate('/tutor/dashboard');
+                    break;
+                case 'parent':
+                    navigate('/parent/dashboard');
+                    break;
+                default:
+                    navigate('/login');
+            }
+        } catch (err: unknown) {
+            const axiosError = err as { response?: { data?: { message?: string } } };
+            setErrorMsg(axiosError.response?.data?.message || 'Registration failed. Please try again.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -106,6 +152,14 @@ const Signup: React.FC = () => {
 
                     {/* Signup Form */}
                     <form onSubmit={handleSubmit} className="signup-form">
+                        {/* Error Message */}
+                        {errorMsg && (
+                            <div className="signup-error">
+                                <span>⚠️ {errorMsg}</span>
+                                <button type="button" onClick={() => setErrorMsg(null)} className="error-close">×</button>
+                            </div>
+                        )}
+
                         {/* Common Fields */}
                         <div className="form-row">
                             <div className="form-group">
@@ -313,8 +367,8 @@ const Signup: React.FC = () => {
                             </label>
                         </div>
 
-                        <button type="submit" className="btn btn-primary btn-lg btn-block">
-                            {signupType === 'tutor' ? 'Apply as Tutor' : 'Create Account'}
+                        <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
+                            {submitting ? 'Creating Account...' : (signupType === 'tutor' ? 'Apply as Tutor' : 'Create Account')}
                         </button>
                     </form>
 

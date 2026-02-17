@@ -58,37 +58,41 @@ const StudentTests: React.FC = () => {
 
                 if (response.success && response.data.results) {
                     // Transform backend data to match TestItem interface
+                    // Backend returns: result.tests (plural, Supabase table name)
+                    // with snake_case fields and nested classes.subject
                     interface TestResult {
-                        test: {
+                        tests: {
                             id: string;
                             title: string;
-                            subject?: string;
-                            tutorName?: string;
-                            scheduledAt?: string;
-                            dueDate?: string;
-                            duration?: number;
-                            totalMarks?: number;
+                            total_marks?: number;
+                            scheduled_at?: string;
+                            due_date?: string;
+                            classes?: { title?: string; subject?: string };
                         };
                         status: string;
                         score?: number;
-                        submittedAt?: string;
+                        submitted_at?: string;
                     }
-                    const transformedTests: TestItem[] = response.data.results.map((result: TestResult) => ({
-                        id: result.test.id,
-                        title: result.test.title,
-                        subject: result.test.subject || 'General',
-                        teacher: result.test.tutorName || 'Teacher',
-                        scheduledDate: result.test.scheduledAt || result.test.dueDate || '',
-                        scheduledTime: new Date(result.test.scheduledAt || result.test.dueDate || '').toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-                        duration: result.test.duration || 60,
-                        totalPoints: result.test.totalMarks || 100,
-                        status: result.status === 'graded' ? 'completed' : result.status === 'submitted' ? 'completed' : 'available',
-                        score: result.score,
-                        submittedAt: result.submittedAt,
-                        type: 'test',
-                        allowRetakes: false,
-                        maxRetakes: 0,
-                    }));
+                    const transformedTests: TestItem[] = response.data.results.map((result: TestResult) => {
+                        const test = result.tests;
+                        const scheduledAt = test?.scheduled_at || test?.due_date || '';
+                        return {
+                            id: test.id,
+                            title: test.title,
+                            subject: test.classes?.subject || 'General',
+                            teacher: 'Teacher',
+                            scheduledDate: scheduledAt,
+                            scheduledTime: scheduledAt ? new Date(scheduledAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
+                            duration: 60,
+                            totalPoints: test.total_marks || 100,
+                            status: result.status === 'graded' ? 'completed' : result.status === 'submitted' ? 'completed' : 'available',
+                            score: result.score,
+                            submittedAt: result.submitted_at,
+                            type: 'test' as const,
+                            allowRetakes: false,
+                            maxRetakes: 0,
+                        };
+                    });
                     setTests(transformedTests);
                 }
             } catch (error: unknown) {

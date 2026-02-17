@@ -62,17 +62,44 @@ const TestResults: React.FC = () => {
 
                 if (response.success && response.data.results) {
                     // Find the specific test result
+                    // Backend returns `tests` (plural, Supabase table name) with snake_case fields
                     interface TestResultItem {
-                        test: Test;
+                        tests: {
+                            id: string;
+                            title: string;
+                            total_marks: number;
+                            passing_marks?: number;
+                            scheduled_at?: string;
+                            due_date?: string;
+                            classes?: { title?: string; subject?: string };
+                            questions?: Question[];
+                        };
                         score: number;
                         answers?: StudentAnswer[];
                     }
-                    const testResult = response.data.results.find((r: TestResultItem) => r.test.id === testId);
+                    const testResult = response.data.results.find((r: TestResultItem) => r.tests.id === testId);
 
                     if (testResult) {
+                        const t = testResult.tests;
+                        const transformedTest: Test = {
+                            id: t.id,
+                            title: t.title,
+                            subject: t.classes?.subject || 'General',
+                            description: '',
+                            tutorId: '',
+                            tutorName: 'Teacher',
+                            scheduledDate: t.scheduled_at || t.due_date || '',
+                            scheduledTime: (t.scheduled_at || t.due_date) ? new Date(t.scheduled_at || t.due_date || '').toLocaleTimeString() : '',
+                            duration: 60,
+                            totalPoints: t.total_marks || 100,
+                            questions: t.questions || [],
+                            studentIds: [],
+                            status: 'completed',
+                            createdAt: '',
+                        };
                         setResultData({
                             score: testResult.score,
-                            test: testResult.test,
+                            test: transformedTest,
                             answers: testResult.answers || [],
                         });
                     } else {

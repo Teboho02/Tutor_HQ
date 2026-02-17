@@ -54,7 +54,8 @@ const ParentDashboard: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [showToast, selectedChildId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showToast]);
 
     useEffect(() => {
         fetchDashboard();

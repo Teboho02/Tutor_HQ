@@ -8,6 +8,7 @@ export interface CreateTestData {
   dueDate?: string;
   duration?: number;
   totalMarks?: number;
+  passingMarks?: number;
   questions?: Array<{
     id: string;
     type: string;
@@ -29,6 +30,11 @@ export const testService = {
     return response.data;
   },
 
+  async getTutorTests() {
+    const response = await apiClient.get('/tests/tutor/all');
+    return response.data;
+  },
+
   async getTest(testId: string) {
     const response = await apiClient.get(`/tests/${testId}`);
     return response.data;
@@ -46,6 +52,20 @@ export const testService = {
 
   async getClassResults(classId: string) {
     const response = await apiClient.get(`/tests/class/${classId}`);
+    return response.data;
+  },
+
+  async uploadQuestionImage(file: File): Promise<{ imageUrl: string; fileName: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post('/tests/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data.data;
+  },
+
+  async deleteQuestionImage(fileName: string) {
+    const response = await apiClient.post('/tests/delete-image', { fileName });
     return response.data;
   },
 };

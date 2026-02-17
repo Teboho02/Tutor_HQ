@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import Toast from '../../../components/Toast';
@@ -39,6 +40,7 @@ interface ClassSchedule {
 }
 
 const TutorStudents: React.FC = () => {
+    const navigate = useNavigate();
     const [selectedClass, setSelectedClass] = useState<string>('all');
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
     const [showProfileModal, setShowProfileModal] = useState(false);
@@ -96,7 +98,7 @@ const TutorStudents: React.FC = () => {
         { label: 'Account', href: '/tutor/account' },
     ];
 
-    const classes = ['All Students', 'Mathematics A', 'Physics B', 'Chemistry C'];
+    const classes = ['All Students', ...Array.from(new Set(students.map(s => s.class).filter(Boolean)))];
 
     const filteredStudents = selectedClass === 'all'
         ? students
@@ -112,6 +114,13 @@ const TutorStudents: React.FC = () => {
                         <h1>My Students</h1>
                         <p>Manage and track student performance</p>
                     </div>
+                    <button
+                        className="btn-primary"
+                        onClick={() => navigate('/tutor/onboarding')}
+                        style={{ whiteSpace: 'nowrap' }}
+                    >
+                        ➕ Manage Students & Classes
+                    </button>
                 </div>
 
                 {/* Class Filter */}

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import Toast from '../../../components/Toast';
 import TestBuilder from '../../../components/TestBuilder';
+import CalendarPicker from '../../../components/CalendarPicker';
 import { classService } from '../../../services/class.service';
 import { testService } from '../../../services/test.service';
 import type { NavigationLink } from '../../../types';
@@ -13,9 +14,13 @@ import './TutorSchedule.css';
 interface Module {
     id: string;
     name: string;
+    subject: string;
     students: number;
     color: string;
 }
+
+// Helper: today's date in YYYY-MM-DD format
+const getToday = () => new Date().toISOString().split('T')[0];
 
 const TutorSchedule: React.FC = () => {
     const navigate = useNavigate();
@@ -28,13 +33,13 @@ const TutorSchedule: React.FC = () => {
         title: '',
         subject: '',
         module: '',
-        date: '',
+        date: getToday(),
         time: '',
         duration: '60',
         description: '',
         classLink: '',
         // Test/Assignment specific
-        dueDate: '',
+        dueDate: getToday(),
         totalMarks: '',
         passingMarks: '',
         // File upload settings
@@ -61,9 +66,10 @@ const TutorSchedule: React.FC = () => {
             try {
                 const response = await classService.listClasses();
                 if (response.success && response.data.classes) {
-                    const fetched: Module[] = response.data.classes.map((c: { id: string; title: string; enrollmentCount?: number }, i: number) => ({
+                    const fetched: Module[] = response.data.classes.map((c: { id: string; title: string; subject?: string; enrollmentCount?: number }, i: number) => ({
                         id: c.id,
                         name: c.title,
+                        subject: c.subject || '',
                         students: c.enrollmentCount || 0,
                         color: moduleColors[i % moduleColors.length],
                     }));
@@ -76,8 +82,6 @@ const TutorSchedule: React.FC = () => {
         fetchModules();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science'];
 
     const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
         setToast({ message, type });
@@ -112,6 +116,7 @@ const TutorSchedule: React.FC = () => {
                     scheduledAt: `${formData.date}T${formData.time}`,
                     durationMinutes: parseInt(formData.duration),
                     meetingLink: formData.classLink,
+                    sourceClassId: formData.module, // Copy students from the selected module
                 };
 
                 await classService.createClass(classData);
@@ -132,14 +137,17 @@ const TutorSchedule: React.FC = () => {
                     })),
                     correctAnswer: Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer,
                 }));
+                // Build valid timestamps — time input is only shown for liveClass,
+                // so default to 09:00 for the start and 23:59 for the due date
+                const startTime = formData.time || '09:00';
                 const testData = {
                     title: formData.title,
                     description: formData.description,
                     classId: formData.module, // Using module as classId
                     totalMarks: totalPoints,
                     passingMarks: parseInt(formData.passingMarks) || Math.floor(totalPoints * 0.5),
-                    scheduledAt: `${formData.date}T${formData.time}`,
-                    dueDate: formData.dueDate,
+                    scheduledAt: `${formData.date}T${startTime}:00`,
+                    dueDate: formData.dueDate ? `${formData.dueDate}T23:59:59` : undefined,
                     questions: formattedQuestions,
                 };
 
@@ -196,24 +204,38 @@ const TutorSchedule: React.FC = () => {
                 </div>
 
                 <form className="schedule-form" onSubmit={handleSubmit}>
+                    {/* Select Module — primary selection */}
+                    <div className="form-section">
+                        <h2>Select Module / Class *</h2>
+                        <p className="section-description">Choose a module to automatically include all enrolled students</p>
+                        <div className="modules-grid">
+                            {modules.map(module => (
+                                <div
+                                    key={module.id}
+                                    className={`module-card ${formData.module === module.id ? 'selected' : ''}`}
+                                    onClick={() => setFormData({ ...formData, module: module.id, subject: module.subject })}
+                                >
+                                    <div className="module-icon" style={{ background: module.color }}>
+                                        📚
+                                    </div>
+                                    <div className="module-info">
+                                        <h4>{module.name}</h4>
+                                        <p>{module.subject} • {module.students} students enrolled</p>
+                                    </div>
+                                    {formData.module === module.id && (
+                                        <div className="selected-badge">✓</div>
+                                    )}
+                                </div>
+                            ))}
+                            {modules.length === 0 && (
+                                <p className="no-modules-msg">No classes found. Create a class first in the <a href="/tutor/onboarding">Manage Students & Classes</a> page.</p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Basic Information */}
                     <div className="form-section">
-                        <h2>Basic Information</h2>
-
-                        <div className="form-group">
-                            <label htmlFor="module">Module / Class *</label>
-                            <select
-                                id="module"
-                                required
-                                value={formData.module}
-                                onChange={(e) => setFormData({ ...formData, module: e.target.value })}
-                            >
-                                <option value="">Select a module</option>
-                                {modules.map(mod => (
-                                    <option key={mod.id} value={mod.id}>{mod.name} ({mod.students} students)</option>
-                                ))}
-                            </select>
-                        </div>
+                        <h2>Details</h2>
 
                         <div className="form-group">
                             <label htmlFor="title">Title *</label>
@@ -227,23 +249,8 @@ const TutorSchedule: React.FC = () => {
                             />
                         </div>
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label htmlFor="subject">Subject *</label>
-                                <select
-                                    id="subject"
-                                    required
-                                    value={formData.subject}
-                                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                >
-                                    <option value="">Select subject</option>
-                                    {subjects.map(subject => (
-                                        <option key={subject} value={subject}>{subject}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {scheduleType === 'liveClass' && (
+                        {scheduleType === 'liveClass' && (
+                            <div className="form-row">
                                 <div className="form-group">
                                     <label htmlFor="duration">Duration *</label>
                                     <select
@@ -259,18 +266,19 @@ const TutorSchedule: React.FC = () => {
                                         <option value="120">2 hours</option>
                                     </select>
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
 
                         <div className="form-row">
                             <div className="form-group">
                                 <label htmlFor="date">{scheduleType === 'liveClass' ? 'Date' : 'Start Date'} *</label>
-                                <input
-                                    type="date"
+                                <CalendarPicker
                                     id="date"
                                     required
+                                    min={getToday()}
                                     value={formData.date}
-                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                    onChange={(val) => setFormData({ ...formData, date: val })}
+                                    placeholder="Select date"
                                 />
                             </div>
 
@@ -288,12 +296,13 @@ const TutorSchedule: React.FC = () => {
                             ) : (
                                 <div className="form-group">
                                     <label htmlFor="dueDate">Due Date *</label>
-                                    <input
-                                        type="date"
+                                    <CalendarPicker
                                         id="dueDate"
                                         required
+                                        min={getToday()}
                                         value={formData.dueDate}
-                                        onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                                        onChange={(val) => setFormData({ ...formData, dueDate: val })}
+                                        placeholder="Select due date"
                                     />
                                 </div>
                             )}
@@ -463,32 +472,6 @@ const TutorSchedule: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Select Module */}
-                    <div className="form-section">
-                        <h2>Select Module</h2>
-                        <p className="section-description">Choose a module to automatically include all enrolled students</p>
-                        <div className="modules-grid">
-                            {modules.map(module => (
-                                <div
-                                    key={module.id}
-                                    className={`module-card ${formData.module === module.id ? 'selected' : ''}`}
-                                    onClick={() => setFormData({ ...formData, module: module.id })}
-                                >
-                                    <div className="module-icon" style={{ background: module.color }}>
-                                        �
-                                    </div>
-                                    <div className="module-info">
-                                        <h4>{module.name}</h4>
-                                        <p>{module.students} students enrolled</p>
-                                    </div>
-                                    {formData.module === module.id && (
-                                        <div className="selected-badge">✓</div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
                     {/* Submit */}
                     <div className="form-actions">
                         <button type="button" className="btn btn-outline" onClick={() => navigate('/tutor/classes')}>
@@ -498,9 +481,15 @@ const TutorSchedule: React.FC = () => {
                             type="submit"
                             className="btn btn-primary"
                             disabled={!formData.module || isSubmitting}
+                            title={!formData.module ? 'Please select a module first' : ''}
                         >
                             {isSubmitting ? 'Scheduling...' : `Schedule ${scheduleType === 'liveClass' ? 'Class' : scheduleType === 'test' ? 'Test' : 'Assignment'}`}
                         </button>
+                        {!formData.module && (
+                            <p className="form-hint" style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                                ⚠ Please select a module/class above before submitting
+                            </p>
+                        )}
                     </div>
                 </form>
             </div>

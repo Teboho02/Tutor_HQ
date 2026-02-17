@@ -88,6 +88,33 @@
     margin-bottom: 25px;
 }
 
+.signup-error {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #fecaca;
+    font-size: 0.95rem;
+}
+
+.error-close {
+    background: none;
+    border: none;
+    color: #991b1b;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 4px;
+    opacity: 0.7;
+}
+
+.error-close:hover {
+    opacity: 1;
+}
+
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

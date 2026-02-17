@@ -18,9 +18,10 @@ export interface User {
     id: string;
     email: string;
     fullName: string;
-    role: 'student' | 'tutor' | 'parent';
+    role: 'student' | 'tutor' | 'parent' | 'admin';
     avatarUrl?: string;
     phoneNumber?: string;
+    status?: 'pending' | 'approved' | 'rejected';
 }
 
 export const authService = {

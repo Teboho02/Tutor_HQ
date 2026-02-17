@@ -5,7 +5,7 @@ export interface CreateClassData {
   subject: string;
   description?: string;
   scheduledAt?: string;
-  duration?: number;
+  durationMinutes?: number;
   meetingLink?: string;
   studentIds?: string[];
 }
@@ -15,7 +15,7 @@ export interface UpdateClassData {
   subject?: string;
   description?: string;
   scheduledAt?: string;
-  duration?: number;
+  durationMinutes?: number;
   meetingLink?: string;
   studentIds?: string[];
   status?: string;

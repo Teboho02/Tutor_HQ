@@ -17,7 +17,9 @@ const Contact: React.FC = () => {
         { label: 'Dashboard', href: '/main' },
         { label: 'About', href: '/about' },
         { label: 'Contact', href: '/contact' },
-    ]; const handleSubmit = (e: React.FormEvent) => {
+    ];
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         // Create mailto link with form data
@@ -37,6 +39,14 @@ const Contact: React.FC = () => {
         });
 
         alert('Thank you for your message! Your default email client will open.');
+    };
+
+    const handleWhatsApp = (e: React.MouseEvent) => {
+        e.preventDefault();
+        const phone = '27782967517'; // WhatsApp number without +
+        const text = `Name: ${formData.name}%0AEmail: ${formData.email}%0ASubject: ${formData.subject}%0A%0A${formData.message}`;
+        const whatsappUrl = `https://wa.me/${phone}?text=${text}`;
+        window.open(whatsappUrl, '_blank');
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -156,9 +166,14 @@ const Contact: React.FC = () => {
                                     />
                                 </div>
 
-                                <button type="submit" className="btn btn-primary btn-lg">
-                                    Send Message
-                                </button>
+                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                    <button type="submit" className="btn btn-primary btn-lg">
+                                        Send Message
+                                    </button>
+                                    <button type="button" className="btn btn-success btn-lg" style={{ backgroundColor: '#25D366' }} onClick={handleWhatsApp}>
+                                        Send via WhatsApp
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>

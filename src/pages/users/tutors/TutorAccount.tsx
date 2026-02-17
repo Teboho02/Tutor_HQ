@@ -4,6 +4,7 @@ import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import Toast from '../../../components/Toast';
 import { tutorService } from '../../../services/tutor.service';
+import { authService } from '../../../services/auth.service';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface TutorInfo {
@@ -61,7 +62,7 @@ const TutorAccount: React.FC = () => {
                 if (response.success && response.data.profile) {
                     const p = response.data.profile;
                     setTutorInfo({
-                        name: p.full_name || user?.name || '',
+                        name: p.full_name || user?.fullName || '',
                         email: p.email || user?.email || '',
                         phone: p.phone_number || '',
                         subjectsTaught: p.subjects || [],
@@ -82,23 +83,50 @@ const TutorAccount: React.FC = () => {
 
     const tutorNavigation = [
         { label: 'Dashboard', href: '/tutor/dashboard' },
-        { label: 'Classes', href: '/tutor/classes' },
+        { label: 'My Classes', href: '/tutor/classes' },
         { label: 'Schedule', href: '/tutor/schedule' },
         { label: 'Students', href: '/tutor/students' },
         { label: 'Materials', href: '/tutor/materials' },
-        { label: 'Messages', href: '/tutor/messages' },
         { label: 'Account', href: '/tutor/account' }
     ];
 
-    const handleSaveProfile = (e: React.FormEvent) => {
+    const [editForm, setEditForm] = useState({ name: '', email: '', phone: '', qualification: '' });
+
+    const openEditProfile = () => {
+        setEditForm({
+            name: tutorInfo.name,
+            email: tutorInfo.email,
+            phone: tutorInfo.phone,
+            qualification: tutorInfo.qualification,
+        });
+        setShowEditProfile(true);
+    };
+
+    const handleSaveProfile = async (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Profile updated successfully!');
-        setShowEditProfile(false);
+        try {
+            await authService.updateProfile({
+                fullName: editForm.name,
+                email: editForm.email,
+                phoneNumber: editForm.phone,
+            });
+            setTutorInfo(prev => ({
+                ...prev,
+                name: editForm.name,
+                email: editForm.email,
+                phone: editForm.phone,
+                qualification: editForm.qualification,
+            }));
+            showToast('Profile updated successfully!', 'success');
+            setShowEditProfile(false);
+        } catch {
+            showToast('Failed to update profile', 'error');
+        }
     };
 
     const handleSaveBanking = (e: React.FormEvent) => {
         e.preventDefault();
-        alert('Banking information updated successfully!');
+        showToast('Banking information updated successfully!', 'success');
         setShowEditBanking(false);
     };
 
@@ -130,81 +158,81 @@ const TutorAccount: React.FC = () => {
                 )}
 
                 {!loading && (
-                <>
-                {/* Personal Information Section */}
-                <div className="account-section">
-                    <div className="section-header">
-                        <h2>👤 Personal Information</h2>
-                        <button className="btn-edit" onClick={() => setShowEditProfile(true)}>
-                            Edit Profile
-                        </button>
-                    </div>
+                    <>
+                        {/* Personal Information Section */}
+                        <div className="account-section">
+                            <div className="section-header">
+                                <h2>👤 Personal Information</h2>
+                                <button className="btn-edit" onClick={openEditProfile}>
+                                    Edit Profile
+                                </button>
+                            </div>
 
-                    <div className="info-grid">
-                        <div className="info-item">
-                            <span className="info-label">Full Name</span>
-                            <span className="info-value">{tutorInfo.name}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Email</span>
-                            <span className="info-value">{tutorInfo.email}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Phone</span>
-                            <span className="info-value">{tutorInfo.phone}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Member Since</span>
-                            <span className="info-value">{tutorInfo.joinDate}</span>
-                        </div>
-                        <div className="info-item full-width">
-                            <span className="info-label">Subjects Taught</span>
-                            <div className="subjects-list">
-                                {tutorInfo.subjectsTaught.map((subject, index) => (
-                                    <span key={index} className="subject-badge">{subject}</span>
-                                ))}
+                            <div className="info-grid">
+                                <div className="info-item">
+                                    <span className="info-label">Full Name</span>
+                                    <span className="info-value">{tutorInfo.name}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Email</span>
+                                    <span className="info-value">{tutorInfo.email}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Phone</span>
+                                    <span className="info-value">{tutorInfo.phone}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Member Since</span>
+                                    <span className="info-value">{tutorInfo.joinDate}</span>
+                                </div>
+                                <div className="info-item full-width">
+                                    <span className="info-label">Subjects Taught</span>
+                                    <div className="subjects-list">
+                                        {tutorInfo.subjectsTaught.map((subject, index) => (
+                                            <span key={index} className="subject-badge">{subject}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="info-item full-width">
+                                    <span className="info-label">Qualification</span>
+                                    <span className="info-value">{tutorInfo.qualification}</span>
+                                </div>
                             </div>
                         </div>
-                        <div className="info-item full-width">
-                            <span className="info-label">Qualification</span>
-                            <span className="info-value">{tutorInfo.qualification}</span>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Banking Information Section */}
-                <div className="account-section">
-                    <div className="section-header">
-                        <h2>🏦 Banking Information</h2>
-                        <button className="btn-edit" onClick={() => setShowEditBanking(true)}>
-                            Edit Banking Details
-                        </button>
-                    </div>
+                        {/* Banking Information Section */}
+                        <div className="account-section">
+                            <div className="section-header">
+                                <h2>🏦 Banking Information</h2>
+                                <button className="btn-edit" onClick={() => setShowEditBanking(true)}>
+                                    Edit Banking Details
+                                </button>
+                            </div>
 
-                    <div className="info-grid">
-                        <div className="info-item">
-                            <span className="info-label">Account Holder Name</span>
-                            <span className="info-value">{bankingInfo.accountHolderName}</span>
+                            <div className="info-grid">
+                                <div className="info-item">
+                                    <span className="info-label">Account Holder Name</span>
+                                    <span className="info-value">{bankingInfo.accountHolderName}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Bank Name</span>
+                                    <span className="info-value">{bankingInfo.bankName}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Account Number</span>
+                                    <span className="info-value">**** **** {bankingInfo.accountNumber.slice(-4)}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Branch Code</span>
+                                    <span className="info-value">{bankingInfo.branchCode}</span>
+                                </div>
+                                <div className="info-item">
+                                    <span className="info-label">Account Type</span>
+                                    <span className="info-value">{bankingInfo.accountType}</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="info-item">
-                            <span className="info-label">Bank Name</span>
-                            <span className="info-value">{bankingInfo.bankName}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Account Number</span>
-                            <span className="info-value">**** **** {bankingInfo.accountNumber.slice(-4)}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Branch Code</span>
-                            <span className="info-value">{bankingInfo.branchCode}</span>
-                        </div>
-                        <div className="info-item">
-                            <span className="info-label">Account Type</span>
-                            <span className="info-value">{bankingInfo.accountType}</span>
-                        </div>
-                    </div>
-                </div>
-                </>
+                    </>
                 )}
             </div>
 
@@ -219,19 +247,19 @@ const TutorAccount: React.FC = () => {
                         <form onSubmit={handleSaveProfile}>
                             <div className="form-group">
                                 <label>Full Name</label>
-                                <input type="text" defaultValue={tutorInfo.name} required />
+                                <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required />
                             </div>
                             <div className="form-group">
                                 <label>Email</label>
-                                <input type="email" defaultValue={tutorInfo.email} required />
+                                <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} required />
                             </div>
                             <div className="form-group">
                                 <label>Phone</label>
-                                <input type="tel" defaultValue={tutorInfo.phone} required />
+                                <input type="tel" value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} required />
                             </div>
                             <div className="form-group">
                                 <label>Qualification</label>
-                                <input type="text" defaultValue={tutorInfo.qualification} required />
+                                <input type="text" value={editForm.qualification} onChange={(e) => setEditForm({ ...editForm, qualification: e.target.value })} required />
                             </div>
                             <div className="modal-actions">
                                 <button type="button" className="btn-cancel" onClick={() => setShowEditProfile(false)}>

@@ -113,15 +113,22 @@ export const materialService = {
     },
 
     /**
-     * Upload file
+     * Upload file (supports large videos — server compresses automatically)
      */
-    async uploadFile(file: File) {
+    async uploadFile(file: File, onProgress?: (percent: number) => void) {
         const formData = new FormData();
         formData.append('file', file);
 
         const response = await apiClient.post('/materials/upload', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
+            },
+            timeout: 2 * 60 * 60 * 1000, // 2 hour timeout for large video compression
+            onUploadProgress: (progressEvent) => {
+                if (onProgress && progressEvent.total) {
+                    const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    onProgress(percent);
+                }
             },
         });
         return response.data;

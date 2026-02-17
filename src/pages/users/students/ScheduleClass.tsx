@@ -103,7 +103,7 @@ const ScheduleClass: React.FC = () => {
                 subject: formData.subject,
                 description: formData.description,
                 scheduledAt: formData.startTime,
-                duration: parseInt(formData.duration),
+                durationMinutes: parseInt(formData.duration),
                 studentIds: formData.selectedStudents,
             });
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -18,6 +18,19 @@ const Login: React.FC = () => {
         email: '',
         password: '',
     });
+
+    // Redirect already-authenticated users to their dashboard
+    useEffect(() => {
+        if (user) {
+            const dashboards: Record<string, string> = {
+                student: '/student/dashboard',
+                tutor: '/tutor/dashboard',
+                parent: '/parent/dashboard',
+                admin: '/admin/dashboard',
+            };
+            navigate(dashboards[user.role] || '/dashboard', { replace: true });
+        }
+    }, [user, navigate]);
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Home', href: '/' },
