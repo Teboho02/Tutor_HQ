@@ -11,7 +11,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    role: 'student' | 'tutor' | 'parent';
+    role: 'student' | 'tutor' | 'parent' | 'admin';
     avatar?: string;
 }
 

@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import type { NavigationLink } from '../types';
 import './Login.css';
 
-type UserRole = 'student' | 'parent' | 'tutor';
+type UserRole = 'student' | 'parent' | 'tutor' | 'admin';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -68,6 +68,8 @@ const Login: React.FC = () => {
                 navigate('/tutor/dashboard');
             } else if (loggedInUser.role === 'parent') {
                 navigate('/parent/dashboard');
+            } else if (loggedInUser.role === 'admin') {
+                navigate('/admin/dashboard');
             } else {
                 navigate('/dashboard');
             }
