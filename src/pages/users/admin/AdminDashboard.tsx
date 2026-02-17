@@ -20,15 +20,27 @@ const AdminDashboard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+    // All users & classes cache for dropdown selectors
+    const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
+    const [allClasses, setAllClasses] = useState<AdminClass[]>([]);
+
     // Filters
     const [roleFilter, setRoleFilter] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
 
-    // Modals
+    // Link modals
     const [showLinkModal, setShowLinkModal] = useState<'student-tutor' | 'student-parent' | 'tutor-class' | 'create-class' | null>(null);
     const [linkForm, setLinkForm] = useState({ studentId: '', parentId: '', tutorId: '', classId: '' });
     const [newClassForm, setNewClassForm] = useState({ title: '', subject: '', description: '', scheduledAt: '', duration: 60, maxStudents: 30 });
+
+    // Edit user modal
+    const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+    const [editForm, setEditForm] = useState({ fullName: '', email: '', role: '', phoneNumber: '' });
+
+    // Assign class to tutor modal
+    const [assignTutorUser, setAssignTutorUser] = useState<AdminUser | null>(null);
+    const [assignClassId, setAssignClassId] = useState('');
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/admin/dashboard' },
@@ -42,11 +54,30 @@ const AdminDashboard: React.FC = () => {
         setTimeout(() => setSuccessMsg(null), 3000);
     };
 
+    // --- Fetch all users/classes for dropdown selectors ---
+    const fetchAllUsersAndClasses = useCallback(async () => {
+        try {
+            const [usersRes, classesRes] = await Promise.all([
+                adminService.getUsers(),
+                adminService.getClasses(),
+            ]);
+            if (usersRes.success) setAllUsers(usersRes.data?.users ?? []);
+            if (classesRes.success) setAllClasses(classesRes.data?.classes ?? []);
+        } catch {
+            // Silently fail — dropdowns will just be empty
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchAllUsersAndClasses();
+    }, [fetchAllUsersAndClasses]);
+
+    // --- Tab data fetchers ---
     const fetchDashboard = useCallback(async () => {
         try {
             setLoading(true);
             const res = await adminService.getDashboard();
-            if (res.success) setStats(res.data);
+            if (res.success) setStats(res.data?.stats ?? res.data);
         } catch { setError('Failed to load dashboard'); }
         finally { setLoading(false); }
     }, []);
@@ -59,7 +90,7 @@ const AdminDashboard: React.FC = () => {
             if (statusFilter) params.status = statusFilter;
             if (searchQuery) params.search = searchQuery;
             const res = await adminService.getUsers(params);
-            if (res.success) setUsers(res.data.users);
+            if (res.success) setUsers(res.data?.users ?? []);
         } catch { setError('Failed to load users'); }
         finally { setLoading(false); }
     }, [roleFilter, statusFilter, searchQuery]);
@@ -68,7 +99,7 @@ const AdminDashboard: React.FC = () => {
         try {
             setLoading(true);
             const res = await adminService.getPendingUsers();
-            if (res.success) setPendingUsers(res.data.users);
+            if (res.success) setPendingUsers(res.data?.users ?? []);
         } catch { setError('Failed to load pending users'); }
         finally { setLoading(false); }
     }, []);
@@ -77,7 +108,7 @@ const AdminDashboard: React.FC = () => {
         try {
             setLoading(true);
             const res = await adminService.getClasses();
-            if (res.success) setClasses(res.data.classes);
+            if (res.success) setClasses(res.data?.classes ?? []);
         } catch { setError('Failed to load classes'); }
         finally { setLoading(false); }
     }, []);
@@ -86,7 +117,7 @@ const AdminDashboard: React.FC = () => {
         try {
             setLoading(true);
             const res = await adminService.getRelationships();
-            if (res.success) setRelationships(res.data.relationships);
+            if (res.success) setRelationships(res.data?.relationships ?? []);
         } catch { setError('Failed to load relationships'); }
         finally { setLoading(false); }
     }, []);
@@ -108,8 +139,9 @@ const AdminDashboard: React.FC = () => {
         try {
             await adminService.approveUser(userId);
             showSuccess('User approved successfully');
-            if (activeTab === 'pending') fetchPending();
-            else fetchUsers();
+            fetchPending();
+            fetchAllUsersAndClasses();
+            if (activeTab === 'users') fetchUsers();
         } catch { setError('Failed to approve user'); }
         finally { setActionLoading(null); }
     };
@@ -133,7 +165,45 @@ const AdminDashboard: React.FC = () => {
             await adminService.deleteUser(userId);
             showSuccess('User deleted');
             fetchUsers();
+            fetchAllUsersAndClasses();
         } catch { setError('Failed to delete user'); }
+        finally { setActionLoading(null); }
+    };
+
+    const handleEditUser = (user: AdminUser) => {
+        setEditingUser(user);
+        setEditForm({
+            fullName: user.fullName || '',
+            email: user.email || '',
+            role: user.role || '',
+            phoneNumber: user.phoneNumber || '',
+        });
+    };
+
+    const handleEditSubmit = async () => {
+        if (!editingUser) return;
+        setActionLoading('edit');
+        try {
+            await adminService.updateUser(editingUser.id, editForm);
+            showSuccess('User updated successfully');
+            setEditingUser(null);
+            fetchUsers();
+            fetchAllUsersAndClasses();
+        } catch { setError('Failed to update user'); }
+        finally { setActionLoading(null); }
+    };
+
+    const handleAssignClassToTutor = async () => {
+        if (!assignTutorUser || !assignClassId) return;
+        setActionLoading('assign-class');
+        try {
+            await adminService.assignTutorToClass(assignTutorUser.id, assignClassId);
+            showSuccess('Class assigned to tutor');
+            setAssignTutorUser(null);
+            setAssignClassId('');
+            fetchClasses();
+            fetchAllUsersAndClasses();
+        } catch { setError('Failed to assign class'); }
         finally { setActionLoading(null); }
     };
 
@@ -157,12 +227,13 @@ const AdminDashboard: React.FC = () => {
                     await adminService.createClass(newClassForm);
                     showSuccess('Class created');
                     fetchClasses();
+                    fetchAllUsersAndClasses();
                     break;
             }
             setShowLinkModal(null);
             setLinkForm({ studentId: '', parentId: '', tutorId: '', classId: '' });
             if (activeTab === 'relationships') fetchRelationships();
-        } catch { setError('Action failed. Check the IDs and try again.'); }
+        } catch { setError('Action failed. Please try again.'); }
         finally { setActionLoading(null); }
     };
 
@@ -177,7 +248,7 @@ const AdminDashboard: React.FC = () => {
         finally { setActionLoading(null); }
     };
 
-    const handleUnlinkStudentTutor = async (studentId: string, classId: string) => {
+    const handleUnlinkStudentClass = async (studentId: string, classId: string) => {
         if (!confirm('Remove this student from the class?')) return;
         setActionLoading(`unlink-${studentId}-${classId}`);
         try {
@@ -189,6 +260,10 @@ const AdminDashboard: React.FC = () => {
     };
 
     // --- Helpers ---
+    const approvedStudents = allUsers.filter(u => u.role === 'student' && u.status === 'approved');
+    const approvedTutors = allUsers.filter(u => u.role === 'tutor' && u.status === 'approved');
+    const approvedParents = allUsers.filter(u => u.role === 'parent' && u.status === 'approved');
+
     const getRoleBadgeClass = (role: string) => {
         switch (role) {
             case 'student': return 'badge-student';
@@ -329,6 +404,18 @@ const AdminDashboard: React.FC = () => {
                                 <td><span className={`badge ${getStatusBadgeClass(user.status)}`}>{user.status}</span></td>
                                 <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                                 <td className="actions-cell">
+                                    <button
+                                        className="btn-edit"
+                                        onClick={() => handleEditUser(user)}
+                                        title="Edit user"
+                                    >✏️</button>
+                                    {user.role === 'tutor' && user.status === 'approved' && (
+                                        <button
+                                            className="btn-assign"
+                                            onClick={() => { setAssignTutorUser(user); setAssignClassId(''); }}
+                                            title="Assign class to this tutor"
+                                        >📚</button>
+                                    )}
                                     {user.status === 'pending' && (
                                         <>
                                             <button
@@ -452,6 +539,9 @@ const AdminDashboard: React.FC = () => {
                     <button className="btn-primary" onClick={() => setShowLinkModal('student-tutor')}>
                         📚 Enroll Student
                     </button>
+                    <button className="btn-primary" onClick={() => setShowLinkModal('tutor-class')}>
+                        👨‍🏫 Assign Tutor
+                    </button>
                 </div>
             </div>
             <div className="relationships-table-wrapper">
@@ -482,7 +572,7 @@ const AdminDashboard: React.FC = () => {
                                     ) : (
                                         <button
                                             className="btn-delete"
-                                            onClick={() => handleUnlinkStudentTutor(rel.studentId, rel.relatedId)}
+                                            onClick={() => handleUnlinkStudentClass(rel.studentId, rel.relatedId)}
                                             disabled={actionLoading === `unlink-${rel.studentId}-${rel.relatedId}`}
                                         >Remove</button>
                                     )}
@@ -498,6 +588,7 @@ const AdminDashboard: React.FC = () => {
         </div>
     );
 
+    // --- Link Modal with Dropdowns ---
     const renderLinkModal = () => {
         if (!showLinkModal) return null;
 
@@ -547,38 +638,144 @@ const AdminDashboard: React.FC = () => {
                             </>
                         ) : (
                             <>
+                                {/* Student dropdown */}
                                 {(showLinkModal === 'student-tutor' || showLinkModal === 'student-parent') && (
                                     <div className="form-group">
-                                        <label>Student ID *</label>
-                                        <input type="text" value={linkForm.studentId} onChange={e => setLinkForm(f => ({ ...f, studentId: e.target.value }))} placeholder="Paste student UUID" />
+                                        <label>Select Student *</label>
+                                        <select value={linkForm.studentId} onChange={e => setLinkForm(f => ({ ...f, studentId: e.target.value }))}>
+                                            <option value="">-- Choose a student --</option>
+                                            {approvedStudents.map(s => (
+                                                <option key={s.id} value={s.id}>{s.fullName} ({s.email})</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 )}
+
+                                {/* Parent dropdown */}
                                 {showLinkModal === 'student-parent' && (
                                     <div className="form-group">
-                                        <label>Parent ID *</label>
-                                        <input type="text" value={linkForm.parentId} onChange={e => setLinkForm(f => ({ ...f, parentId: e.target.value }))} placeholder="Paste parent UUID" />
+                                        <label>Select Parent *</label>
+                                        <select value={linkForm.parentId} onChange={e => setLinkForm(f => ({ ...f, parentId: e.target.value }))}>
+                                            <option value="">-- Choose a parent --</option>
+                                            {approvedParents.map(p => (
+                                                <option key={p.id} value={p.id}>{p.fullName} ({p.email})</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 )}
+
+                                {/* Tutor dropdown */}
                                 {showLinkModal === 'tutor-class' && (
                                     <div className="form-group">
-                                        <label>Tutor ID *</label>
-                                        <input type="text" value={linkForm.tutorId} onChange={e => setLinkForm(f => ({ ...f, tutorId: e.target.value }))} placeholder="Paste tutor UUID" />
+                                        <label>Select Tutor *</label>
+                                        <select value={linkForm.tutorId} onChange={e => setLinkForm(f => ({ ...f, tutorId: e.target.value }))}>
+                                            <option value="">-- Choose a tutor --</option>
+                                            {approvedTutors.map(t => (
+                                                <option key={t.id} value={t.id}>{t.fullName} ({t.email})</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 )}
+
+                                {/* Class dropdown */}
                                 {(showLinkModal === 'student-tutor' || showLinkModal === 'tutor-class') && (
                                     <div className="form-group">
-                                        <label>Class ID *</label>
-                                        <input type="text" value={linkForm.classId} onChange={e => setLinkForm(f => ({ ...f, classId: e.target.value }))} placeholder="Paste class UUID" />
+                                        <label>Select Class *</label>
+                                        <select value={linkForm.classId} onChange={e => setLinkForm(f => ({ ...f, classId: e.target.value }))}>
+                                            <option value="">-- Choose a class --</option>
+                                            {allClasses.map(c => (
+                                                <option key={c.id} value={c.id}>{c.title} — {c.subject}{c.tutorName ? ` (${c.tutorName})` : ''}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 )}
                             </>
                         )}
-                        <p className="hint">You can find user/class IDs from the Users or Classes tabs.</p>
                     </div>
                     <div className="modal-footer">
                         <button className="btn-secondary" onClick={() => setShowLinkModal(null)}>Cancel</button>
                         <button className="btn-primary" onClick={handleLinkSubmit} disabled={actionLoading === 'link'}>
                             {actionLoading === 'link' ? 'Processing...' : 'Confirm'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- Edit User Modal ---
+    const renderEditModal = () => {
+        if (!editingUser) return null;
+
+        return (
+            <div className="modal-overlay" onClick={() => setEditingUser(null)}>
+                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h2>Edit User</h2>
+                        <button className="modal-close" onClick={() => setEditingUser(null)}>×</button>
+                    </div>
+                    <div className="modal-body">
+                        <div className="form-group">
+                            <label>Full Name</label>
+                            <input type="text" value={editForm.fullName} onChange={e => setEditForm(f => ({ ...f, fullName: e.target.value }))} />
+                        </div>
+                        <div className="form-group">
+                            <label>Email</label>
+                            <input type="email" value={editForm.email} onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))} />
+                        </div>
+                        <div className="form-group">
+                            <label>Role</label>
+                            <select value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))}>
+                                <option value="student">Student</option>
+                                <option value="tutor">Tutor</option>
+                                <option value="parent">Parent</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Phone Number</label>
+                            <input type="text" value={editForm.phoneNumber} onChange={e => setEditForm(f => ({ ...f, phoneNumber: e.target.value }))} placeholder="e.g., +27 12 345 6789" />
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button className="btn-secondary" onClick={() => setEditingUser(null)}>Cancel</button>
+                        <button className="btn-primary" onClick={handleEditSubmit} disabled={actionLoading === 'edit'}>
+                            {actionLoading === 'edit' ? 'Saving...' : 'Save Changes'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // --- Assign Class to Tutor Modal ---
+    const renderAssignClassModal = () => {
+        if (!assignTutorUser) return null;
+
+        return (
+            <div className="modal-overlay" onClick={() => setAssignTutorUser(null)}>
+                <div className="modal-content" onClick={e => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h2>Assign Class to {assignTutorUser.fullName}</h2>
+                        <button className="modal-close" onClick={() => setAssignTutorUser(null)}>×</button>
+                    </div>
+                    <div className="modal-body">
+                        <div className="form-group">
+                            <label>Select Class *</label>
+                            <select value={assignClassId} onChange={e => setAssignClassId(e.target.value)}>
+                                <option value="">-- Choose a class --</option>
+                                {allClasses.map(c => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.title} — {c.subject}{c.tutorName ? ` (currently: ${c.tutorName})` : ' (no tutor)'}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button className="btn-secondary" onClick={() => setAssignTutorUser(null)}>Cancel</button>
+                        <button className="btn-primary" onClick={handleAssignClassToTutor} disabled={actionLoading === 'assign-class' || !assignClassId}>
+                            {actionLoading === 'assign-class' ? 'Assigning...' : 'Assign Class'}
                         </button>
                     </div>
                 </div>
@@ -619,7 +816,6 @@ const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div className="admin-main">
-                    {/* Notifications */}
                     {error && (
                         <div className="admin-alert admin-alert-error">
                             <span>{error}</span>
@@ -648,6 +844,8 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {renderLinkModal()}
+            {renderEditModal()}
+            {renderAssignClassModal()}
 
             <Footer />
         </div>

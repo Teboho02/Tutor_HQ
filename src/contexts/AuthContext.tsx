@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { authService } from '../services/auth.service';
 import type { User, RegisterData } from '../services/auth.service';
 import { useToast } from '../components/Toast';
+import { tokenStore } from '../config/api';
 
 interface AuthContextType {
     user: User | null;
@@ -54,6 +55,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             const response = await authService.login({ email, password });
             if (response.success) {
+                // Persist tokens so the Authorization header works as a cookie fallback
+                const session = response.data?.session;
+                if (session?.access_token) {
+                    tokenStore.setTokens(session.access_token, session.refresh_token || '');
+                }
                 setUser(response.data.user);
                 showToast('Login successful!', 'success');
                 return response.data.user;
@@ -71,6 +77,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
             const response = await authService.register(data);
             if (response.success) {
+                const session = response.data?.session;
+                if (session?.access_token) {
+                    tokenStore.setTokens(session.access_token, session.refresh_token || '');
+                }
                 setUser(response.data.user);
                 showToast('Registration successful!', 'success');
             }
@@ -85,10 +95,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const logout = async () => {
         try {
             await authService.logout();
+            tokenStore.clear();
             setUser(null);
             showToast('Logged out successfully', 'info');
         } catch {
-            showToast('Logout failed', 'error');
+            tokenStore.clear();
+            setUser(null);
+            showToast('Logged out', 'info');
         }
     };
 

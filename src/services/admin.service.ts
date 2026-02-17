@@ -17,10 +17,12 @@ export interface AdminClass {
     subject: string;
     tutorId?: string;
     tutorName?: string;
+    tutorEmail?: string;
     scheduledAt?: string;
-    duration?: number;
+    durationMinutes?: number;
     maxStudents?: number;
     status?: string;
+    description?: string;
 }
 
 export interface DashboardStats {
@@ -33,7 +35,7 @@ export interface DashboardStats {
 }
 
 export interface Relationship {
-    type: 'student-tutor' | 'student-parent';
+    type: 'student-parent' | 'student-class';
     studentId: string;
     studentName: string;
     studentEmail: string;
@@ -41,7 +43,7 @@ export interface Relationship {
     relatedName: string;
     relatedEmail: string;
     relatedRole: string;
-    className?: string;
+    className?: string | null;
 }
 
 export const adminService = {
@@ -69,6 +71,11 @@ export const adminService = {
 
     async rejectUser(userId: string, reason?: string) {
         const response = await apiClient.patch(`/admin/users/${userId}/reject`, { reason });
+        return response.data;
+    },
+
+    async updateUser(userId: string, data: { fullName?: string; email?: string; role?: string; phoneNumber?: string }) {
+        const response = await apiClient.patch(`/admin/users/${userId}`, data);
         return response.data;
     },
 
