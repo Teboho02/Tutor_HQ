@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
 import { SkeletonCard } from '../../../components/SkeletonLoader';
 import { useToast } from '../../../components/Toast';
+import { useAuth } from '../../../contexts/AuthContext';
 import { studentService } from '../../../services/student.service';
 import type { NavigationLink } from '../../../types';
 import './StudentDashboard.css';
@@ -37,6 +38,13 @@ const StudentDashboard: React.FC = () => {
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const { showToast } = useToast();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleSignOut = async () => {
+        await logout();
+        navigate('/login');
+    };
 
     const navigationLinks: NavigationLink[] = [
         { label: 'Dashboard', href: '/student/dashboard' },
@@ -214,6 +222,28 @@ const StudentDashboard: React.FC = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Sign Out */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '24px 20px 40px' }}>
+                <button
+                    onClick={handleSignOut}
+                    style={{
+                        padding: '12px 32px',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        color: '#fff',
+                        backgroundColor: '#ef4444',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s',
+                    }}
+                    onMouseOver={e => (e.currentTarget.style.backgroundColor = '#dc2626')}
+                    onMouseOut={e => (e.currentTarget.style.backgroundColor = '#ef4444')}
+                >
+                    Sign Out
+                </button>
             </div>
 
             <Footer />
