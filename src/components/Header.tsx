@@ -64,13 +64,13 @@ const Header: React.FC<HeaderProps> = ({
         <header className={headerClasses}>
             <nav className="nav container">
                 <div className="logo">
-                    <Link to="/" onClick={closeMenu}>
+                    <a href="https://tutorhq.co.za" onClick={closeMenu}>
                         <img
-                            src="/src/assets/logo-hq2.png"
+                            src="/src/assets/logo3.jpeg"
                             alt="Tutor HQ"
                             className="logo-image"
                         />
-                    </Link>
+                    </a>
                 </div>
 
                 <ul className={`nav-links ${isMenuOpen ? 'nav-links--open' : ''}`}>
